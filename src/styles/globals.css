@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "../components/layout/theme-swith/style.css" layer(base);
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: light-dark(#5363ee, #3545d6); /* Bleu royal */
+  --color-secondary: light-dark(#c2f750, #c2f750); /* Vert lime */
+  --color-dark: light-dark(#0e1a27, #0e1a27);
+  /* Variantes de couleurs */
+  --color-primary-light: light-dark(#6474ff, #4656e7);
+  --color-primary-dark: light-dark(#4252dd, #2434c5);
+
+  /* Couleurs de fond et texte */
+  --color-background: light-dark(#ffffff, #0e1a27);
+  --color-text: light-dark(#0e1a27, #ffffff);
+}
+
+/* Ajouter des thèmes  */
+/* ajouter un data-theme="exemple" sur le html */
+[data-theme="vert"] {
+  --color-primary: light-dark(
+    #c2f750,
+    #c2f750
+  ); /* Vert lime comme couleur principale */
+  --color-secondary: light-dark(
+    #5363ee,
+    #3545d6
+  ); /* Bleu royal comme couleur secondaire */
+}
