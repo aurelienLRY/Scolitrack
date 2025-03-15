@@ -1,8 +1,11 @@
 import { ButtonLink } from "@/components/shared/button";
-
+/**
+ * customer Unauthorized page
+ * @returns
+ */
 export default function Unauthorized() {
   return (
-    <section className="flex w-screen items-center justify-center">
+    <section className="flex w-screen items-center justify-center min-h-[calc(100vh-170px)]">
       <div className="flex flex-col items-center gap-4">
         <span className="text-8xl">🧐</span>
         <h1>Accès refusé</h1>

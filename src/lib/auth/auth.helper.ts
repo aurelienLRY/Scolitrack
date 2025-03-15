@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { unauthorized } from "next/navigation";
 
 export const requiredAuth = async () => {
