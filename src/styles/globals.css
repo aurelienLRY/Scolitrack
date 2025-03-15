@@ -1,12 +1,17 @@
 @import "tailwindcss";
-@import "../components/layout/theme-swith/style.css" layer(base);
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: light-dark(#5363ee, #3545d6); /* Bleu royal */
-  --color-secondary: light-dark(#c2f750, #c2f750); /* Vert lime */
+  --font-raleway: "Raleway", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --color-primary: light-dark(#3545d6, #112aff); /* Bleu royal */
+  --color-secondary: light-dark(#a6ee0a, #81bc00); /* Vert lime */
+  --color-accent: light-dark(#9f7300, #e7a906); /* Rouge */
   --color-dark: light-dark(#0e1a27, #0e1a27);
+
+  --color-destructive: light-dark(#ff0000, #ff0000);
+
   /* Variantes de couleurs */
   --color-primary-light: light-dark(#6474ff, #4656e7);
   --color-primary-dark: light-dark(#4252dd, #2434c5);
@@ -27,4 +32,28 @@
     #5363ee,
     #3545d6
   ); /* Bleu royal comme couleur secondaire */
+}
+
+/* Importation des styles */
+@import "../components/layout/theme-switch/style.css" layer(base);
+@import "./typographies.css" layer(base);
+@import "./balise.css" layer(base);
+
+/* customer scrollbar */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 15px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-light);
 }

@@ -1,0 +1,26 @@
+html,
+body {
+  font-family: var(--font-montserrat);
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-raleway);
+}
+
+h1 {
+  @apply text-4xl md:text-6xl lg:text-8xl font-bold;
+}
+
+h2 {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold;
+}
+
+h3 {
+  @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+}

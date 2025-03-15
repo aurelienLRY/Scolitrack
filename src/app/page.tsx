@@ -1,16 +1,17 @@
-import { ThemeSwitch } from "@/components/layout/theme-swith/ThemeSwitch";
-
+import Login from "@/components/auth/login";
 export default function Home() {
   return (
-    <div className=" min-h-screen flex flex-col ">
-      <ThemeSwitch />
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <h1 className="text-8xl">Bienvenu</h1>
-        <h2 className="text-4xl text-primary ">sur theme color</h2>
-        <button className="bg-secondary  px-4 py-2 rounded-md mt-11">
-          Theme color
-        </button>
+    <section className="  flex flex-col min-h-[calc(100vh-170px)] ">
+      <div className="flex-1 flex flex-col gap-8 items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
+          <h1 className="">Bienvenu</h1>
+          <p className=" text-xl  ">
+            sur <span className="text-accent text-6xl">ScoliTrack</span>
+          </p>
+          <hr className="w-1/2 border-t-2 border-gray-300 my-6 " />
+        </div>
+        <Login />
       </div>
-    </div>
+    </section>
   );
 }
