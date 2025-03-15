@@ -1,0 +1,13 @@
+/* Animation du bouton de thème */
+.theme-switch-button {
+  @apply relative overflow-hidden;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.theme-switch-button svg {
+  @apply transform transition-all duration-500;
+}
+
+.theme-switch-button:hover svg {
+  @apply scale-110;
+}
