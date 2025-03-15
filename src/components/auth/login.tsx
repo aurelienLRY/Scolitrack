@@ -87,7 +87,7 @@ export default function Login() {
           error={errors.password}
         />
         <Link
-          href="/forget-password"
+          href="/forgot-password"
           className="text-sm text-gray-500 dark:text-gray-400 italic hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
         >
           Mot de passe oublié ?
@@ -97,7 +97,7 @@ export default function Login() {
           type="submit"
           disabled={isSubmitting}
           variant="secondary"
-          className="max-w-[150px]"
+          className="max-w-[170px] min-w-fit"
         >
           {isSubmitting ? "Connexion en cours..." : "Se connecter"}
         </Button>
