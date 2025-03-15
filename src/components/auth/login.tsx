@@ -1,6 +1,7 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 import Input from "../shared/Input";
 import { Button } from "@/components/shared/button";
@@ -27,6 +28,13 @@ export default function Login() {
   });
 
   const router = useRouter();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/private/dashboard");
+    }
+  }, [status, router]);
 
   const onSubmit = async (data: LoginFormData) => {
     try {
@@ -51,11 +59,6 @@ export default function Login() {
       toast.error("Une erreur est survenue lors de la connexion");
     }
   };
-  const { status } = useSession();
-
-  if (status === "authenticated") {
-    router.push("/private/dashboard");
-  }
 
   return (
     <form
