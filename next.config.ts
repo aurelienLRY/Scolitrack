@@ -3,12 +3,13 @@ import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   compiler: {
-    removeConsole:
+    /*removeConsole:
       process.env.NODE_ENV === "production"
         ? {
             exclude: ["error"],
           }
         : false,
+  */
   },
   experimental: {
     authInterrupts: true,

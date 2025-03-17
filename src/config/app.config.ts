@@ -53,18 +53,21 @@ export const appConfig = {
       icons: [
         {
           src: "/icons/my-account.png",
+
           sizes: "96x96",
           type: "image/png",
         },
       ],
     },
     {
+
       name: "Dashboard",
       url: "/private/dashboard",
       description: "Accéder au dashboard",
       icons: [
         {
           src: "/icons/dashboard.png",
+
           sizes: "96x96",
           type: "image/png",
         },

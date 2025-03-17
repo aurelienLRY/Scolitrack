@@ -9,6 +9,7 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+
 /**
  * Route pour envoyer une notification à un utilisateur ou un rôle
  * @param req - Requête HTTP (json avec les données de la notification )
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
         {
           action: "open",
           title: "Ouvrir",
+
         },
         {
           action: "close",

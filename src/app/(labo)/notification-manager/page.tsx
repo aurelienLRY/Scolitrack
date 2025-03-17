@@ -44,6 +44,7 @@ export default function NotificationManager() {
           title: "Ouvrir",
         },
       ],
+
     };
 
     await pushMessage(notification);
