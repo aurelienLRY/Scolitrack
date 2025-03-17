@@ -23,5 +23,6 @@ export const config = {
     // - _next/image (images optimisées)
     // - favicon.ico (icône du navigateur)
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/api/auth/:path*",
   ],
 };
