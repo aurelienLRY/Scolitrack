@@ -5,8 +5,10 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { ThemeSwitchAlt } from "@/components/layout/theme-switch/ThemeSwitchAlt";
+
 import { Tooltip } from "@/components/shared/tooltip";
+import { NotificationToggle } from "@/components/notification/NotificationToggle";
+import { ThemeSwitch } from "../layout/theme-switch/ThemeSwitch";
 
 /**
  * User menu component
@@ -62,9 +64,15 @@ export function UserMenu() {
               <p className="text-sm font-medium">{user.name}</p>
               <p className="text-xs text-slate-500">{user.email}</p>
             </div>
-
-            <ThemeSwitchAlt />
-
+            <div className="flex flex-col gap-2 border-b px-2 py-2">
+              <span className="text-sm text-accent font-semibold mx-auto">
+                Options
+              </span>
+              <div className="flex gap-2 justify-center">
+                <ThemeSwitch />
+                <NotificationToggle />
+              </div>
+            </div>
             <button
               className={cn(
                 "w-full text-left",

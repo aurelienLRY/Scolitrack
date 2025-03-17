@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
 import { Raleway, Montserrat } from "next/font/google";
 import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
+
+export { metadata } from "./metadata";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -12,11 +13,6 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
 });
-
-export const metadata: Metadata = {
-  title: "Scolitack",
-  description: "Simplifiez vous la vie avec Scolitack",
-};
 
 export default function RootLayout({
   children,

@@ -4,7 +4,8 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.SUPER_ADMIN_EMAIL;
+  const adminEmail =
+    process.env.SUPER_ADMIN_EMAIL || ("admin@admin.com" as string);
   // Vérifier si un utilisateur admin existe déjà
   const adminExists = await prisma.user.findUnique({
     where: { email: adminEmail },
