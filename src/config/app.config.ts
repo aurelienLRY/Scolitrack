@@ -47,24 +47,27 @@ export const appConfig = {
   // Raccourcis rapides pour l'application
   shortcuts: [
     {
-      name: "Documentation",
-      url: "/docs",
-      description: "Accéder à la documentation",
+      name: "Mon compte",
+      url: "/private/my-account",
+      description: "Accéder à mon compte",
       icons: [
         {
-          src: "/icons/PWA/android/android-launchericon-96-96.png",
+          src: "/icons/my-account.png",
+
           sizes: "96x96",
           type: "image/png",
         },
       ],
     },
     {
-      name: "Guide PWA",
-      url: "/guide-pwa",
-      description: "Guide d'utilisation PWA",
+
+      name: "Dashboard",
+      url: "/private/dashboard",
+      description: "Accéder au dashboard",
       icons: [
         {
-          src: "/icons/PWA/android/android-launchericon-96-96.png",
+          src: "/icons/dashboard.png",
+
           sizes: "96x96",
           type: "image/png",
         },
