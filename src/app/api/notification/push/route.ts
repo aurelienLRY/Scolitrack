@@ -9,6 +9,11 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+/**
+ * Route pour envoyer une notification à un utilisateur ou un rôle
+ * @param req - Requête HTTP (json avec les données de la notification )
+ * @returns Réponse HTTP
+ */
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
@@ -61,18 +66,24 @@ export async function POST(req: NextRequest) {
     const notificationOptions = {
       title,
       message,
+      renotify: true,
+      requireInteraction: true,
+      lang: "fr",
       icon: icon || "/icons/PWA/android/android-launchericon-144-144.png",
       badge: badge || "/icons/PWA/android/android-launchericon-48-48.png",
-      vibrate: vibrate || [100, 50, 100],
-      data: {
-        ...data,
-        dateOfArrival: Date.now(),
-        primaryKey: 1,
-      },
+      vibrate: vibrate || [200, 100, 200],
+      ...(data && {
+        data: {
+          ...data,
+          dateOfArrival: Date.now(),
+          primaryKey: 1,
+        },
+      }),
+
       actions: actions || [
         {
-          action: "explore",
-          title: "Voir plus",
+          action: "open",
+          title: "Ouvrir",
         },
         {
           action: "close",

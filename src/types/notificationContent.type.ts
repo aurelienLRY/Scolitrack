@@ -4,14 +4,14 @@ export type NotificationTarget = {
 };
 
 export type NotificationData = {
-  link?: string;
-  type?: string;
-  priority?: "high" | "normal" | "low";
+  link?: string; //lien de la notification
+  type?: string; //type de la notification
+  priority?: "high" | "normal" | "low"; //priorité de la notification
   [key: string]: string | number | boolean | undefined;
 };
 
 export type NotificationContent = {
-  title: string;
+  title: string; //titre de la notification
   message: string;
   target: NotificationTarget;
   data?: NotificationData;
@@ -21,5 +21,6 @@ export type NotificationContent = {
   actions?: {
     action: string;
     title: string;
+    icon?: string;
   }[];
 };
