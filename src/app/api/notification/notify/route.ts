@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/prisma";
 import webpush from "web-push";
+
 import {
   DEFAULT_ICONS,
   DEFAULT_VIBRATE_PATTERN,
   DEFAULT_NOTIFICATION_ACTIONS,
-  NotificationResponse,
-} from "@/types/api/notification.types";
+} from "@/config/notification.constants";
+
+import { NotificationResponse } from "@/types/notification.type";
 
 /**
  * Configuration des clés VAPID pour Web Push
@@ -46,6 +48,7 @@ webpush.setVapidDetails(
  * @returns {number} failed - Nombre de notifications ayant échoué
  * @returns {number} total - Nombre total de tentatives d'envoi
  * @returns {Array} [errors] - Détails des erreurs (si applicable)
+
  */
 export async function POST(req: NextRequest) {
   try {

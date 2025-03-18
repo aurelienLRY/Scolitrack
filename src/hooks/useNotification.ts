@@ -13,20 +13,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { NotificationContent } from "@/types/notificationContent.type";
-
-interface PushSubscriptionJSON {
-  endpoint: string;
-  keys: {
-    p256dh: string;
-    auth: string;
-  };
-}
+import {
+  NotificationContent,
+  PushSubscriptionRequest,
+} from "@/types/notification.type";
 
 export const useNotification = () => {
-  const [subscription, setSubscription] = useState<PushSubscriptionJSON | null>(
-    null
-  );
+  const [subscription, setSubscription] =
+    useState<PushSubscriptionRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -47,7 +41,8 @@ export const useNotification = () => {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        const subscriptionData = subscription.toJSON() as PushSubscriptionJSON;
+        const subscriptionData =
+          subscription.toJSON() as PushSubscriptionRequest;
         setSubscription(subscriptionData);
         setIsSubscribed(true);
       }
@@ -74,7 +69,7 @@ export const useNotification = () => {
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
       });
 
-      const subscriptionData = subscription.toJSON() as PushSubscriptionJSON;
+      const subscriptionData = subscription.toJSON() as PushSubscriptionRequest;
 
       const response = await fetch("/api/notification/subscribe", {
         method: "POST",
@@ -129,7 +124,7 @@ export const useNotification = () => {
    */
   const pushMessage = async (notification: NotificationContent) => {
     try {
-      const response = await fetch("/api/notification/push", {
+      const response = await fetch("/api/notification/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notification),

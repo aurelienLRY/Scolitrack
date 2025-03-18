@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/shared/select";
 import { useNotification } from "@/hooks/useNotification";
-import { NotificationContent } from "@/types/notificationContent.type";
+import { NotificationContent } from "@/types/notification.type";
 
 export default function NotificationManager() {
   const { isSubscribed, subscribe, unsubscribe, pushMessage } =

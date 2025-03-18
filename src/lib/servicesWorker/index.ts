@@ -4,8 +4,8 @@ import {
   DEFAULT_ICONS,
   DEFAULT_VIBRATE_PATTERN,
   DEFAULT_NOTIFICATION_ACTIONS,
-  ExtendedNotificationOptions,
-} from "../../../config/notification.constants";
+} from "@/config/notification.constants";
+import { ExtendedNotificationOptions } from "@/types/notification.type";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -17,6 +17,7 @@ declare const self: ServiceWorkerGlobalScope;
  */
 self.addEventListener("push", (event: PushEvent) => {
   try {
+    console.log("Notification recu", event);
     // Analyse des données de la notification
     const data = JSON.parse(event.data?.text() ?? "{}");
 
@@ -34,7 +35,6 @@ self.addEventListener("push", (event: PushEvent) => {
       actions: data.actions || DEFAULT_NOTIFICATION_ACTIONS,
       requireInteraction: true,
       lang: "fr",
-      renotify: true,
     };
 
     // Affichage de la notification

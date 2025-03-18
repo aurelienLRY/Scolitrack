@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/auth";
 import {
   PushSubscriptionRequest,
   SubscribeResponse,
-} from "@/types/api/notification.types";
+} from "@/types/notification.type";
 
 /**
  * API d'abonnement aux notifications push
