@@ -8,7 +8,7 @@ export const appConfig = {
   shortName: "Scolitack", // Nom court pour l'icône sur l'écran d'accueil
   description: "Portail d'école", // Description de l'application
   url: "/", // URL de base de l'application
-  display: "fullscreen", // Mode d'affichage de la PWA (standalone, fullscreen, minimal-ui, browser)
+  display: "standalone", // Mode d'affichage de la PWA (standalone, fullscreen, minimal-ui, browser)
   orientation: "portrait" as const, // Orientation préférée de l'application
 
   // Catégorisation et localisation
