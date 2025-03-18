@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -8,7 +8,7 @@ import Input from "@/components/shared/Input";
 import { Button } from "@/components/shared/button";
 import { toast } from "sonner";
 import Link from "next/link";
-import { unauthorized, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 /**
  * Reset password schema
@@ -30,19 +30,11 @@ const resetPasswordSchema = yup.object().shape({
 
 type ResetPasswordFormData = yup.InferType<typeof resetPasswordSchema>;
 
-/**
- * Reset password page
- * @returns
- */
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-
-  if (!token) {
-    unauthorized();
-  }
 
   const {
     register,
@@ -51,6 +43,16 @@ export default function ResetPasswordPage() {
   } = useForm<ResetPasswordFormData>({
     resolver: yupResolver(resetPasswordSchema),
   });
+
+  useEffect(() => {
+    if (!token) {
+      router.push("/unauthorized");
+    }
+  }, [token, router]);
+
+  if (!token) {
+    return null;
+  }
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
@@ -152,5 +154,13 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

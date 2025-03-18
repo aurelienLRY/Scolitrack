@@ -9,7 +9,7 @@ export default function Dashboard() {
   return (
     <section className="flex flex-col gap-8 items-center justify-center min-h-[calc(100vh-170px)]">
       <div className="flex flex-col items-center ">
-        <h1>Dashboard</h1>
+        <h1>Dashboard - new version</h1>
         <p>{session?.user?.email || "No email"}</p>
       </div>
       <LogoutForm />
