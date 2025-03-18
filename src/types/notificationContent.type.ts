@@ -16,11 +16,13 @@ export type NotificationData = {
   type?: string;
   priority?: NotificationPriority;
   timestamp?: number;
+
   [key: string]: string | number | boolean | undefined;
 };
 
 export type NotificationContent = {
-  title: string;
+
+  title: string; //titre de la notification
   message: string;
   target: NotificationTarget;
   data?: NotificationData;

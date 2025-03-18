@@ -35,10 +35,18 @@ export default function NotificationManager() {
         id: targetId,
       },
       data: {
+
         path: "/private/dashboard",
         icon: "/icons/Message.png",
         timestamp: Date.now(),
       },
+      actions: [
+        {
+          action: "open",
+          title: "Ouvrir",
+        },
+      ],
+
     };
 
     await pushMessage(notification);

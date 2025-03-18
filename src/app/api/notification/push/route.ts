@@ -19,6 +19,7 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+
 /**
  * Route pour envoyer une notification push aux utilisateurs abonnés
  *
@@ -46,6 +47,7 @@ webpush.setVapidDetails(
  * @returns {number} failed - Nombre de notifications ayant échoué
  * @returns {number} total - Nombre total de tentatives d'envoi
  * @returns {Array} [errors] - Détails des erreurs (si applicable)
+
  */
 export async function POST(req: NextRequest) {
   try {
