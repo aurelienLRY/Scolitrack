@@ -15,13 +15,13 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { NotificationContent } from "@/types/notificationContent.type";
 
-type PushSubscriptionJSON = {
+interface PushSubscriptionJSON {
   endpoint: string;
   keys: {
     p256dh: string;
     auth: string;
   };
-};
+}
 
 export const useNotification = () => {
   const [subscription, setSubscription] = useState<PushSubscriptionJSON | null>(
@@ -35,32 +35,25 @@ export const useNotification = () => {
       checkSubscription();
     } else {
       setIsLoading(false);
+      toast.error(
+        "Les notifications push ne sont pas supportées par votre navigateur"
+      );
     }
   }, []);
 
   const checkSubscription = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
-      const sub = await registration.pushManager.getSubscription();
+      const subscription = await registration.pushManager.getSubscription();
 
-      if (sub) {
-        const subscriptionData = sub.toJSON() as PushSubscriptionJSON;
+      if (subscription) {
+        const subscriptionData = subscription.toJSON() as PushSubscriptionJSON;
         setSubscription(subscriptionData);
         setIsSubscribed(true);
-
-        // Vérifier si la souscription existe déjà dans la base de données
-        const response = await fetch("/api/notification/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(subscriptionData),
-        });
-
-        if (!response.ok) {
-          console.error("Erreur lors de la vérification de la souscription");
-        }
       }
     } catch (error) {
       console.error("Erreur lors de la vérification de l'abonnement:", error);
+      toast.error("Erreur lors de la vérification de l'abonnement");
     } finally {
       setIsLoading(false);
     }
@@ -68,17 +61,20 @@ export const useNotification = () => {
 
   const subscribe = async () => {
     try {
-      if (isSubscribed) return;
-
       const registration = await navigator.serviceWorker.ready;
-      const sub = await registration.pushManager.subscribe({
+      const permission = await Notification.requestPermission();
+
+      if (permission !== "granted") {
+        toast.error("Permission de notification refusée");
+        return;
+      }
+
+      const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
       });
 
-      const subscriptionData = sub.toJSON() as PushSubscriptionJSON;
-      setSubscription(subscriptionData);
-      setIsSubscribed(true);
+      const subscriptionData = subscription.toJSON() as PushSubscriptionJSON;
 
       const response = await fetch("/api/notification/subscribe", {
         method: "POST",
@@ -86,11 +82,11 @@ export const useNotification = () => {
         body: JSON.stringify(subscriptionData),
       });
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement de la souscription");
-      }
+      if (!response.ok) throw new Error("Erreur lors de l'enregistrement");
 
-      toast.success("Notifications activées");
+      setSubscription(subscriptionData);
+      setIsSubscribed(true);
+      toast.success("Notifications activées avec succès");
     } catch (error) {
       console.error("Erreur lors de l'abonnement:", error);
       toast.error("Erreur lors de l'activation des notifications");
@@ -99,28 +95,26 @@ export const useNotification = () => {
 
   const unsubscribe = async () => {
     try {
-      if (!subscription || !isSubscribed) return;
+      if (!subscription) return;
 
       const registration = await navigator.serviceWorker.ready;
-      const sub = await registration.pushManager.getSubscription();
-
-      if (sub) {
-        await sub.unsubscribe();
-        setSubscription(null);
-        setIsSubscribed(false);
-
-        const response = await fetch("/api/notification/subscribe", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(subscription),
-        });
-
-        if (!response.ok) {
-          throw new Error("Erreur lors de la suppression de la souscription");
-        }
-
-        toast.success("Notifications désactivées");
+      const currentSubscription =
+        await registration.pushManager.getSubscription();
+      if (currentSubscription) {
+        await currentSubscription.unsubscribe();
       }
+
+      const response = await fetch("/api/notification/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: subscription.endpoint }),
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de la désinscription");
+
+      setSubscription(null);
+      setIsSubscribed(false);
+      toast.success("Notifications désactivées avec succès");
     } catch (error) {
       console.error("Erreur lors de la désinscription:", error);
       toast.error("Erreur lors de la désactivation des notifications");
@@ -137,33 +131,25 @@ export const useNotification = () => {
     try {
       const response = await fetch("/api/notification/push", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notification),
       });
 
-      const data = await response.json();
+      if (!response.ok) throw new Error("Erreur lors de l'envoi");
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Erreur lors de l'envoi de la notification"
-        );
-      }
-
-      toast.success(`Notification envoyée (${data.sent}/${data.total})`);
-      return true;
+      const result = await response.json();
+      toast.success(`Notification envoyée à ${result.sent} destinataire(s)`);
+      return result;
     } catch (error) {
       console.error("Erreur lors de l'envoi de la notification:", error);
-      toast.error("Échec de l'envoi de la notification");
-      return false;
+      toast.error("Erreur lors de l'envoi de la notification");
+      throw error;
     }
   };
 
   return {
-    subscription,
-    isLoading,
     isSubscribed,
+    isLoading,
     subscribe,
     unsubscribe,
     pushMessage,
