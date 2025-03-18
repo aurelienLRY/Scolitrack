@@ -6,7 +6,6 @@ import webpush from "web-push";
 import {
   DEFAULT_ICONS,
   DEFAULT_VIBRATE_PATTERN,
-  DEFAULT_NOTIFICATION_ACTIONS,
 } from "@/config/notification.constants";
 
 import { NotificationResponse } from "@/types/notification.type";
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Extraction et validation des données
-    const { title, message, target, data, icon, badge, vibrate, actions } =
+    const { title, message, target, data, icon, badge, vibrate } =
       await req.json();
 
     if (!title || !message || !target) {
@@ -132,7 +131,6 @@ export async function POST(req: NextRequest) {
         path: data?.path || "/",
         timestamp: Date.now(),
       },
-      actions: actions || DEFAULT_NOTIFICATION_ACTIONS,
     };
 
     // 6. Envoi des notifications
