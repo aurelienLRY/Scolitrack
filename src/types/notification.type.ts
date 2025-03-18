@@ -147,6 +147,7 @@ export interface UnsubscribeRequest {
 export interface NotificationContent {
   title: string;
   message: string;
+  icon?: string;
   target: {
     type: "user" | "role";
     id: string;

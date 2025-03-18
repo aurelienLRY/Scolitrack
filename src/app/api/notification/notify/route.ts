@@ -20,6 +20,16 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+// Étendre l'interface NotificationResponse pour inclure le nombre d'abonnements supprimés
+interface ExtendedNotificationResponse extends NotificationResponse {
+  deleted?: number;
+}
+
+// Type pour les résultats rejetés avec un index
+interface IndexedRejectedResult extends PromiseRejectedResult {
+  index: number;
+}
+
 /**
  * Route pour envoyer une notification push aux utilisateurs abonnés
  *
@@ -47,6 +57,7 @@ webpush.setVapidDetails(
  * @returns {number} failed - Nombre de notifications ayant échoué
  * @returns {number} total - Nombre total de tentatives d'envoi
  * @returns {Array} [errors] - Détails des erreurs (si applicable)
+ * @returns {number} [deleted] - Nombre d'abonnements invalides supprimés
 
  */
 export async function POST(req: NextRequest) {
@@ -155,16 +166,69 @@ export async function POST(req: NextRequest) {
     const succeeded = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
 
-    // Extraire les erreurs pour les inclure dans la réponse
+    // Extraire les erreurs et identifier les abonnements à supprimer
+    const invalidSubscriptions: string[] = [];
     const errors = results
-      .filter((r): r is PromiseRejectedResult => r.status === "rejected")
-      .map((r, index) => ({
-        endpoint: subscriptions[index].endpoint,
-        error: r.reason instanceof Error ? r.reason.message : String(r.reason),
-      }));
+      .filter((r, idx): r is IndexedRejectedResult => {
+        const isRejected = r.status === "rejected";
+        if (isRejected) {
+          // Ajouter l'index pour référencer l'abonnement correspondant
+          (r as IndexedRejectedResult).index = idx;
+        }
+        return isRejected;
+      })
+      .map((r) => {
+        const subscription = subscriptions[r.index];
+        const errorMessage =
+          r.reason instanceof Error ? r.reason.message : String(r.reason);
 
-    // 8. Préparation de la réponse
-    const response: NotificationResponse = {
+        // Vérifier si l'erreur indique que l'abonnement est invalide
+        // Les erreurs courantes pour les abonnements invalides incluent 404, 410, etc.
+        if (
+          errorMessage.includes("404") ||
+          errorMessage.includes("410") ||
+          errorMessage.includes("invalid") ||
+          errorMessage.includes("expired") ||
+          errorMessage.includes("unsubscribed") ||
+          errorMessage.includes("Received unexpected response code") ||
+          errorMessage.includes("not found") ||
+          errorMessage.includes("gone")
+        ) {
+          invalidSubscriptions.push(subscription.id);
+        }
+
+        return {
+          endpoint: subscription.endpoint,
+          error: errorMessage,
+          subscriptionId: subscription.id,
+        };
+      });
+
+    // 8. Supprimer les abonnements invalides
+    let deleted = 0;
+    if (invalidSubscriptions.length > 0) {
+      try {
+        const deleteResult = await prisma.pushSubscription.deleteMany({
+          where: {
+            id: {
+              in: invalidSubscriptions,
+            },
+          },
+        });
+        deleted = deleteResult.count;
+        console.log(
+          `${deleted} abonnements invalides supprimés de la base de données.`
+        );
+      } catch (deleteError) {
+        console.error(
+          "Erreur lors de la suppression des abonnements invalides:",
+          deleteError
+        );
+      }
+    }
+
+    // 9. Préparation de la réponse
+    const response: ExtendedNotificationResponse = {
       success: succeeded > 0,
       message:
         succeeded > 0
@@ -173,6 +237,7 @@ export async function POST(req: NextRequest) {
       sent: succeeded,
       failed,
       total: subscriptions.length,
+      deleted, // Ajout du nombre d'abonnements supprimés
       ...(errors.length > 0 && { errors }),
     };
 

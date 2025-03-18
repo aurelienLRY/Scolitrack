@@ -131,7 +131,6 @@ export const useNotification = () => {
       });
 
       if (!response.ok) throw new Error("Erreur lors de l'envoi");
-
       const result = await response.json();
       toast.success(`Notification envoyée à ${result.sent} destinataire(s)`);
       return result;

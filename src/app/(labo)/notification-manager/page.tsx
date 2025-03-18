@@ -30,6 +30,7 @@ export default function NotificationManager() {
     const notification: NotificationContent = {
       title,
       message,
+      icon: "/icons/Message.png",
       target: {
         type: targetType,
         id: targetId,
