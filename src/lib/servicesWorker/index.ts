@@ -45,22 +45,25 @@ self.addEventListener("push", (event: PushEvent) => {
  * Ce gestionnaire est appelé quand l'utilisateur clique sur une notification.
  * Il ferme la notification et navigue vers l'URL spécifiée ou exécute l'action demandée.
  */
-self.addEventListener("notificationclick", (event: NotificationEvent) => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        if (clientList.length > 0) {
-          let client = clientList[0];
-          for (let i = 0; i < clientList.length; i++) {
-            if (clientList[i].focused) {
-              client = clientList[i];
+self.addEventListener("notificationclick", (event) => {
+  try {
+    event.notification.close();
+    event.waitUntil(
+      self.clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clientList) => {
+          const path = event.notification.data.path;
+          // Vérifier s’il y a déjà un onglet sur cette URL
+          for (const client of clientList) {
+            if (client.url.includes(path) && "focus" in client) {
+              return client.focus();
             }
           }
-          return client.focus();
-        }
-        return self.clients.openWindow(event.notification.data.path);
-      })
-  );
+          // Sinon, on ouvre un nouvel onglet
+          return self.clients.openWindow(path);
+        })
+    );
+  } catch (error) {
+    console.error("Erreur lors du traitement de la notification:", error);
+  }
 });

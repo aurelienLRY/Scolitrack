@@ -8,7 +8,7 @@ export const appConfig = {
   shortName: "Scolitack", // Nom court pour l'icône sur l'écran d'accueil
   description: "Portail d'école", // Description de l'application
   url: "/", // URL de base de l'application
-  display: "standalone", // Mode d'affichage de la PWA (standalone, fullscreen, minimal-ui, browser)
+  display: "fullscreen", // Mode d'affichage de la PWA (standalone, fullscreen, minimal-ui, browser)
   orientation: "portrait" as const, // Orientation préférée de l'application
 
   // Catégorisation et localisation
@@ -22,8 +22,8 @@ export const appConfig = {
 
   // Thème et couleurs
   colors: {
-    background: "#ffffff", // Couleur de fond de l'application
-    theme: "#3b82f6", // Couleur principale du thème
+    background: "#0e1a27", // Couleur de fond de l'application
+    theme: "#112aff", // Couleur principale du thème
   },
 
   // Captures d'écran pour la fenêtre d'installation
@@ -60,14 +60,12 @@ export const appConfig = {
       ],
     },
     {
-
       name: "Dashboard",
       url: "/private/dashboard",
       description: "Accéder au dashboard",
       icons: [
         {
           src: "/icons/dashboard.png",
-
           sizes: "96x96",
           type: "image/png",
         },
