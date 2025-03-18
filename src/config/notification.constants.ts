@@ -20,7 +20,7 @@ export const DEFAULT_ICONS = {
  * Motif de vibration par défaut [200ms, 100ms, 200ms]
  * Format: [vibration, pause, vibration, ...]
  */
-export const DEFAULT_VIBRATE_PATTERN = [200, 100, 200];
+export const DEFAULT_VIBRATE_PATTERN = [400, 100, 200];
 
 /**
  * Actions par défaut pour les notifications
