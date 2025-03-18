@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/shared/select";
 import { useNotification } from "@/hooks/useNotification";
-import { NotificationContent } from "@/types/notificationContent.type";
+import { NotificationContent } from "@/types/notification.type";
 
 export default function NotificationManager() {
   const { isSubscribed, subscribe, unsubscribe, pushMessage } =
@@ -35,18 +35,10 @@ export default function NotificationManager() {
         id: targetId,
       },
       data: {
-
         path: "/private/dashboard",
         icon: "/icons/Message.png",
         timestamp: Date.now(),
       },
-      actions: [
-        {
-          action: "open",
-          title: "Ouvrir",
-        },
-      ],
-
     };
 
     await pushMessage(notification);

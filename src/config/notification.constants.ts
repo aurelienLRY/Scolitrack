@@ -36,28 +36,3 @@ export const DEFAULT_NOTIFICATION_ACTIONS = [
     title: "Fermer",
   },
 ];
-
-/**
- * Types pour les notifications
- */
-export interface NotificationAction {
-  /** Identifiant unique de l'action */
-  action: string;
-  /** Texte affiché sur le bouton d'action */
-  title: string;
-  /** URL optionnelle de l'icône du bouton */
-  icon?: string;
-}
-
-/**
- * Options de notification étendues
- * Inclut les propriétés non standard ou expérimentales
- */
-export interface ExtendedNotificationOptions extends NotificationOptions {
-  /** Modèle de vibration */
-  vibrate?: number[];
-  /** Ré-afficher la notification si elle est déjà ouverte */
-  renotify?: boolean;
-  /** Actions possibles sur la notification */
-  actions?: NotificationAction[];
-}

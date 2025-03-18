@@ -3,13 +3,12 @@ import withPWA from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   compiler: {
-    /*removeConsole:
+    removeConsole:
       process.env.NODE_ENV === "production"
         ? {
             exclude: ["error"],
           }
         : false,
-  */
   },
   experimental: {
     authInterrupts: true,
@@ -18,7 +17,7 @@ const nextConfig: NextConfig = {
 
 export default withPWA({
   dest: "public",
-  customWorkerSrc: "src/lib/servicesWorker/worker",
+  customWorkerSrc: "src/lib/servicesWorker",
   register: true,
   disable: process.env.NODE_ENV === "development",
 })(nextConfig);
