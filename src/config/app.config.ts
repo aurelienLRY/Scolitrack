@@ -23,7 +23,7 @@ export const appConfig = {
   // Thème et couleurs
   colors: {
     background: "#0e1a27", // Couleur de fond de l'application
-    theme: "#112aff", // Couleur principale du thème
+    theme: "#0e1a27", // Couleur principale du thème
   },
 
   // Captures d'écran pour la fenêtre d'installation
@@ -53,7 +53,6 @@ export const appConfig = {
       icons: [
         {
           src: "/icons/my-account.png",
-
           sizes: "96x96",
           type: "image/png",
         },
