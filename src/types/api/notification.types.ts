@@ -2,8 +2,6 @@ import {
   DEFAULT_ICONS,
   DEFAULT_VIBRATE_PATTERN,
   DEFAULT_NOTIFICATION_ACTIONS,
-  NotificationAction,
-  ExtendedNotificationOptions,
 } from "@/config/notification.constants";
 
 /**
@@ -70,5 +68,3 @@ export interface UnsubscribeRequest {
 
 // Exporter les constantes et types partagés
 export { DEFAULT_ICONS, DEFAULT_VIBRATE_PATTERN, DEFAULT_NOTIFICATION_ACTIONS };
-
-export type { NotificationAction, ExtendedNotificationOptions };
