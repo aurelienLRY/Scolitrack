@@ -69,7 +69,6 @@ const MainContent = memo(
   ({
     children,
     className,
-    isCollapsed,
   }: {
     children: React.ReactNode;
     className?: string;
@@ -79,7 +78,6 @@ const MainContent = memo(
       <div
         className={cn(
           "flex-1 p-4 lg:p-6 overflow-auto transition-all duration-300",
-          isCollapsed ? "lg:ml-16" : "lg:ml-56",
           className
         )}
       >
@@ -107,7 +105,7 @@ function SidebarLayoutComponent({
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+    <div className="min-h-[calc(100vh-170px)] bg-background flex flex-col lg:flex-row">
       {/* Sidebar component with collapse state handling */}
       <Sidebar
         items={navItems}

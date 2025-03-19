@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   FiHome,
-  FiUser,
   FiMenu,
   FiX,
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
+import { MdAdminPanelSettings } from "react-icons/md";
+import { IoSettingsSharp } from "react-icons/io5";
+
 import { Tooltip } from "@/components/shared/tooltip";
 
 // Types
@@ -46,7 +48,7 @@ const NavItemLink = memo(
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition-colors",
           isCollapsed && "justify-center",
-          isActive ? "bg-primary text-white" : "hover:bg-primary/10 text-text"
+          isActive ? "bg-accent text-white" : "hover:text-accent text-text"
         )}
         title={isCollapsed ? item.title : undefined}
         onClick={onClick}
@@ -201,10 +203,11 @@ export const defaultItems: NavItem[] = [
     href: "/private/dashboard",
     icon: <FiHome size={20} />,
   },
+
   {
-    title: "Profil",
-    href: "/private/my-account",
-    icon: <FiUser size={20} />,
+    title: "Paramètres",
+    href: "/private/admin",
+    icon: <IoSettingsSharp size={20} />,
   },
 ];
 

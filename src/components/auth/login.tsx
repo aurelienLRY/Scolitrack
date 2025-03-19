@@ -63,7 +63,7 @@ export default function Login() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex min-w-[300px] w-[90%] max-w-[400px] flex-col items-center gap-6 rounded-md bg-primary p-6 shadow-md dark:bg-primary/50 shadow-primary border-t-2 border-white/20"
+      className="flex min-w-[300px] w-[90%] max-w-[400px] flex-col items-center gap-6 rounded-md bg-primary p-6 shadow-md dark:bg-primary/50  border-t-2 border-white/20"
     >
       <h2 className="text-white">Connexion</h2>
 
