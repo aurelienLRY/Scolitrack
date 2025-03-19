@@ -2,6 +2,7 @@
 import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
 import React from "react";
 import { useNotification } from "@/hooks/useNotification";
+import { SidebarLayout } from "@/components/layout/sidebar";
 export default function PrivateTemplate({
   children,
 }: {
@@ -17,7 +18,7 @@ export default function PrivateTemplate({
 
   return (
     <>
-      {children}
+      <SidebarLayout>{children}</SidebarLayout>
       <PWAInstallPrompt />
     </>
   );
