@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import CreateUserForm from "@/components/users/create-user-form";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/auth";
-import { UserRole } from "@prisma/client";
 import UserList from "@/components/users/user-list";
 import { Toaster } from "sonner";
 
@@ -17,12 +16,6 @@ export default async function AdminUsersPage() {
 
   if (!session) {
     redirect("/");
-  }
-
-  // Vérifier si l'utilisateur est admin ou super admin
-  const userRole = session.user?.role;
-  if (userRole !== UserRole.ADMIN && userRole !== UserRole.SUPER_ADMIN) {
-    redirect("/dashboard");
   }
 
   return (

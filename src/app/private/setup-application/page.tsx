@@ -1,7 +1,7 @@
 "use client";
 
 import { CardFluo } from "@/components/shared/card";
-import { adminNavItems } from "./adminNavItem.data";
+import { adminNavItems } from "./setup-NavItem.data";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 

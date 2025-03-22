@@ -1,5 +1,4 @@
 import * as yup from "yup";
-import { UserRole } from "@prisma/client";
 
 /**
  * Schéma de validation pour la création d'un utilisateur par un administrateur
@@ -7,10 +6,7 @@ import { UserRole } from "@prisma/client";
 export const CreateUserSchema = yup.object().shape({
   name: yup.string().required("Nom complet requis"),
   email: yup.string().email("Email invalide").required("Email requis"),
-  role: yup
-    .string()
-    .oneOf(Object.values(UserRole), "Rôle invalide")
-    .required("Rôle requis"),
+  role: yup.string(),
 });
 
 export type CreateUserSchemaType = yup.InferType<typeof CreateUserSchema>;

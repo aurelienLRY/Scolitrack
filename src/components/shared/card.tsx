@@ -9,9 +9,22 @@ interface CardFluoProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-export default function Card({ children }: { children: React.ReactNode }) {
+export default function Card({
+  children,
+  className,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  props?: HTMLAttributes<HTMLDivElement>;
+}) {
   return (
-    <div className="rounded-lg border border-gray-200 p-4">{children}</div>
+    <div
+      className={cn("rounded-lg border border-gray-200 p-4", className)}
+      {...props}
+    >
+      {children}
+    </div>
   );
 }
 

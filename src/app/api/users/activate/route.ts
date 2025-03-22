@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ActivateAccountSchema } from "@/schemas/UserSchema";
-import { activateAccount } from "@/lib/auth/user.service";
+import { activateAccount } from "@/lib/services/user.service";
 
 /**
  * POST /api/users/activate - Activer un compte utilisateur et définir son mot de passe
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        roleName: user.roleName,
       },
     });
   } catch (error: unknown) {

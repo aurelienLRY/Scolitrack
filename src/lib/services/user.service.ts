@@ -34,7 +34,11 @@ export async function createUser(
     data: {
       name: userData.name,
       email: userData.email,
-      role: userData.role,
+      role: {
+        connect: {
+          name: userData.role,
+        },
+      },
       resetToken: activationToken,
       resetTokenExpiry: tokenExpiry,
     },

@@ -23,6 +23,17 @@ export default {
         /* search user */
         const user = await prisma.user.findUnique({
           where: { email: validatedCredentials.email },
+          include: {
+            role: {
+              include: {
+                rolePrivileges: {
+                  include: {
+                    privilege: true,
+                  },
+                },
+              },
+            },
+          },
         });
 
         /* if user not found */
@@ -37,9 +48,17 @@ export default {
         /* if password is incorrect */
         if (!passwordsMatch) return null;
 
+        // Préparer l'utilisateur pour la session en extrayant les privilèges
+        const privileges = user.role.rolePrivileges.map(
+          (rp) => rp.privilege.name
+        );
+
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return {
+          ...userWithoutPassword,
+          privileges,
+        };
       },
     }),
   ],
@@ -51,15 +70,35 @@ export default {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.roleName = user.roleName;
         token.id = user.id;
+
+        // Utiliser les privilèges déjà récupérés lors de l'authentification
+        if ("privileges" in user && Array.isArray(user.privileges)) {
+          token.privileges = user.privileges;
+        } else {
+          // Fallback pour les autres providers qui n'incluent pas les privilèges
+          const rolePrivileges = await prisma.rolePrivilege.findMany({
+            where: {
+              role: { name: user.roleName },
+            },
+            include: {
+              privilege: true,
+            },
+          });
+
+          // Extraire les noms des privilèges
+          const privileges = rolePrivileges.map((rp) => rp.privilege.name);
+          token.privileges = privileges;
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role;
+        session.user.roleName = token.roleName;
         session.user.id = token.id;
+        session.user.privileges = token.privileges || [];
       }
       return session;
     },

@@ -10,7 +10,6 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
-import { MdAdminPanelSettings } from "react-icons/md";
 import { IoSettingsSharp } from "react-icons/io5";
 
 import { Tooltip } from "@/components/shared/tooltip";
@@ -206,7 +205,7 @@ export const defaultItems: NavItem[] = [
 
   {
     title: "Paramètres",
-    href: "/private/admin",
+    href: "/private/setup-application",
     icon: <IoSettingsSharp size={20} />,
   },
 ];

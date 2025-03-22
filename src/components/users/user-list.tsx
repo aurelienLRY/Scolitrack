@@ -4,17 +4,6 @@ import { toast } from "sonner";
 import { formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
 
-// Types pour les utilisateurs et la pagination
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  role: string;
-  emailVerified: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface Pagination {
   total: number;
   pages: number;
@@ -22,6 +11,14 @@ interface Pagination {
   limit: number;
 }
 
+interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  role: { name: string };
+  emailVerified: boolean;
+  createdAt: string;
+}
 interface UserListResponse {
   users: User[];
   pagination: Pagination;
@@ -70,6 +67,7 @@ export default function UserList() {
   // Charger les utilisateurs au chargement du composant
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Changer de page
@@ -87,6 +85,8 @@ export default function UserList() {
       locale: fr,
     });
   };
+
+  console.log(users);
 
   // Afficher un message d'erreur
   if (error) {
@@ -111,7 +111,7 @@ export default function UserList() {
     return (
       <div className="px-4 py-5 sm:p-6">
         <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
         </div>
       </div>
     );
@@ -175,16 +175,16 @@ export default function UserList() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.role === "SUPER_ADMIN"
+                      user.role.name === "SUPER_ADMIN"
                         ? "bg-purple-100 text-purple-800"
-                        : user.role === "ADMIN"
+                        : user.role.name === "ADMIN"
                         ? "bg-red-100 text-red-800"
-                        : user.role === "TEACHER"
+                        : user.role.name === "TEACHER"
                         ? "bg-blue-100 text-blue-800"
                         : "bg-green-100 text-green-800"
                     }`}
                   >
-                    {user.role}
+                    {user.role.name}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

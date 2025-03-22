@@ -2,8 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { adminNavItems } from "./adminNavItem.data";
-
+import { adminNavItems } from "./setup-NavItem.data";
 export default function AdminTemplate({
   children,
 }: {
@@ -15,7 +14,7 @@ export default function AdminTemplate({
     <>
       <div className="flex flex-col gap-4">
         <Link
-          href="/private/admin"
+          href="/private/setup-application"
           className={cn(
             "text-sm font-medium hover:text-accent transition-all duration-300"
           )}

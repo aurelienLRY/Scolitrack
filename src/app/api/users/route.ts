@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CreateUserSchema } from "@/schemas/UserSchema";
-import { isAdmin } from "@/lib/auth/auth.middleware";
-import { createUser, getUsers } from "@/lib/auth/user.service";
+import { withPrivilege } from "@/lib/auth/authMiddleware";
+import { createUser, getUsers } from "@/lib/services/user.service";
 
 /**
  * GET /api/users - Récupérer la liste des utilisateurs (admin seulement)
  */
-export async function GET(request: NextRequest) {
+export const GET = withPrivilege(async (request: NextRequest) => {
   // Vérifier les autorisations
-  const authError = await isAdmin();
-  if (authError) return authError;
 
   // Récupérer les paramètres de pagination de l'URL
   const { searchParams } = new URL(request.url);
@@ -28,15 +26,13 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, "VIEW_USER");
 
 /**
  * POST /api/users - Créer un nouvel utilisateur (admin seulement)
  */
-export async function POST(request: NextRequest) {
+export const POST = withPrivilege(async (request: NextRequest) => {
   // Vérifier les autorisations
-  const authError = await isAdmin();
-  if (authError) return authError;
 
   try {
     // Récupérer les données du corps de la requête
@@ -56,7 +52,7 @@ export async function POST(request: NextRequest) {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role,
+          roleName: user.roleName,
           createdAt: user.createdAt,
         },
       },
@@ -84,4 +80,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+}, "CREATE_USER");

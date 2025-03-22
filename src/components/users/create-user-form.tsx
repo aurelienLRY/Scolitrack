@@ -3,17 +3,17 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { CreateUserSchema, CreateUserSchemaType } from "@/schemas/UserSchema";
-import { UserRole } from "@prisma/client";
 import { toast } from "sonner";
+import { useRoleStore } from "@/context";
 
 /**
  * Formulaire de création d'utilisateur pour les administrateurs
  */
 export default function CreateUserForm() {
+  const { roles } = useRoleStore();
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Configurer react-hook-form avec validation Yup
   const {
     register,
     handleSubmit,
@@ -22,7 +22,7 @@ export default function CreateUserForm() {
   } = useForm<CreateUserSchemaType>({
     resolver: yupResolver(CreateUserSchema),
     defaultValues: {
-      role: UserRole.USER,
+      role: "USER",
     },
   });
 
@@ -123,10 +123,11 @@ export default function CreateUserForm() {
           } shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
           {...register("role")}
         >
-          <option value={UserRole.USER}>Parent / Tuteur</option>
-          <option value={UserRole.TEACHER}>Enseignant</option>
-          <option value={UserRole.ADMIN}>Administrateur</option>
-          <option value={UserRole.SUPER_ADMIN}>Super Administrateur</option>
+          {roles.map((role) => (
+            <option key={role.id} value={role.name}>
+              {role.name}
+            </option>
+          ))}
         </select>
         {errors.role && (
           <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>

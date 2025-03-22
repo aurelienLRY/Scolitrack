@@ -16,7 +16,7 @@ interface AdminNavItem {
 export const adminNavItems: AdminNavItem[] = [
   {
     label: "Établissement",
-    href: "/private/admin/establishment",
+    href: "/private/setup-application/establishment",
     description: [
       "Gestion des établissements.",
       "Renseigner les informations de l'établissement.",
@@ -25,37 +25,27 @@ export const adminNavItems: AdminNavItem[] = [
     icon: FaSchool,
   },
   {
-    label: "Rôles",
-    href: "/private/admin/roles",
+    label: "Rôles & Privilèges",
+    href: "/private/setup-application/roles-privilege",
     description: [
-      "Gestion des rôles.",
-      "Les rôles sont utilisés pour gérer les permissions des utilisateurs.",
-      "Directeur, enseignant, élève, parent, etc.",
-    ],
-    icon: RiAdminLine,
-  },
-  {
-    label: "Privilèges",
-    href: "/private/admin/privilege",
-    description: [
-      "Gestion des privilèges.",
-      "Les privilèges permettent d'autoriser ou non des actions aux différents rôles.",
-      "Exemple: les professeurs peuvent voir les informations des élèves.",
+      "Administré les droits d'accès des utilisateurs.",
+      "Définissez les différents rôles dans l'établissement et attribué leurs des fonctionnalités différentes.",
     ],
     icon: RiChatPrivateLine,
   },
+
   {
     label: "Utilisateurs",
-    href: "/private/admin/users",
+    href: "/private/setup-application/users",
     description: [
       "Gestion des utilisateurs.",
-      "Les utilisateurs sont les personnes qui utilisent l'application.",
+      "Créer, modifier, supprimer des utilisateurs.",
     ],
     icon: RiAdminLine,
   },
   {
     label: "Classes",
-    href: "/private/admin/classes",
+    href: "/private/setup-application/classes",
     description: [
       "Gestion des classes.",
       "Créer, modifier, supprimer des classes.",

@@ -60,7 +60,6 @@ export const useNotification = () => {
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
-        toast.error("Permission de notification refusée");
         return;
       }
 
