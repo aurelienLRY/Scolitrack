@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth/auth";
 import {
   PushSubscriptionRequest,
   SubscribeResponse,
 } from "@/types/notification.type";
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 /**
  * API d'abonnement aux notifications push
@@ -29,13 +35,10 @@ export async function POST(request: NextRequest) {
     // 1. Vérification de l'authentification
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Non authentifié. Veuillez vous connecter.",
-        },
-        { status: 401 }
-      );
+      return errorResponse({
+        feedback: "Non authentifié. Veuillez vous connecter.",
+        status: HttpStatus.UNAUTHORIZED,
+      });
     }
 
     // 2. Extraction et validation des données
@@ -46,14 +49,11 @@ export async function POST(request: NextRequest) {
       !subscription?.keys?.p256dh ||
       !subscription?.keys?.auth
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Données de souscription incomplètes. Endpoint, p256dh et auth sont requis.",
-        },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback:
+          "Données de souscription incomplètes. Endpoint, p256dh et auth sont requis.",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // 3. Vérification des doublons
@@ -71,7 +71,10 @@ export async function POST(request: NextRequest) {
           auth: existingSubscription.auth,
         },
       };
-      return NextResponse.json(response);
+      return successResponse({
+        feedback: response.message,
+        data: response.subscription,
+      });
     }
 
     // 4. Création de l'abonnement en base de données
@@ -95,16 +98,15 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    return NextResponse.json(response);
+    return successResponse({
+      feedback: response.message,
+      data: response.subscription,
+    });
   } catch (error) {
     console.error("Erreur lors de l'enregistrement de l'abonnement:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Erreur serveur lors de l'enregistrement de l'abonnement",
-        error: error instanceof Error ? error.message : "Erreur inconnue",
-      },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur serveur lors de l'enregistrement de l'abonnement"
     );
   }
 }
@@ -120,26 +122,20 @@ export async function DELETE(request: NextRequest) {
     // 1. Vérification de l'authentification
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Non authentifié. Veuillez vous connecter.",
-        },
-        { status: 401 }
-      );
+      return errorResponse({
+        feedback: "Non authentifié. Veuillez vous connecter.",
+        status: HttpStatus.UNAUTHORIZED,
+      });
     }
 
     // 2. Extraction et validation des données
     const subscription = await request.json();
 
     if (!subscription?.endpoint) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Endpoint manquant. L'endpoint de l'abonnement est requis.",
-        },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Endpoint manquant. L'endpoint de l'abonnement est requis.",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // 3. Suppression de l'abonnement
@@ -148,19 +144,13 @@ export async function DELETE(request: NextRequest) {
     });
 
     // 4. Préparation de la réponse
-    return NextResponse.json({
-      success: true,
-      message: "Abonnement supprimé avec succès",
+    return successResponse({
+      feedback: "Abonnement supprimé avec succès",
     });
   } catch (error) {
-    console.error("Erreur lors de la suppression de l'abonnement:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Erreur serveur lors de la suppression de l'abonnement",
-        error: error instanceof Error ? error.message : "Erreur inconnue",
-      },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur serveur lors de la suppression de l'abonnement"
     );
   }
 }

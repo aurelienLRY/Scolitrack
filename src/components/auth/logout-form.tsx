@@ -1,6 +1,6 @@
 "use client";
 
-import { logout } from "@/action/signOut.action";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/shared/button";
 
 /**
@@ -8,8 +8,11 @@ import { Button } from "@/components/shared/button";
  * @returns Logout form
  */
 export function LogoutForm() {
+  const handleLogout = async () => {
+    await signOut();
+  };
   return (
-    <form action={logout}>
+    <form action={handleLogout}>
       <Button type="submit" variant="destructive">
         Se déconnecter
       </Button>

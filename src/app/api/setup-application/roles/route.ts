@@ -1,33 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { roleService } from "@/lib/services/role.service";
-import { withPrivilege } from "@/lib/auth/authMiddleware";
+import { withPrivilege } from "@/lib/services/auth.service";
+import {
+  successResponse,
+  createdResponse,
+  handleApiError,
+  errorResponse,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 // Obtenir tous les rôles
-export const GET = withPrivilege(async () => {
+export const GET = withPrivilege("VIEW_ROLE", async () => {
   try {
     const roles = await roleService.getAllRoles();
-    return NextResponse.json(roles);
+    return successResponse({
+      data: roles,
+      feedback: "Liste des rôles récupérée avec succès",
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des rôles:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération des rôles" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Erreur lors de la récupération des rôles");
   }
-}, "VIEW_ROLE");
+});
 
 // Créer un nouveau rôle
-export const POST = withPrivilege(async (req: NextRequest) => {
+export const POST = withPrivilege("CREATE_ROLE", async (req: NextRequest) => {
   try {
     const data = await req.json();
     const { name, description, privilegeIds } = data;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Le nom du rôle est requis" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Le nom du rôle est requis",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
+
     const preName = name.toUpperCase().replace(/ /g, "_");
 
     const role = await roleService.createRole({
@@ -36,15 +44,12 @@ export const POST = withPrivilege(async (req: NextRequest) => {
       privilegeIds,
     });
 
-    return NextResponse.json(role, { status: 201 });
-  } catch (error: unknown) {
+    return createdResponse({
+      data: role,
+      feedback: "Rôle créé avec succès",
+    });
+  } catch (error) {
     console.error("Erreur lors de la création du rôle:", error);
-    // Si l'erreur est une instance d'Error, utiliser son message
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Erreur lors de la création du rôle";
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return handleApiError(error, "Erreur lors de la création du rôle");
   }
-}, "CREATE_ROLE");
+});

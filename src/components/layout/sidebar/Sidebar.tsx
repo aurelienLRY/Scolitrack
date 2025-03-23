@@ -13,12 +13,13 @@ import {
 import { IoSettingsSharp } from "react-icons/io5";
 
 import { Tooltip } from "@/components/shared/tooltip";
-
+import Authorization from "@/components/auth/Authorization";
 // Types
 interface NavItem {
   title: string;
   href: string;
   icon: React.ReactNode;
+  privileges?: string[];
 }
 
 interface SidebarProps {
@@ -41,6 +42,27 @@ const NavItemLink = memo(
     isCollapsed: boolean;
     onClick?: () => void;
   }) => {
+    if (item.privileges) {
+      return (
+        <Authorization privileges={item.privileges}>
+          <Link
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition-colors",
+              isCollapsed && "justify-center",
+              isActive ? "bg-accent text-white" : "hover:text-accent text-text"
+            )}
+            title={isCollapsed ? item.title : undefined}
+            onClick={onClick}
+          >
+            <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+              {item.icon}
+            </div>
+            {!isCollapsed && <span>{item.title}</span>}
+          </Link>
+        </Authorization>
+      );
+    }
     return (
       <Link
         href={item.href}
@@ -207,6 +229,7 @@ export const defaultItems: NavItem[] = [
     title: "Paramètres",
     href: "/private/setup-application",
     icon: <IoSettingsSharp size={20} />,
+    privileges: ["SETUP_APPLICATION"],
   },
 ];
 

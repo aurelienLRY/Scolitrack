@@ -5,10 +5,6 @@ const publicRoutes = [
   "/reset-password",
 ];
 
-const privateRoutes = ["/private"];
-
-const DEFAULT_LOGIN_REDIRECT: string = "/";
-
 const privilegeApiRoutes = [
   {
     path: "/api/setup-application/",
@@ -16,9 +12,5 @@ const privilegeApiRoutes = [
   },
 ];
 
-export {
-  privilegeApiRoutes,
-  publicRoutes,
-  privateRoutes,
-  DEFAULT_LOGIN_REDIRECT,
-};
+const DEFAULT_LOGIN_REDIRECT: string = "/";
+export { privilegeApiRoutes, publicRoutes, DEFAULT_LOGIN_REDIRECT };

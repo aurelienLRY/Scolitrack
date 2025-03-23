@@ -195,46 +195,92 @@ function CustomComponent() {
 
 ### Middleware d'Autorisation
 
-Pour protéger les routes API, utilisez le middleware `withPrivilege` :
+Pour protéger les routes API, utilisez le middleware `withPrivilege` depuis le service d'authentification :
 
 ```tsx
 // app/api/users/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { withPrivilege } from "@/lib/auth/authMiddleware";
+import { NextRequest } from "next/server";
+import { withPrivilege } from "@/lib/services/auth.service";
+import { successResponse, handleApiError } from "@/lib/services/api.service";
+
+// Route protégée par le privilège VIEW_USER
+export const GET = withPrivilege("VIEW_USER", async (request: NextRequest) => {
+  try {
+    // Votre logique de récupération d'utilisateurs ici
+    const users = await getUsersFromDatabase();
+    return successResponse({
+      data: users,
+      feedback: "Liste des utilisateurs récupérée avec succès",
+    });
+  } catch (error) {
+    return handleApiError(
+      error,
+      "Erreur lors de la récupération des utilisateurs"
+    );
+  }
+});
 
 // Route protégée par le privilège CREATE_USER
 export const POST = withPrivilege(
-  async (req: NextRequest) => {
-    // Votre logique de création d'utilisateur ici
-    const data = await req.json();
-    // ...
-    return NextResponse.json({ success: true });
-  },
-  "CREATE_USER"
-);
-
-// Route avec vérification personnalisée
-export const GET = async (req: NextRequest) => {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json({ message: "Non authentifié" }, { status: 401 });
+  "CREATE_USER",
+  async (request: NextRequest) => {
+    try {
+      const data = await request.json();
+      // Votre logique de création d'utilisateur ici
+      const user = await createUser(data);
+      return createdResponse({
+        data: user,
+        feedback: "Utilisateur créé avec succès",
+      });
+    } catch (error) {
+      return handleApiError(
+        error,
+        "Erreur lors de la création de l'utilisateur"
+      );
     }
-
-    // Les utilisateurs SUPER_ADMIN peuvent voir tous les utilisateurs
-    // Les utilisateurs normaux ne peuvent voir que leur propre profil
-    if (session.user.roleName !== "SUPER_ADMIN" &&
-        !session.user.privileges.includes("VIEW_ALL_USERS")) {
-      // On limite la requête à l'utilisateur courant
-      // ...
-    }
-
-    return NextResponse.json({ users: [...] });
-  } catch (error) {
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
-};
+);
+```
+
+Le middleware `withPrivilege` :
+
+1. Vérifie si l'utilisateur est authentifié
+2. Vérifie si l'utilisateur a le privilège requis
+3. Exécute le gestionnaire de route si autorisé, sinon renvoie une erreur 403
+
+### Format de Réponse API Standardisé
+
+Toutes les routes API utilisent désormais un format de réponse standardisé via le service `api.service.ts` :
+
+```typescript
+// Réponse de succès
+return successResponse({
+  data: user,
+  feedback: "Utilisateur trouvé",
+});
+
+// Réponse d'erreur
+return errorResponse({
+  feedback: "Identifiants incorrects",
+  status: HttpStatus.UNAUTHORIZED,
+});
+
+// Ressource non trouvée
+return notFoundResponse("Utilisateur introuvable");
+
+// Gestion d'erreur
+return handleApiError(error, "Erreur lors de la connexion");
+```
+
+Structure de réponse :
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "feedback": "Message pour l'utilisateur",
+  "meta": { ... } // Métadonnées optionnelles (pagination, etc.)
+}
 ```
 
 ### Routes API disponibles
@@ -244,64 +290,75 @@ Le système comprend les routes API suivantes pour la gestion des rôles et priv
 #### Routes pour les rôles
 
 ```typescript
-// GET /api/roles - Liste tous les rôles
+// GET /api/setup-application/roles - Liste tous les rôles
 // Privilège requis: VIEW_ROLE
-export const GET = withPrivilege(async () => {
-  const roles = await roleService.getAllRoles();
-  return NextResponse.json(roles);
-}, "VIEW_ROLE");
+export const GET = withPrivilege("VIEW_ROLE", async () => {
+  try {
+    const roles = await roleService.getAllRoles();
+    return successResponse({
+      data: roles,
+      feedback: "Liste des rôles récupérée avec succès",
+    });
+  } catch (error) {
+    return handleApiError(error, "Erreur lors de la récupération des rôles");
+  }
+});
 
-// POST /api/roles - Crée un nouveau rôle
+// POST /api/setup-application/roles - Crée un nouveau rôle
 // Privilège requis: CREATE_ROLE
-export const POST = withPrivilege(async (req: NextRequest) => {
-  const data = await req.json();
-  const { name, description, privilegeIds } = data;
-  // ...
-}, "CREATE_ROLE");
-
-// GET /api/roles/[id] - Récupère un rôle spécifique
-// Privilège requis: VIEW_ROLE
-export const GET = withPrivilege(async (req: NextRequest) => {
-  const id = req.nextUrl.pathname.split("/").pop();
-  // ...
-}, "VIEW_ROLE");
-
-// PUT /api/roles/[id] - Met à jour un rôle
-// Privilège requis: UPDATE_ROLE
-export const PUT = withPrivilege(async (req: NextRequest) => {
-  const id = req.nextUrl.pathname.split("/").pop();
-  const data = await req.json();
-  // ...
-}, "UPDATE_ROLE");
-
-// DELETE /api/roles/[id] - Supprime un rôle
-// Privilège requis: DELETE_ROLE
-export const DELETE = withPrivilege(async (req: NextRequest) => {
-  const id = req.nextUrl.pathname.split("/").pop();
-  // ...
-}, "DELETE_ROLE");
+export const POST = withPrivilege("CREATE_ROLE", async (req: NextRequest) => {
+  try {
+    const data = await req.json();
+    const { name, description, privilegeIds } = data;
+    // ...
+    return createdResponse({
+      data: role,
+      feedback: "Rôle créé avec succès",
+    });
+  } catch (error) {
+    return handleApiError(error, "Erreur lors de la création du rôle");
+  }
+});
 ```
 
 #### Routes pour les privilèges
 
 ```typescript
-// GET /api/privileges - Liste tous les privilèges
-// Privilège requis: MANAGE_PRIVILEGES
-export const GET = withPrivilege(async () => {
-  const privileges = await roleService.getAllPrivileges();
-  return NextResponse.json(privileges);
-}, "MANAGE_PRIVILEGES");
+// GET /api/setup-application/privileges - Liste tous les privilèges
+// Privilège requis: SETUP_APPLICATION
+export const GET = withPrivilege("SETUP_APPLICATION", async () => {
+  try {
+    const privileges = await privilegeService.getAllPrivileges();
+    return successResponse({
+      data: privileges,
+      feedback: "Liste des privilèges récupérée avec succès",
+    });
+  } catch (error) {
+    return handleApiError(
+      error,
+      "Erreur lors de la récupération des privilèges"
+    );
+  }
+});
 
-// POST /api/privileges - Crée un nouveau privilège
-// Privilège requis: MANAGE_PRIVILEGES
-export const POST = withPrivilege(async (req: NextRequest) => {
-  const data = await req.json();
-  const { name, description } = data;
-  // ...
-}, "MANAGE_PRIVILEGES");
-
-// Routes similaires pour GET, PUT, DELETE /api/privileges/[id]
-// Toutes requièrent MANAGE_PRIVILEGES
+// POST /api/setup-application/privileges - Crée un nouveau privilège
+// Privilège requis: SETUP_APPLICATION
+export const POST = withPrivilege(
+  "SETUP_APPLICATION",
+  async (req: NextRequest) => {
+    try {
+      const data = await req.json();
+      const { name, description } = data;
+      // ...
+      return createdResponse({
+        data: privilege,
+        feedback: "Privilège créé avec succès",
+      });
+    } catch (error) {
+      return handleApiError(error, "Erreur lors de la création du privilège");
+    }
+  }
+);
 ```
 
 #### Routes pour l'attribution de rôles
@@ -309,13 +366,61 @@ export const POST = withPrivilege(async (req: NextRequest) => {
 ```typescript
 // PUT /api/users/[id]/role - Assigne un rôle à un utilisateur
 // Privilège requis: ASSIGN_ROLE
-export const PUT = withPrivilege(async (req: NextRequest) => {
-  const pathSegments = req.nextUrl.pathname.split("/");
-  const userId = pathSegments[pathSegments.indexOf("users") + 1];
-  const data = await req.json();
-  const { roleName } = data;
+export const PUT = withPrivilege("ASSIGN_ROLE", async (req: NextRequest) => {
+  try {
+    const pathSegments = req.nextUrl.pathname.split("/");
+    const userId = pathSegments[pathSegments.indexOf("users") + 1];
+    const data = await req.json();
+    const { roleName } = data;
+    // ...
+    return successResponse({
+      data: updatedUser,
+      feedback: `Rôle '${roleName}' attribué avec succès à l'utilisateur`,
+    });
+  } catch (error) {
+    return handleApiError(error, "Erreur lors de l'attribution du rôle");
+  }
+});
+```
+
+### Protection des routes API spécifiques
+
+Pour les cas plus complexes, vous pouvez utiliser le middleware global pour restreindre l'accès à certaines routes API en fonction des privilèges de l'utilisateur. Ceci est configuré dans le fichier `middleware.ts` :
+
+```typescript
+// Définir les routes d'API nécessitant des privilèges spécifiques
+const API_PRIVILEGE_ROUTES = [
+  { path: "/api/users", privilege: "VIEW_USER", method: "GET" },
+  { path: "/api/users", privilege: "CREATE_USER", method: "POST" },
+  { path: "/api/users/:id/role", privilege: "ASSIGN_ROLE", method: "PUT" },
   // ...
-}, "ASSIGN_ROLE");
+];
+
+// Vérifier si l'utilisateur a accès à la route API
+async function verifyApiRoutePermission(req: NextRequest, session: Session) {
+  const path = req.nextUrl.pathname;
+  const method = req.method;
+
+  // Vérifier si la route nécessite un privilège spécifique
+  const matchingRoute = API_PRIVILEGE_ROUTES.find((route) => {
+    return (
+      path.startsWith(route.path) && (route.method === method || !route.method)
+    );
+  });
+
+  if (matchingRoute) {
+    // Super admin a accès à tout
+    if (session.user.roleName === "SUPER_ADMIN") {
+      return true;
+    }
+
+    // Vérifier si l'utilisateur a le privilège requis
+    return session.user.privileges.includes(matchingRoute.privilege);
+  }
+
+  // Aucune restriction pour cette route
+  return true;
+}
 ```
 
 ## 6. Gestion des Rôles et Privilèges via les Services

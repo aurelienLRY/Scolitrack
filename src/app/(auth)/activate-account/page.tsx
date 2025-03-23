@@ -13,7 +13,7 @@ export default function ActivateAccountPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Image
-            src="/logo.png"
+            src="/img/Logo_Scolitrack.png"
             alt="Scolitrack Logo"
             width={80}
             height={80}

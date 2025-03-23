@@ -149,6 +149,7 @@ async function main() {
         name: "Super Admin",
         password: hashedPassword,
         roleName: "SUPER_ADMIN",
+        emailVerified: new Date(),
       },
     });
     console.log("Utilisateur Super Admin par défaut créé.");

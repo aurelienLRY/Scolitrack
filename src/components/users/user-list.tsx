@@ -19,10 +19,6 @@ interface User {
   emailVerified: boolean;
   createdAt: string;
 }
-interface UserListResponse {
-  users: User[];
-  pagination: Pagination;
-}
 
 /**
  * Composant qui affiche la liste des utilisateurs avec pagination
@@ -52,9 +48,9 @@ export default function UserList() {
         throw new Error("Erreur lors de la récupération des utilisateurs");
       }
 
-      const data: UserListResponse = await response.json();
-      setUsers(data.users);
-      setPagination(data.pagination);
+      const { data, meta } = await response.json();
+      setUsers(data);
+      setPagination(meta);
     } catch (error) {
       console.error("Erreur:", error);
       setError("Impossible de charger la liste des utilisateurs");
@@ -85,8 +81,6 @@ export default function UserList() {
       locale: fr,
     });
   };
-
-  console.log(users);
 
   // Afficher un message d'erreur
   if (error) {

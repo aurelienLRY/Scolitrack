@@ -1,7 +1,12 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
 import { sendResetPasswordEmail } from "@/lib/nodemailer/reset-passeword.email";
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 /**
  * Gère la requête POST pour la réinitialisation du mot de passe.
@@ -16,10 +21,10 @@ export async function POST(request: Request) {
   try {
     const { email } = await request.json();
     if (!email) {
-      return NextResponse.json(
-        { message: "L'email est requis" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "L'email est requis",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -28,12 +33,9 @@ export async function POST(request: Request) {
 
     if (!user) {
       // Pour des raisons de sécurité, on ne révèle pas si l'email existe
-      return NextResponse.json(
-        {
-          message: "Si l'email existe, un lien de réinitialisation sera envoyé",
-        },
-        { status: 200 }
-      );
+      return successResponse({
+        feedback: "Si l'email existe, un lien de réinitialisation sera envoyé",
+      });
     }
 
     // Générer un token unique
@@ -52,15 +54,14 @@ export async function POST(request: Request) {
     // Envoyer l'email
     await sendResetPasswordEmail(email, resetToken);
 
-    return NextResponse.json(
-      { message: "Si l'email existe, un lien de réinitialisation sera envoyé" },
-      { status: 200 }
-    );
+    return successResponse({
+      feedback: "Si l'email existe, un lien de réinitialisation sera envoyé",
+    });
   } catch (error) {
     console.error("Erreur lors de la demande de réinitialisation:", error);
-    return NextResponse.json(
-      { message: "Une erreur est survenue" },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur lors de la demande de réinitialisation"
     );
   }
 }

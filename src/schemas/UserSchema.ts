@@ -20,7 +20,7 @@ export const ActivateAccountSchema = yup.object().shape({
     .required("Mot de passe requis")
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
       "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial"
     ),
   confirmPassword: yup

@@ -1,6 +1,11 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 /**
  * Gère la requête POST pour la réinitialisation du mot de passe.
@@ -17,10 +22,10 @@ export async function POST(request: Request) {
     const { token, password } = await request.json();
 
     if (!token || !password) {
-      return NextResponse.json(
-        { message: "Token et mot de passe requis" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Token et mot de passe requis",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // Trouver l'utilisateur avec le token valide
@@ -34,10 +39,10 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "Lien de réinitialisation invalide ou expiré" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Lien de réinitialisation invalide ou expiré",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // Hasher le nouveau mot de passe
@@ -53,15 +58,11 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(
-      { message: "Mot de passe réinitialisé avec succès" },
-      { status: 200 }
-    );
+    return successResponse({
+      feedback: "Mot de passe réinitialisé avec succès",
+    });
   } catch (error) {
     console.error("Erreur lors de la réinitialisation:", error);
-    return NextResponse.json(
-      { message: "Une erreur est survenue" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Erreur lors de la réinitialisation");
   }
 }

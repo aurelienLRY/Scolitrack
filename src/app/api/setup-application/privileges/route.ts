@@ -1,48 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withPrivilege } from "@/lib/auth/authMiddleware";
+import { NextRequest } from "next/server";
+import { withPrivilege } from "@/lib/services/auth.service";
 import { privilegeService } from "@/lib/services/privilege.service";
+import {
+  successResponse,
+  createdResponse,
+  handleApiError,
+  errorResponse,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 // Récupérer tous les privilèges
-export const GET = withPrivilege(async () => {
+export const GET = withPrivilege("SETUP_APPLICATION", async () => {
   try {
     const privileges = await privilegeService.getAllPrivileges();
-    return NextResponse.json(privileges);
+    return successResponse({
+      data: privileges,
+      feedback: "Liste des privilèges récupérée avec succès",
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des privilèges:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération des privilèges" },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur lors de la récupération des privilèges"
     );
   }
-}, "SETUP_APPLICATION");
+});
 
 // Ajouter un nouveau privilège
-export const POST = withPrivilege(async (req: NextRequest) => {
-  try {
-    const data = await req.json();
-    const { name, description } = data;
+export const POST = withPrivilege(
+  "SETUP_APPLICATION",
+  async (req: NextRequest) => {
+    try {
+      const data = await req.json();
+      const { name, description } = data;
 
-    if (!name) {
-      return NextResponse.json(
-        { error: "Le nom du privilège est requis" },
-        { status: 400 }
-      );
+      if (!name) {
+        return errorResponse({
+          feedback: "Le nom du privilège est requis",
+          status: HttpStatus.BAD_REQUEST,
+        });
+      }
+
+      // Créer le privilège avec le service
+      const privilege = await privilegeService.createPrivilege({
+        name,
+        description,
+      });
+
+      return createdResponse({
+        data: privilege,
+        feedback: "Privilège créé avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la création du privilège:", error);
+      return handleApiError(error, "Erreur lors de la création du privilège");
     }
-
-    // Créer le privilège avec le service
-    const privilege = await privilegeService.createPrivilege({
-      name,
-      description,
-    });
-
-    return NextResponse.json(privilege, { status: 201 });
-  } catch (error: unknown) {
-    console.error("Erreur lors de la création du privilège:", error);
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Erreur lors de la création du privilège";
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-}, "SETUP_APPLICATION");
+);

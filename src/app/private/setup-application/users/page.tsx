@@ -3,7 +3,6 @@ import CreateUserForm from "@/components/users/create-user-form";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/auth";
 import UserList from "@/components/users/user-list";
-import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Gestion des utilisateurs | Scolitrack",
@@ -20,14 +19,11 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <Toaster richColors position="top-right" />
-
       <h1 className="text-2xl font-bold mb-8">Gestion des utilisateurs</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Formulaire de création d'utilisateur */}
         <div className="md:col-span-1">
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
+          <div className=" shadow overflow-hidden sm:rounded-lg p-6">
             <h2 className="text-lg font-medium mb-4">Ajouter un utilisateur</h2>
             <p className="text-sm text-gray-500 mb-6">
               Créez un nouveau compte utilisateur qui recevra un email

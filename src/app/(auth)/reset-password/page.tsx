@@ -18,8 +18,8 @@ const resetPasswordSchema = yup.object().shape({
     .string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre"
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+      "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial"
     )
     .required("Le mot de passe est requis"),
   confirmPassword: yup
@@ -71,12 +71,9 @@ function ResetPasswordForm() {
           token,
           password: data.password,
         }),
-      });
+      }).then((res) => res.json());
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Une erreur est survenue");
-      }
+      if (!response.success) throw new Error(response.feedback);
 
       toast.success("Votre mot de passe a été réinitialisé avec succès");
       router.push("/");

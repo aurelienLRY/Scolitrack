@@ -1,9 +1,13 @@
 import { ButtonLink } from "@/components/shared/button";
+import { auth } from "@/lib/auth/auth";
 /**
  * customer Unauthorized page
  * @returns
  */
-export default function Unauthorized() {
+export default async function Unauthorized() {
+  const session = await auth();
+  console.log("session", session);
+
   return (
     <section className="flex w-screen items-center justify-center min-h-[calc(100vh-170px)]">
       <div className="flex flex-col items-center gap-4">
@@ -14,7 +18,7 @@ export default function Unauthorized() {
           page.
         </p>
         <div className="flex gap-4">
-          <ButtonLink href="/" variant="accent">
+          <ButtonLink href={session?.user ? "/private" : "/"} variant="accent">
             Retour à la page d&apos;accueil
           </ButtonLink>
         </div>

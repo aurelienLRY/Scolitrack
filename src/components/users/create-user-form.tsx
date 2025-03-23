@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { CreateUserSchema, CreateUserSchemaType } from "@/schemas/UserSchema";
 import { toast } from "sonner";
 import { useRoleStore } from "@/context";
+import Input, { SelectInput } from "@/components/shared/Input";
 
 /**
  * Formulaire de création d'utilisateur pour les administrateurs
@@ -12,7 +13,6 @@ import { useRoleStore } from "@/context";
 export default function CreateUserForm() {
   const { roles } = useRoleStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const {
     register,
@@ -29,8 +29,6 @@ export default function CreateUserForm() {
   // Gérer la soumission du formulaire
   const onSubmit = async (data: CreateUserSchemaType) => {
     setIsLoading(true);
-    setSuccess(null);
-
     try {
       // Envoyer la requête à l'API
       const response = await fetch("/api/users", {
@@ -39,29 +37,26 @@ export default function CreateUserForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      });
+      }).then((res) => res.json());
 
-      // Traiter la réponse
-      const result = await response.json();
-
-      if (!response.ok) {
+      if (!response.success) {
         throw new Error(
-          result.error || "Erreur lors de la création de l'utilisateur"
+          response.feedback || "Erreur lors de la création de l'utilisateur"
         );
       }
 
       // Afficher un message de succès
-      toast.success("L'utilisateur a été créé avec succès");
-      setSuccess(`Un email d'invitation a été envoyé à ${data.email}`);
-
+      toast.success(
+        "L'utilisateur a été créé avec succès , un email d'invitation a été envoyé à l'utilisateur"
+      );
       // Réinitialiser le formulaire
       reset();
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Une erreur est survenue");
-      }
+      console.log(
+        "une erreur est survenue lors de la création de l'utilisateur :",
+        error
+      );
+      toast.error("Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -69,80 +64,27 @@ export default function CreateUserForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Nom complet
-        </label>
-        <input
-          id="name"
-          type="text"
-          className={`mt-1 block w-full rounded-md ${
-            errors.name ? "border-red-500" : "border-gray-300"
-          } shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
-          {...register("name")}
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Adresse email
-        </label>
-        <input
-          id="email"
-          type="email"
-          className={`mt-1 block w-full rounded-md ${
-            errors.email ? "border-red-500" : "border-gray-300"
-          } shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
-          {...register("email")}
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="role"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Rôle
-        </label>
-        <select
-          id="role"
-          className={`mt-1 block w-full rounded-md ${
-            errors.role ? "border-red-500" : "border-gray-300"
-          } shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
-          {...register("role")}
-        >
-          {roles.map((role) => (
-            <option key={role.id} value={role.name}>
-              {role.name}
-            </option>
-          ))}
-        </select>
-        {errors.role && (
-          <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-        )}
-      </div>
-
-      {success && (
-        <div className="rounded-md bg-green-50 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <p className="text-sm font-medium text-green-800">{success}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      <Input
+        label="Nom complet"
+        type="text"
+        {...register("name")}
+        error={errors.name}
+        placeholder="Nom complet"
+      />
+      <Input
+        label="Adresse email"
+        type="email"
+        {...register("email")}
+        error={errors.email}
+        placeholder="Adresse email"
+      />
+      <SelectInput
+        label="Rôle"
+        error={errors.role}
+        className="mt-1 block w-full rounded-md"
+        options={roles}
+        {...register("role")}
+      />
 
       <div>
         <button

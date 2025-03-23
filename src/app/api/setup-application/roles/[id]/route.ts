@@ -1,47 +1,54 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { roleService } from "@/lib/services/role.service";
-import { withPrivilege } from "@/lib/auth/authMiddleware";
+import { withPrivilege } from "@/lib/services/auth.service";
+import {
+  successResponse,
+  notFoundResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 // Récupérer un rôle par son ID
-export const GET = withPrivilege(async (req: NextRequest) => {
+export const GET = withPrivilege("VIEW_ROLE", async (req: NextRequest) => {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID de rôle manquant" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "ID de rôle manquant",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const role = await roleService.getRoleById(id);
 
     if (!role) {
-      return NextResponse.json({ error: "Rôle introuvable" }, { status: 404 });
+      return notFoundResponse("Rôle introuvable");
     }
 
-    return NextResponse.json(role);
+    return successResponse({
+      data: role,
+      feedback: "Rôle récupéré avec succès",
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération du rôle:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération du rôle" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Erreur lors de la récupération du rôle");
   }
-}, "VIEW_ROLE");
+});
 
 // Mettre à jour un rôle
-export const PUT = withPrivilege(async (req: NextRequest) => {
+export const PUT = withPrivilege("UPDATE_ROLE", async (req: NextRequest) => {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID de rôle manquant" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "ID de rôle manquant",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     const data = await req.json();
@@ -53,50 +60,46 @@ export const PUT = withPrivilege(async (req: NextRequest) => {
       privilegeIds,
     });
 
-    return NextResponse.json(updatedRole);
-  } catch (error: unknown) {
+    return successResponse({
+      data: updatedRole,
+      feedback: "Rôle mis à jour avec succès",
+    });
+  } catch (error) {
     console.error("Erreur lors de la mise à jour du rôle:", error);
-
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Erreur lors de la mise à jour du rôle";
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return handleApiError(error, "Erreur lors de la mise à jour du rôle");
   }
-}, "UPDATE_ROLE");
+});
 
 // Supprimer un rôle
-export const DELETE = withPrivilege(async (req: NextRequest) => {
+export const DELETE = withPrivilege("DELETE_ROLE", async (req: NextRequest) => {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "ID de rôle manquant" },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "ID de rôle manquant",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     await roleService.deleteRole(id);
-    return NextResponse.json({ success: true });
-  } catch (error: unknown) {
+
+    return successResponse({
+      feedback: "Rôle supprimé avec succès",
+      status: HttpStatus.OK,
+    });
+  } catch (error) {
     console.error("Erreur lors de la suppression du rôle:", error);
 
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Erreur lors de la suppression du rôle";
+    // Gestion spéciale pour les rôles permanents
+    if (error instanceof Error && error.message.includes("permanent")) {
+      return errorResponse({
+        feedback: error.message,
+        status: HttpStatus.FORBIDDEN,
+      });
+    }
 
-    return NextResponse.json(
-      { error: errorMessage },
-      {
-        status:
-          error instanceof Error && error.message.includes("permanent")
-            ? 403
-            : 500,
-      }
-    );
+    return handleApiError(error, "Erreur lors de la suppression du rôle");
   }
-}, "DELETE_ROLE");
+});
