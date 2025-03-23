@@ -3,6 +3,7 @@ import { privilegeApiRoutes } from "../routes";
 import authConfig from "@/lib/auth/auth.config";
 import NextAuth from "next-auth";
 import { getToken } from "next-auth/jwt";
+
 const { auth } = NextAuth(authConfig);
 
 export default auth(async (req) => {
@@ -14,7 +15,6 @@ export default auth(async (req) => {
     return NextResponse.redirect(new URL("/", nextUrl.origin));
   }
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-
   //* Vérifie si la route API est soumise à des privilèges *//
   const isPrivilegedApiRoute = privilegeApiRoutes.some((route) =>
     nextUrl.pathname.startsWith(route.path)
@@ -28,6 +28,7 @@ export default auth(async (req) => {
     const thisRoutePrivilege = privilegeApiRoutes.find((route) =>
       nextUrl.pathname.startsWith(route.path)
     );
+
     const hasPrivilege = token?.privileges?.includes(
       thisRoutePrivilege?.privilege ?? ""
     );
@@ -36,7 +37,6 @@ export default auth(async (req) => {
     }
     return undefined;
   }
-
   return undefined;
 });
 

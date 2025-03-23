@@ -3,8 +3,7 @@ import { PWAInstallPrompt } from "@/components/ui/PWAInstallPrompt";
 import React from "react";
 import { useNotification } from "@/hooks/useNotification";
 import { SidebarLayout } from "@/components/layout/sidebar";
-import { useIsAuthenticated } from "@/hooks/useAuthorization";
-import { unauthorized } from "next/navigation";
+
 export default function PrivateTemplate({
   children,
 }: {
@@ -17,15 +16,6 @@ export default function PrivateTemplate({
       subscribe();
     }
   }, [isSubscribed, subscribe, isLoading]);
-
-  const { isAuthenticated, isLoading: isLoadingAuth } = useIsAuthenticated();
-  if (isLoadingAuth) {
-    return;
-  }
-
-  if (!isAuthenticated) {
-    return unauthorized();
-  }
 
   return (
     <>

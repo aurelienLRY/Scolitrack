@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth/auth";
  */
 export default async function Unauthorized() {
   const session = await auth();
-  console.log("session", session);
 
   return (
     <section className="flex w-screen items-center justify-center min-h-[calc(100vh-170px)]">
