@@ -2,11 +2,11 @@ name: Sync Wiki
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - "docs/wiki/**"
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
       - "docs/wiki/**"
 
