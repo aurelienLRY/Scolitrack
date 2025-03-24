@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+
 import { adminNavItems } from "./setup-NavItem.data";
+
 export default function AdminTemplate({
   children,
 }: {

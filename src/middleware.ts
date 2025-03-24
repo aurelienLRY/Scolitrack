@@ -1,42 +1,73 @@
 import { NextResponse } from "next/server";
-import { privilegeApiRoutes } from "../routes";
+import {
+  privilegesApiRoutes,
+  privilegesRoutes,
+  TPrivilegeRoute,
+} from "@/config/routes.config";
+
+//* Edge compatibility *//
 import authConfig from "@/lib/auth/auth.config";
 import NextAuth from "next-auth";
-import { getToken } from "next-auth/jwt";
 
-const { auth } = NextAuth(authConfig);
+const { auth: authMiddleware } = NextAuth(authConfig);
 
-export default auth(async (req) => {
-  const isLoggedIn = !!req.auth;
+export default authMiddleware(async function middleware(req) {
+  const session = req.auth;
+  const isLoggedIn = !!session;
   const { nextUrl } = req;
 
+  /**
+   * Vérifie si la route est soumise à des privilèges
+   * @param routes - Les routes à vérifier
+   * @returns undefined si l'utilisateur a les privilèges, ou une réponse si non
+   */
+  const checkRoutePrivileges = (routes: TPrivilegeRoute[]) => {
+    const matchedRoute = routes.find((route) =>
+      nextUrl.pathname.startsWith(route.path)
+    );
+
+    if (!matchedRoute) return undefined;
+
+    if (!isLoggedIn) {
+      // Pour les routes API, renvoyer une erreur JSON
+      if (nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      }
+      // Pour les autres routes, rediriger vers la page de connexion
+      return NextResponse.redirect(new URL("/", nextUrl.origin));
+    }
+
+    const hasPrivilege = session?.user?.privileges?.includes(
+      matchedRoute.privilege
+    );
+
+    if (!hasPrivilege) {
+      if (nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
+    }
+
+    return undefined;
+  };
+
+  // Traiter les routes protégées génériques d'abord
   const isProtectedRoute = nextUrl.pathname.startsWith("/private");
   if (isProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/", nextUrl.origin));
   }
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  //* Vérifie si la route API est soumise à des privilèges *//
-  const isPrivilegedApiRoute = privilegeApiRoutes.some((route) =>
-    nextUrl.pathname.startsWith(route.path)
-  );
-  //* Si la route API est soumise à des privilèges et que l'utilisateur est connecté, vérifie si l'utilisateur a les privilèges *//
-  if (isPrivilegedApiRoute) {
-    if (!isLoggedIn) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
-    const thisRoutePrivilege = privilegeApiRoutes.find((route) =>
-      nextUrl.pathname.startsWith(route.path)
-    );
-
-    const hasPrivilege = token?.privileges?.includes(
-      thisRoutePrivilege?.privilege ?? ""
-    );
-    if (!hasPrivilege) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-    return undefined;
+  // Vérifier les routes API avec privilèges
+  if (nextUrl.pathname.startsWith("/api/")) {
+    const apiResult = checkRoutePrivileges(privilegesApiRoutes);
+    if (apiResult) return apiResult;
   }
+  // Vérifier les routes UI avec privilèges
+  else {
+    const routeResult = checkRoutePrivileges(privilegesRoutes);
+    if (routeResult) return routeResult;
+  }
+
   return undefined;
 });
 

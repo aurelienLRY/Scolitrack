@@ -32,7 +32,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/private/dashboard");
+      router.push("/private");
     }
   }, [status, router]);
 

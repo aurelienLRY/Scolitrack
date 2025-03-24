@@ -1,0 +1,29 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/wiki/**"
+
+jobs:
+  update-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Clone wiki
+        run: |
+          git clone https://x-access-token:${{ secrets.WIKI_TOKEN }}@github.com/aurelienLRY/Scolitrack.wiki.git wiki
+
+      - name: Sync docs/wiki with Wiki
+        run: |
+          cp -r docs/wiki/* wiki/
+          cd wiki
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "🔄 Wiki auto-sync from docs/wiki"
+          git push

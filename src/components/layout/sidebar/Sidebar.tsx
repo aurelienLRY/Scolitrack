@@ -13,11 +13,13 @@ import {
 import { IoSettingsSharp } from "react-icons/io5";
 
 import { Tooltip } from "@/components/shared/tooltip";
+import Authorized from "@/components/auth/Authorization";
 // Types
 interface NavItem {
   title: string;
   href: string;
   icon: React.ReactNode;
+  privilege?: string;
   privileges?: string[];
 }
 
@@ -42,21 +44,23 @@ const NavItemLink = memo(
     onClick?: () => void;
   }) => {
     return (
-      <Link
-        href={item.href}
-        className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition-colors",
-          isCollapsed && "justify-center",
-          isActive ? "bg-accent text-white" : "hover:text-accent text-text"
-        )}
-        title={isCollapsed ? item.title : undefined}
-        onClick={onClick}
-      >
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-          {item.icon}
-        </div>
-        {!isCollapsed && <span>{item.title}</span>}
-      </Link>
+      <Authorized privilege={item.privilege ?? undefined}>
+        <Link
+          href={item.href}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-md text-base font-medium transition-colors",
+            isCollapsed && "justify-center",
+            isActive ? "bg-accent text-white" : "hover:text-accent text-text"
+          )}
+          title={isCollapsed ? item.title : undefined}
+          onClick={onClick}
+        >
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+            {item.icon}
+          </div>
+          {!isCollapsed && <span>{item.title}</span>}
+        </Link>
+      </Authorized>
     );
   }
 );
@@ -207,7 +211,7 @@ export const defaultItems: NavItem[] = [
     title: "Paramètres",
     href: "/private/setup-application",
     icon: <IoSettingsSharp size={20} />,
-    privileges: ["SETUP_APPLICATION"],
+    privilege: "SETUP_APPLICATION",
   },
 ];
 

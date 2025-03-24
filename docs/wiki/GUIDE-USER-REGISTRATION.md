@@ -25,7 +25,6 @@ src/
 │   ├── auth/
 │   │   ├── auth.ts                   # Configuration de l'authentification
 │   │   ├── auth.config.ts            # Configuration NextAuth
-│   │   ├── auth.middleware.ts        # Middleware pour vérifier les autorisations
 │   │   └── user.service.ts           # Services de gestion des utilisateurs
 │   └── nodemailer/
 │       ├── account-activation.email.ts # Template d'email d'activation
@@ -58,7 +57,7 @@ Le flux de création et d'activation d'un compte utilisateur se déroule comme s
 
 1. **Administrateur crée un utilisateur**
 
-   - Se connecte à l'interface d'administration `/private/admin/users`
+   - Se connecte à l'interface d'administration `/private/setup-application/users`
    - Remplit le formulaire avec nom, email et rôle
    - Soumet le formulaire
 
@@ -121,7 +120,11 @@ Champs du formulaire :
 Le service `user.service.ts` fournit les fonctions pour gérer les utilisateurs :
 
 ```typescript
-import { createUser, activateAccount, getUsers } from "@/lib/auth/user.service";
+import {
+  createUser,
+  activateAccount,
+  getUsers,
+} from "@/lib/services/user.service";
 
 // Créer un utilisateur
 const newUser = await createUser({
