@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - "docs/wiki/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/wiki/**"
 
 jobs:
   update-wiki:
