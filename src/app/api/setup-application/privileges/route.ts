@@ -10,7 +10,7 @@ import {
 } from "@/lib/services/api.service";
 
 // Récupérer tous les privilèges
-export const GET = withPrivilege("SETUP_APPLICATION", async () => {
+export async function GET() {
   try {
     const privileges = await privilegeService.getAllPrivileges();
     return successResponse({
@@ -24,7 +24,7 @@ export const GET = withPrivilege("SETUP_APPLICATION", async () => {
       "Erreur lors de la récupération des privilèges"
     );
   }
-});
+}
 
 // Ajouter un nouveau privilège
 export const POST = withPrivilege(

@@ -10,7 +10,7 @@ import {
 } from "@/lib/services/api.service";
 
 // Récupérer un rôle par son ID
-export const GET = withPrivilege("VIEW_ROLE", async (req: NextRequest) => {
+export async function GET(req: NextRequest) {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
@@ -36,10 +36,10 @@ export const GET = withPrivilege("VIEW_ROLE", async (req: NextRequest) => {
     console.error("Erreur lors de la récupération du rôle:", error);
     return handleApiError(error, "Erreur lors de la récupération du rôle");
   }
-});
+}
 
 // Mettre à jour un rôle
-export const PUT = withPrivilege("UPDATE_ROLE", async (req: NextRequest) => {
+export const PUT = withPrivilege("UPDATE_DATA", async (req: NextRequest) => {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
@@ -71,7 +71,7 @@ export const PUT = withPrivilege("UPDATE_ROLE", async (req: NextRequest) => {
 });
 
 // Supprimer un rôle
-export const DELETE = withPrivilege("DELETE_ROLE", async (req: NextRequest) => {
+export const DELETE = withPrivilege("DELETE_DATA", async (req: NextRequest) => {
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();

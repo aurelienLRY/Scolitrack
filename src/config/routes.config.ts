@@ -22,6 +22,11 @@ const privilegesApiRoutes: TPrivilegeRoute[] = [
     path: "/api/setup-application",
     privilege: "SETUP_APPLICATION",
   },
+  {
+    path: "/api/users/[id]/role",
+    privilege: "SETUP_APPLICATION",
+  },
+
   // Ajoutez d'autres routes API protégées ici
 ];
 

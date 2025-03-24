@@ -11,7 +11,7 @@ import {
 /**
  * Mise à jour du rôle d'un utilisateur
  */
-export const PUT = withPrivilege("ASSIGN_ROLE", async (req: NextRequest) => {
+export const PUT = withPrivilege("UPDATE_DATA ", async (req: NextRequest) => {
   try {
     // Extraire l'ID de l'utilisateur des paramètres de l'URL
     const pathSegments = req.nextUrl.pathname.split("/");

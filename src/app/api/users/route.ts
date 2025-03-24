@@ -11,37 +11,34 @@ import {
 /**
  * GET /api/users - Récupérer la liste des utilisateurs (admin seulement)
  */
-export const GET = withPrivilege(
-  "SETUP_APPLICATION",
-  async (request: NextRequest) => {
-    // Récupérer les paramètres de pagination de l'URL
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+export async function GET(request: NextRequest) {
+  // Récupérer les paramètres de pagination de l'URL
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
 
-    try {
-      // Récupérer les utilisateurs
-      const result = await getUsers(page, limit);
-      return successResponse({
-        data: result.users,
-        feedback: "Liste des utilisateurs récupérée avec succès",
-        meta: result.pagination,
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération des utilisateurs:", error);
-      return handleApiError(
-        error,
-        "Erreur lors de la récupération des utilisateurs"
-      );
-    }
+  try {
+    // Récupérer les utilisateurs
+    const result = await getUsers(page, limit);
+    return successResponse({
+      data: result.users,
+      feedback: "Liste des utilisateurs récupérée avec succès",
+      meta: result.pagination,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des utilisateurs:", error);
+    return handleApiError(
+      error,
+      "Erreur lors de la récupération des utilisateurs"
+    );
   }
-);
+}
 
 /**
  * POST /api/users - Créer un nouvel utilisateur (admin seulement)
  */
 export const POST = withPrivilege(
-  "CREATE_USER",
+  "MANAGE_USERS",
   async (request: NextRequest) => {
     try {
       // Récupérer les données du corps de la requête
