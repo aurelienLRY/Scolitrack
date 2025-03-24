@@ -1,7 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth/auth";
-import { UnsubscribeResponse } from "@/types/notification.type";
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 /**
  * API de désabonnement aux notifications push
@@ -23,26 +28,20 @@ export async function POST(request: NextRequest) {
     // 1. Vérification de l'authentification
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Non authentifié. Veuillez vous connecter.",
-        },
-        { status: 401 }
-      );
+      return errorResponse({
+        feedback: "Non authentifié. Veuillez vous connecter.",
+        status: HttpStatus.UNAUTHORIZED,
+      });
     }
 
     // 2. Extraction et validation des données
     const body = await request.json();
 
     if (!body.endpoint) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Endpoint manquant. L'endpoint de l'abonnement est requis.",
-        },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Endpoint manquant. L'endpoint de l'abonnement est requis.",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // 3. Vérification de l'existence de l'abonnement
@@ -51,21 +50,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!existingSubscription) {
-      return NextResponse.json({
-        success: false,
-        message: "Abonnement non trouvé",
+      return errorResponse({
+        feedback: "Abonnement non trouvé",
+        status: HttpStatus.NOT_FOUND,
       });
     }
 
     // 4. Vérification des permissions
     if (existingSubscription.userId !== session.user.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Vous n'êtes pas autorisé à supprimer cet abonnement",
-        },
-        { status: 403 }
-      );
+      return errorResponse({
+        feedback: "Vous n'êtes pas autorisé à supprimer cet abonnement",
+        status: HttpStatus.FORBIDDEN,
+      });
     }
 
     // 5. Suppression de l'abonnement
@@ -74,22 +70,13 @@ export async function POST(request: NextRequest) {
     });
 
     // 6. Préparation de la réponse
-    const response: UnsubscribeResponse = {
-      success: true,
-      message: "Abonnement supprimé avec succès",
-    };
-
-    return NextResponse.json(response);
+    return successResponse({
+      feedback: "Abonnement supprimé avec succès",
+    });
   } catch (error) {
-    console.error("Erreur lors de la suppression de l'abonnement:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Erreur serveur lors de la suppression de l'abonnement",
-        error: error instanceof Error ? error.message : "Erreur inconnue",
-      },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur serveur lors de la suppression de l'abonnement"
     );
   }
 }

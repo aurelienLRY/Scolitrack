@@ -60,7 +60,6 @@ export const useNotification = () => {
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
-        toast.error("Permission de notification refusée");
         return;
       }
 
@@ -75,9 +74,9 @@ export const useNotification = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subscriptionData),
-      });
+      }).then((res) => res.json());
 
-      if (!response.ok) throw new Error("Erreur lors de l'enregistrement");
+      if (!response.success) throw new Error(response.feedback);
 
       setSubscription(subscriptionData);
       setIsSubscribed(true);
@@ -103,10 +102,11 @@ export const useNotification = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ endpoint: subscription.endpoint }),
-      });
+      }).then((res) => res.json());
 
-      if (!response.ok) throw new Error("Erreur lors de la désinscription");
-
+      if (!response.success) {
+        throw new Error(response.feedback);
+      }
       setSubscription(null);
       setIsSubscribed(false);
       toast.success("Notifications désactivées avec succès");
@@ -128,16 +128,16 @@ export const useNotification = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notification),
-      });
+      }).then((res) => res.json());
 
-      if (!response.ok) throw new Error("Erreur lors de l'envoi");
-      const result = await response.json();
-      toast.success(`Notification envoyée à ${result.sent} destinataire(s)`);
-      return result;
+      if (!response.success) throw new Error(response.feedback);
+      toast.success(
+        `Notification envoyée à ${response.meta?.sent} destinataire(s)`
+      );
+      return response;
     } catch (error) {
       console.error("Erreur lors de l'envoi de la notification:", error);
       toast.error("Erreur lors de l'envoi de la notification");
-      throw error;
     }
   };
 

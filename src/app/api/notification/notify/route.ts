@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/prisma";
 import webpush from "web-push";
@@ -9,6 +9,13 @@ import {
 } from "@/config/notification.constants";
 
 import { NotificationResponse } from "@/types/notification.type";
+
+import {
+  successResponse,
+  errorResponse,
+  handleApiError,
+  HttpStatus,
+} from "@/lib/services/api.service";
 
 /**
  * Configuration des clés VAPID pour Web Push
@@ -65,13 +72,10 @@ export async function POST(req: NextRequest) {
     // 1. Vérification de l'authentification
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Non authentifié. Veuillez vous connecter.",
-        },
-        { status: 401 }
-      );
+      return errorResponse({
+        feedback: "Non authentifié. Veuillez vous connecter.",
+        status: HttpStatus.UNAUTHORIZED,
+      });
     }
 
     // 2. Extraction et validation des données
@@ -79,13 +83,10 @@ export async function POST(req: NextRequest) {
       await req.json();
 
     if (!title || !message || !target) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Données manquantes. Titre, message et cible sont requis.",
-        },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: "Données manquantes. Titre, message et cible sont requis.",
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // 3. Récupération des abonnements selon la cible
@@ -106,27 +107,23 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Type de cible invalide: ${target.type}. Utilisez "user" ou "role".`,
-        },
-        { status: 400 }
-      );
+      return errorResponse({
+        feedback: `Type de cible invalide: ${target.type}. Utilisez "user" ou "role".`,
+        status: HttpStatus.BAD_REQUEST,
+      });
     }
 
     // 4. Vérification de l'existence d'abonnements
     if (!subscriptions.length) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Aucun abonnement trouvé pour ${target.type} avec ID: ${target.id}`,
+      return errorResponse({
+        feedback: `Aucun abonnement trouvé pour ${target.type} avec ID: ${target.id}`,
+        status: HttpStatus.NOT_FOUND,
+        meta: {
           sent: 0,
           failed: 0,
           total: 0,
         },
-        { status: 404 }
-      );
+      });
     }
 
     // 5. Préparation des options de notification
@@ -241,16 +238,20 @@ export async function POST(req: NextRequest) {
       ...(errors.length > 0 && { errors }),
     };
 
-    return NextResponse.json(response);
+    return successResponse({
+      feedback: response.message,
+      meta: {
+        sent: response.sent,
+        failed: response.failed,
+        total: response.total,
+        deleted: response.deleted,
+      },
+    });
   } catch (error) {
     console.error("Erreur lors de l'envoi des notifications:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Erreur serveur lors de l'envoi des notifications",
-        error: error instanceof Error ? error.message : "Erreur inconnue",
-      },
-      { status: 500 }
+    return handleApiError(
+      error,
+      "Erreur serveur lors de l'envoi des notifications"
     );
   }
 }

@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scolitrack
 
-## Getting Started
+Scolitrack est une application médicale permettant le suivi des patients atteints de scoliose.
 
-First, run the development server:
+## Fonctionnalités
+
+- Gestion des utilisateurs avec rôles et privilèges dynamiques
+- Authentification sécurisée avec Next-Auth
+- Gestion et suivi des patients
+- Interface intuitive pour les professionnels de santé
+- Dashboard analytique
+- API RESTful pour toutes les opérations
+
+## Installation
 
 ```bash
+# Cloner le dépôt
+git clone https://github.com/your-username/scolitrack.git
+cd scolitrack
+
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env.local
+# Modifier les variables selon votre environnement
+
+# Lancer la migration de la base de données et initialiser les données
+npx prisma migrate dev
+npx prisma db seed
+
+# Démarrer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Structure du Projet
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/              # Routes et pages Next.js (App Router)
+│   ├── api/          # Routes API
+│   │   ├── auth/     # Authentification
+│   │   ├── users/    # Gestion des utilisateurs
+│   │   ├── roles/    # Gestion des rôles
+│   │   ├── privileges/ # Gestion des privilèges
+│   └── (routes)/     # Pages de l'application
+├── components/       # Composants React partagés
+├── hooks/            # Hooks personnalisés
+├── lib/              # Bibliothèques et utilitaires
+│   ├── auth/         # Configuration d'authentification
+│   ├── role/         # Gestion des rôles et privilèges
+│   └── prisma/       # Client Prisma
+├── types/            # Définitions de types TypeScript
+└── styles/           # Styles globaux et thèmes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+prisma/
+├── schema.prisma     # Modèle de données
+└── seed.ts           # Script d'initialisation
+```
 
-## Learn More
+## Système d'Authentification et d'Autorisation
 
-To learn more about Next.js, take a look at the following resources:
+L'application utilise Next-Auth pour l'authentification et implémente un système dynamique de rôles et privilèges pour l'autorisation.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Rôles Prédéfinis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **SUPER_ADMIN** : Accès complet à toutes les fonctionnalités
+- **ADMIN** : Accès à la gestion des utilisateurs et patients
+- **USER** : Accès limité aux fonctionnalités de base
 
-## Deploy on Vercel
+### API de Gestion des Rôles et Privilèges
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Gestion des Rôles
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/roles` - Liste tous les rôles (privilège requis: VIEW_ROLE)
+- `POST /api/roles` - Crée un nouveau rôle (privilège requis: CREATE_ROLE)
+- `GET /api/roles/[id]` - Récupère un rôle spécifique (privilège requis: VIEW_ROLE)
+- `PUT /api/roles/[id]` - Met à jour un rôle (privilège requis: UPDATE_ROLE)
+- `DELETE /api/roles/[id]` - Supprime un rôle (privilège requis: DELETE_ROLE)
+
+#### Gestion des Privilèges
+
+- `GET /api/privileges` - Liste tous les privilèges (privilège requis: MANAGE_PRIVILEGES)
+- `POST /api/privileges` - Crée un nouveau privilège (privilège requis: MANAGE_PRIVILEGES)
+- `GET /api/privileges/[id]` - Récupère un privilège spécifique (privilège requis: MANAGE_PRIVILEGES)
+- `PUT /api/privileges/[id]` - Met à jour un privilège (privilège requis: MANAGE_PRIVILEGES)
+- `DELETE /api/privileges/[id]` - Supprime un privilège (privilège requis: MANAGE_PRIVILEGES)
+
+#### Attribution de Rôle
+
+- `PUT /api/users/[id]/role` - Assigne un rôle à un utilisateur (privilège requis: ASSIGN_ROLE)
+
+### Fonctionnalités Additionnelles
+
+- Vérification des privilèges côté client avec le hook `useAuthorization`
+- Composant `Authorization` pour l'affichage conditionnel d'éléments UI
+- Middleware `withPrivilege` pour protéger les routes API
+
+Consultez le fichier [GUIDE-ROLES-AND-PRIVILEGES.md](./GUIDE-ROLES-AND-PRIVILEGES.md) pour une documentation détaillée du système de rôles et privilèges.
+
+## Documentation API
+
+Voir le fichier [API.md](./API.md) pour la documentation complète des endpoints API.
+
+## Environnement de Développement
+
+- Node.js 18+
+- PostgreSQL 12+
+- TypeScript 5+
+- Next.js 14+
+- Prisma ORM
+
+## Licence
+
+Ce projet est sous licence MIT - voir [LICENSE](LICENSE) pour plus d'informations.
