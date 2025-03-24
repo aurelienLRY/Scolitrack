@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Badge } from "@/components/shared/badges";
+import ScrollableTable from "@/components/shared/ScrollableTable";
 
 interface Pagination {
   total: number;
@@ -123,8 +125,12 @@ export default function UserList() {
   // Afficher la liste des utilisateurs
   return (
     <div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+      <ScrollableTable
+        scrollbarStyle="custom"
+        enableWheelScroll={true}
+        scrollButtonPosition="outsideTable"
+      >
+        <table className="min-w-full divide-y divide-gray-200 overflow-hidden">
           <thead className="bg-gray-50">
             <tr>
               <th
@@ -167,30 +173,30 @@ export default function UserList() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  <Badge
+                    variant={
                       user.role.name === "SUPER_ADMIN"
-                        ? "bg-purple-100 text-purple-800"
+                        ? "primary"
                         : user.role.name === "ADMIN"
-                        ? "bg-red-100 text-red-800"
+                        ? "secondary"
                         : user.role.name === "TEACHER"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
+                        ? "accent"
+                        : "success"
+                    }
+                    styleVariant="soft"
+                    size="sm"
                   >
                     {user.role.name}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.emailVerified
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
+                  <Badge
+                    variant={user.emailVerified ? "success" : "warning"}
+                    styleVariant="soft"
+                    size="sm"
                   >
                     {user.emailVerified ? "Vérifié" : "En attente"}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {formatDate(user.createdAt)}
@@ -199,7 +205,7 @@ export default function UserList() {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollableTable>
 
       {/* Pagination */}
       {pagination.pages > 1 && (

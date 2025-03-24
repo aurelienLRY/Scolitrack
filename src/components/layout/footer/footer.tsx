@@ -10,7 +10,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-100 dark:bg-gray-800 relative min-h-20">
+    <footer className="bg-background/20 relative min-h-20 border-t border-primary/10">
       <div className="container mx-auto px-4 py-8">
         <p className="text-center text-gray-600 dark:text-gray-400">
           &copy; {new Date().getFullYear()} Scolitrack. Tous droits réservés.

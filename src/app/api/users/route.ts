@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/users - Créer un nouvel utilisateur (admin seulement)
+ * POST /api/users - Créer un nouvel utilisateur
  */
 export const POST = withPrivilege(
   "MANAGE_USERS",

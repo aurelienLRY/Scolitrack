@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { RoleSchema, RoleSchemaType } from "@/schemas/RoleSchema";
 import { useRoleStore } from "@/context";
 import Input from "@/components/shared/Input";
-import { Button } from "@/components/shared/button";
+import { SaveButton } from "@/components/shared/button";
 import Card from "../shared/card";
 
 export const CreateRoleForm = () => {
@@ -49,14 +49,9 @@ export const CreateRoleForm = () => {
           {...register("description")}
           error={errors.description}
         />
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-fit"
-          variant="accent"
-        >
+        <SaveButton type="submit" disabled={isLoading} className="w-fit">
           {isLoading ? "Création en cours..." : "Créer le rôle"}
-        </Button>
+        </SaveButton>
       </form>
     </Card>
   );

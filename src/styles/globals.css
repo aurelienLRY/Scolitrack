@@ -11,13 +11,17 @@
   --color-dark: light-dark(#0e1a27, #0e1a27);
 
   --color-destructive: light-dark(#ff0000, #ff0000);
+  --color-success: light-dark(#008000, #008000);
+  --color-warning: light-dark(#ffa500, #ffa500);
+  --color-info: light-dark(#0000ff, #0000ff);
 
   /* Variantes de couleurs */
   --color-primary-light: light-dark(#6474ff, #4656e7);
   --color-primary-dark: light-dark(#4252dd, #2434c5);
 
   /* Couleurs de fond et texte */
-  --color-background: light-dark(#ffffff, #0e1a27);
+  --color-background: light-dark(#d7d7d7, #0e1a27);
+  --color-background-body: light-dark(#ffffff, #000f1f);
   --color-text: light-dark(#0e1a27, #ffffff);
 }
 
@@ -43,6 +47,7 @@
 
 ::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -51,9 +56,9 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-accent);
-  border-radius: 15px;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent-light);
+  background: var(--color-accent);
 }

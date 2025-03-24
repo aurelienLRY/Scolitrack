@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/shared/button";
+import { DeleteButton, UpdateButton } from "@/components/shared/button";
 import { Role, useRoleStore } from "@/context";
 import Card from "../shared/card";
 export const RoleList = () => {
@@ -23,7 +23,10 @@ const RoleTable = ({ roles }: { roles: Role[] }) => {
   const { deleteRole, isLoading } = useRoleStore();
 
   const handleDelete = async (id: string) => {
-    await deleteRole(id);
+    const confirm = window.confirm("Voulez-vous vraiment supprimer ce rôle ?");
+    if (confirm) {
+      await deleteRole(id);
+    }
   };
   return (
     <div className="max-w-[1200px] mx-auto">
@@ -62,22 +65,23 @@ const RoleTable = ({ roles }: { roles: Role[] }) => {
                     role.name !== "ADMIN" &&
                     role.name !== "USER" && (
                       <div className="flex gap-2 items-center justify-end">
-                        <Button
+                        <UpdateButton
+                          style="outline"
                           variant="accent"
-                          size="sm"
-                          className="bg-transparent border-accent border text-accent hover:text-white"
+                          iconOnly
+                          size="icon-sm"
                         >
                           Modifier
-                        </Button>
-                        <Button
+                        </UpdateButton>
+                        <DeleteButton
+                          style="outline"
                           onClick={() => handleDelete(role.id)}
                           disabled={isLoading}
-                          variant="destructive"
-                          size="sm"
-                          className="bg-transparent border-red-500 border text-red-500 hover:text-white"
+                          size="icon-sm"
+                          iconOnly
                         >
                           {isLoading ? "en cours..." : "supprimer"}
-                        </Button>
+                        </DeleteButton>
                       </div>
                     )}
                 </td>

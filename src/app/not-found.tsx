@@ -1,4 +1,5 @@
-import { ButtonLink } from "@/components/shared/button";
+import { buttonVariants } from "@/components/shared/button";
+import Link from "next/link";
 
 /**
  * Not found page
@@ -14,9 +15,9 @@ export default function NotFound() {
           La page que vous cherchez n&apos;existe pas.
         </p>
         <div className="flex gap-4">
-          <ButtonLink href="/" variant="accent">
+          <Link href="/" className={buttonVariants({ variant: "accent" })}>
             Retour à la page d&apos;accueil
-          </ButtonLink>
+          </Link>
         </div>
       </div>
     </section>

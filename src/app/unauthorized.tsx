@@ -1,4 +1,5 @@
-import { ButtonLink } from "@/components/shared/button";
+import { buttonVariants } from "@/components/shared/button";
+import Link from "next/link";
 import { auth } from "@/lib/auth/auth";
 /**
  * customer Unauthorized page
@@ -17,9 +18,12 @@ export default async function Unauthorized() {
           page.
         </p>
         <div className="flex gap-4">
-          <ButtonLink href={session?.user ? "/private" : "/"} variant="accent">
+          <Link
+            href={session?.user ? "/private" : "/"}
+            className={buttonVariants({ variant: "accent" })}
+          >
             Retour à la page d&apos;accueil
-          </ButtonLink>
+          </Link>
         </div>
       </div>
     </section>

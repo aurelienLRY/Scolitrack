@@ -105,7 +105,7 @@ function SidebarLayoutComponent({
   );
 
   return (
-    <div className="min-h-[calc(100vh-170px)] bg-background flex flex-col lg:flex-row">
+    <div className="min-h-[calc(100vh-170px)]  flex flex-col lg:flex-row">
       {/* Sidebar component with collapse state handling */}
       <Sidebar
         items={navItems}

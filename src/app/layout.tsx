@@ -27,7 +27,7 @@ export default function RootLayout({
     >
       <body
         className={cn(
-          " bg-background antialiased",
+          " bg-background-body ",
           raleway.variable,
           montserrat.variable
         )}

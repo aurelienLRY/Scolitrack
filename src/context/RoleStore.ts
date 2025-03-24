@@ -162,7 +162,7 @@ export const useRoleStore = create<RoleState>()(
       deleteRole: async (id: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch(`/api/roles/${id}`, {
+          const response = await fetch(`/api/setup-application/roles/${id}`, {
             method: "DELETE",
           });
 
