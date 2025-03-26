@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Badge } from "@/components/shared/badges";
-import ScrollableTable from "@/components/shared/ScrollableTable";
+import { Badge } from "@/components/ui/badges";
+import ScrollableTable from "@/components/ui/ScrollableTable";
 
 interface Pagination {
   total: number;

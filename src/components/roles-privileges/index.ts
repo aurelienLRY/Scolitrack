@@ -1,3 +1,3 @@
-export * from "./roles-list";
-export * from "./create-role-form";
-export * from "./privileges-manager";
+export * from "./RolesList";
+export * from "./CreateRoleForm";
+export * from "./PrivilegesManager";

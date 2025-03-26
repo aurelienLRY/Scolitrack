@@ -42,6 +42,7 @@
 @import "../components/layout/theme-switch/style.css" layer(base);
 @import "./typographies.css" layer(base);
 @import "./balise.css" layer(base);
+@import "./sidebar_components.css" layer(base);
 
 /* customer scrollbar */
 

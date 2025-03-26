@@ -4,8 +4,8 @@ import { useState, Suspense, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Input from "@/components/shared/Input";
-import { Button } from "@/components/shared/button";
+import Input from "@/components/ui/inputs/Input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -132,7 +132,7 @@ function ResetPasswordForm() {
               type="submit"
               className="w-full max-w-fit"
               disabled={isLoading}
-              variant="accent"
+              color="accent"
             >
               {isLoading
                 ? "Réinitialisation en cours..."

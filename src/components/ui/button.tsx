@@ -1,12 +1,9 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Tooltip } from "@/components/shared/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 
-import { FaTrash, FaSave, FaEllipsisH } from "react-icons/fa";
-import { BiEditAlt } from "react-icons/bi";
-
-import { IconType } from "react-icons";
+import { Trash, Save, Ellipsis, Edit, LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -14,8 +11,9 @@ const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
-      variant: {
-        default: "text-primary-foreground border-primary",
+      color: {
+        default: "text-text border-black",
+        primary: "text-primary-foreground border-primary",
         destructive: "text-destructive-foreground border-destructive",
         secondary: "text-secondary-foreground border-secondary",
         accent: "text-accent-foreground border-accent",
@@ -23,7 +21,7 @@ const buttonVariants = cva(
         warning: "text-warning-foreground border-warning",
         info: "text-info-foreground border-info",
       },
-      style: {
+      variant: {
         solid: "",
         outline: "border-2 bg-transparent hover:bg-opacity-10",
         ghost: "bg-transparent border-transparent hover:bg-opacity-10",
@@ -45,152 +43,152 @@ const buttonVariants = cva(
     compoundVariants: [
       // Solid variants
       {
-        variant: "default",
-        style: "solid",
+        color: "default",
+        variant: "solid",
         className: "bg-primary hover:bg-primary/90",
       },
       {
-        variant: "destructive",
-        style: "solid",
+        color: "destructive",
+        variant: "solid",
         className: "bg-destructive hover:bg-destructive/90",
       },
       {
-        variant: "secondary",
-        style: "solid",
+        color: "secondary",
+        variant: "solid",
         className: "bg-secondary hover:bg-secondary/80",
       },
       {
-        variant: "accent",
-        style: "solid",
+        color: "accent",
+        variant: "solid",
         className: "bg-accent hover:bg-accent/80",
       },
       {
-        variant: "success",
-        style: "solid",
+        color: "success",
+        variant: "solid",
         className: "bg-success hover:bg-success/90",
       },
       {
-        variant: "warning",
-        style: "solid",
+        color: "warning",
+        variant: "solid",
         className: "bg-warning hover:bg-warning/90",
       },
       {
-        variant: "info",
-        style: "solid",
+        color: "info",
+        variant: "solid",
         className: "bg-info hover:bg-info/90",
       },
       // Soft variants
       {
-        variant: "default",
-        style: "soft",
+        color: "default",
+        variant: "soft",
         className: "bg-primary text-primary-foreground",
       },
       {
-        variant: "destructive",
-        style: "soft",
+        color: "destructive",
+        variant: "soft",
         className: "bg-destructive text-destructive-foreground",
       },
       {
-        variant: "secondary",
-        style: "soft",
+        color: "secondary",
+        variant: "soft",
         className: "bg-secondary text-secondary-foreground",
       },
       {
-        variant: "accent",
-        style: "soft",
+        color: "accent",
+        variant: "soft",
         className: "bg-accent text-accent-foreground",
       },
       {
-        variant: "success",
-        style: "soft",
+        color: "success",
+        variant: "soft",
         className: "bg-success text-success-foreground",
       },
       {
-        variant: "warning",
-        style: "soft",
+        color: "warning",
+        variant: "soft",
         className: "bg-warning text-warning-foreground",
       },
       {
-        variant: "info",
-        style: "soft",
+        color: "info",
+        variant: "soft",
         className: "bg-info text-info-foreground",
       },
       // Outline variants - adding text colors
       {
-        variant: "default",
-        style: "outline",
+        color: "default",
+        variant: "outline",
         className: "text-primary",
       },
       {
-        variant: "destructive",
-        style: "outline",
+        color: "destructive",
+        variant: "outline",
         className: "text-destructive",
       },
       {
-        variant: "secondary",
-        style: "outline",
+        color: "secondary",
+        variant: "outline",
         className: "text-secondary",
       },
       {
-        variant: "accent",
-        style: "outline",
+        color: "accent",
+        variant: "outline",
         className: "text-accent",
       },
       {
-        variant: "success",
-        style: "outline",
+        color: "success",
+        variant: "outline",
         className: "text-success",
       },
       {
-        variant: "warning",
-        style: "outline",
+        color: "warning",
+        variant: "outline",
         className: "text-warning",
       },
       {
-        variant: "info",
-        style: "outline",
+        color: "info",
+        variant: "outline",
         className: "text-info",
       },
       // Ghost variants
       {
-        variant: "default",
-        style: "ghost",
+        color: "default",
+        variant: "ghost",
         className: "hover:bg-primary/10 text-primary",
       },
       {
-        variant: "destructive",
-        style: "ghost",
+        color: "destructive",
+        variant: "ghost",
         className: "hover:bg-destructive/10 text-destructive",
       },
       {
-        variant: "secondary",
-        style: "ghost",
+        color: "secondary",
+        variant: "ghost",
         className: "hover:bg-secondary/10 text-secondary",
       },
       {
-        variant: "accent",
-        style: "ghost",
+        color: "accent",
+        variant: "ghost",
         className: "hover:bg-accent/10 text-accent",
       },
       {
-        variant: "success",
-        style: "ghost",
+        color: "success",
+        variant: "ghost",
         className: "hover:bg-success/10 text-success",
       },
       {
-        variant: "warning",
-        style: "ghost",
+        color: "warning",
+        variant: "ghost",
         className: "hover:bg-warning/10 text-warning",
       },
       {
-        variant: "info",
-        style: "ghost",
+        color: "info",
+        variant: "ghost",
         className: "hover:bg-info/10 text-info",
       },
     ],
     defaultVariants: {
-      variant: "default",
-      style: "solid",
+      variant: "solid",
+      color: "default",
       size: "default",
     },
   }
@@ -200,11 +198,19 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-  icon?: IconType;
+  icon?: LucideIcon;
   iconPosition?: "left" | "right";
   iconOnly?: boolean;
   tooltip?: string;
-  style?: "solid" | "outline" | "ghost" | "link" | "soft" | "glass";
+  color?:
+    | "default"
+    | "destructive"
+    | "secondary"
+    | "accent"
+    | "success"
+    | "warning"
+    | "info";
+  variant?: "solid" | "outline" | "ghost" | "link" | "soft" | "glass";
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -212,7 +218,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     {
       className,
       variant,
-      style = "solid",
+      color,
       size,
       asChild = false,
       icon: Icon,
@@ -230,7 +236,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           buttonVariants({
             variant,
-            style,
+            color,
             size: iconOnly ? (size?.includes("icon") ? size : "icon") : size,
             className,
           }),
@@ -258,9 +264,9 @@ Button.displayName = "Button";
 // Boutons d'action prédéfinis
 export const DeleteButton = (props: Omit<ButtonProps, "icon">) => (
   <Button
-    variant={props.variant || "destructive"}
-    style={props.style || "solid"}
-    icon={FaTrash}
+    variant={props.variant || "solid"}
+    color={props.color || "destructive"}
+    icon={Trash}
     tooltip={
       props.iconOnly ? (props.children as string) || "Supprimer" : undefined
     }
@@ -273,9 +279,9 @@ DeleteButton.displayName = "DeleteButton";
 
 export const SaveButton = (props: Omit<ButtonProps, "icon">) => (
   <Button
-    variant={props.variant || "success"}
-    style={props.style || "solid"}
-    icon={FaSave}
+    variant={props.variant || "solid"}
+    color={props.color || "success"}
+    icon={Save}
     tooltip={
       props.iconOnly ? (props.children as string) || "Enregistrer" : undefined
     }
@@ -287,7 +293,7 @@ export const SaveButton = (props: Omit<ButtonProps, "icon">) => (
 SaveButton.displayName = "SaveButton";
 
 export const MoreButton = (props: Omit<ButtonProps, "icon">) => (
-  <Button icon={FaEllipsisH} {...props}>
+  <Button icon={Ellipsis} {...props}>
     {props.children || "Voir plus"}
   </Button>
 );
@@ -295,9 +301,9 @@ MoreButton.displayName = "MoreButton";
 
 export const UpdateButton = (props: Omit<ButtonProps, "icon">) => (
   <Button
-    variant={props.variant || "warning"}
-    style={props.style || "solid"}
-    icon={BiEditAlt}
+    variant={props.variant || "solid"}
+    color={props.color || "warning"}
+    icon={Edit}
     tooltip={
       props.iconOnly ? (props.children as string) || "Mettre à jour" : undefined
     }

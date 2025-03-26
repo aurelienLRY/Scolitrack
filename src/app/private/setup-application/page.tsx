@@ -1,6 +1,6 @@
 "use client";
 
-import { CardFluo } from "@/components/shared/card";
+import { CardFluo } from "@/components/ui/card";
 import { adminNavItems } from "./setup-NavItem.data";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export default function AdminPage() {
   const router = useRouter();
   return (
-    <section className="flex justify-center items-center min-h-[calc(100vh-170px)]  gap-10">
+    <section className="flex justify-center items-center gap-10">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
         {adminNavItems.map((item, index) => (
           <div

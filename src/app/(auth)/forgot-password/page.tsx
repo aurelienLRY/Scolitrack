@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Input from "@/components/shared/Input";
-import { Button } from "@/components/shared/button";
+import Input from "@/components/ui/inputs/Input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
               type="submit"
               className="min-w-fit"
               disabled={isLoading}
-              variant="accent"
+              color="accent"
             >
               {isLoading ? "Envoi en cours..." : "Envoyer le lien"}
             </Button>

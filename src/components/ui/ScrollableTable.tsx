@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, ReactNode } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -177,7 +177,7 @@ export function ScrollableTable({
           onClick={() => scroll("left")}
           aria-label="Défiler vers la gauche"
         >
-          <FaChevronLeft className="size-4" />
+          <ChevronLeft className="size-4" />
         </button>
       )}
 
@@ -187,7 +187,7 @@ export function ScrollableTable({
           onClick={() => scroll("right")}
           aria-label="Défiler vers la droite"
         >
-          <FaChevronRight className="size-4" />
+          <ChevronRight className="size-4" />
         </button>
       )}
 

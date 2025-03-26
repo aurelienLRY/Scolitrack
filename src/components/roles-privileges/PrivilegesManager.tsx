@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRoleStore, usePrivilegeStore } from "@/context";
+import { useRoleStore } from "@/context/store/RoleStore";
+import { usePrivilegeStore } from "@/context/store/PrivilegeStore";
 import { toast } from "sonner";
-import { Role, RolePrivilege } from "@/context/types";
-import Card from "../shared/card";
-import { UpdateButton, SaveButton, Button } from "../shared/button";
-import { Checkbox } from "@/components/shared/checkbox";
+import { Role, RolePrivilege } from "@/context/store/types";
+import Card from "../ui/card";
+import { UpdateButton, SaveButton, Button } from "../ui/button";
+import { Checkbox } from "@/components/ui/inputs/checkbox";
 
 /**
  * Composant de gestion des privilèges
@@ -16,19 +17,10 @@ import { Checkbox } from "@/components/shared/checkbox";
  */
 export default function PrivilegesManager() {
   // État et fonctions du store de rôles
-  const {
-    roles,
-    fetchRoles,
-    updateRole,
-    isLoading: rolesLoading,
-  } = useRoleStore();
+  const { roles, updateRole, isLoading: rolesLoading } = useRoleStore();
 
   // État et fonctions du store de privilèges
-  const {
-    privileges,
-    fetchPrivileges,
-    isLoading: privilegesLoading,
-  } = usePrivilegeStore();
+  const { privileges, isLoading: privilegesLoading } = usePrivilegeStore();
 
   // État local pour suivre les privilèges sélectionnés pour chaque rôle
   const [selectedPrivileges, setSelectedPrivileges] = useState<
@@ -38,15 +30,6 @@ export default function PrivilegesManager() {
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   // Indicateur de sauvegarde en cours
   const [savingPrivileges, setSavingPrivileges] = useState(false);
-
-  // Charger les données initiales (rôles et privilèges)
-  useEffect(() => {
-    const loadData = async () => {
-      await fetchRoles();
-      await fetchPrivileges();
-    };
-    loadData();
-  }, [fetchRoles, fetchPrivileges]);
 
   // Initialiser les privilèges sélectionnés à partir des rôles chargés
   useEffect(() => {
@@ -229,7 +212,7 @@ export default function PrivilegesManager() {
                                     }
                                     disabled={savingPrivileges}
                                     size="icon-sm"
-                                    style="outline"
+                                    variant="outline"
                                     iconOnly
                                   >
                                     {savingPrivileges
@@ -241,7 +224,7 @@ export default function PrivilegesManager() {
                                     onClick={() => handleToggleEdit(role.id)}
                                     disabled={editingRoleId !== null}
                                     size="icon-sm"
-                                    style="outline"
+                                    variant="outline"
                                     iconOnly
                                   >
                                     Modifier
@@ -308,7 +291,8 @@ export default function PrivilegesManager() {
                 <div className="mt-2 flex space-x-2">
                   <Button
                     onClick={() => handleToggleEdit(null)}
-                    variant="secondary"
+                    variant="solid"
+                    color="secondary"
                     size="sm"
                   >
                     Annuler

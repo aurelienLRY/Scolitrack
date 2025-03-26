@@ -1,7 +1,7 @@
-import { Button } from "@/components/shared/button";
-import { BsBell, BsBellSlash } from "react-icons/bs";
+import { Button } from "@/components/ui/button";
+import { Bell, BellOff } from "lucide-react";
 import { useNotification } from "@/hooks/useNotification";
-import { Tooltip } from "@/components/shared/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export const NotificationToggle = () => {
@@ -10,7 +10,7 @@ export const NotificationToggle = () => {
   if (isLoading) {
     return (
       <Button variant="ghost" size="icon" disabled>
-        <BsBell className="h-5 w-5 animate-pulse" />
+        <Bell className="h-5 w-5 animate-pulse" />
       </Button>
     );
   }
@@ -35,9 +35,9 @@ export const NotificationToggle = () => {
         )}
       >
         {isSubscribed ? (
-          <BsBell className="h-5 w-5" />
+          <Bell className="h-5 w-5" />
         ) : (
-          <BsBellSlash className="h-5 w-5 text-muted-foreground" />
+          <BellOff className="h-5 w-5 text-muted-foreground" />
         )}
       </Button>
     </Tooltip>

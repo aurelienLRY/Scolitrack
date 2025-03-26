@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { LogoutForm } from "@/components/auth/logout-form";
+import { LogoutForm } from "@/components/auth/LogoutForm";
 export default function Dashboard() {
   const { data: session } = useSession();
 

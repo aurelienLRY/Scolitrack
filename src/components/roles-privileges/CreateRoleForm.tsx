@@ -2,10 +2,10 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { RoleSchema, RoleSchemaType } from "@/schemas/RoleSchema";
-import { useRoleStore } from "@/context";
-import Input from "@/components/shared/Input";
-import { SaveButton } from "@/components/shared/button";
-import Card from "../shared/card";
+import { useRoleStore } from "@/context/store/RoleStore";
+import Input from "@/components/ui/inputs/Input";
+import { SaveButton } from "@/components/ui/button";
+import Card from "../ui/card";
 
 export const CreateRoleForm = () => {
   const { createRole, isLoading } = useRoleStore();

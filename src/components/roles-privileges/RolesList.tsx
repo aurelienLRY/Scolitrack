@@ -1,7 +1,8 @@
 "use client";
-import { DeleteButton, UpdateButton } from "@/components/shared/button";
-import { Role, useRoleStore } from "@/context";
-import Card from "../shared/card";
+import { DeleteButton, UpdateButton } from "@/components/ui/button";
+import { useRoleStore } from "@/context/store/RoleStore";
+import { Role } from "@/context/store/types";
+import Card from "../ui/card";
 export const RoleList = () => {
   const { roles } = useRoleStore();
 
@@ -66,15 +67,15 @@ const RoleTable = ({ roles }: { roles: Role[] }) => {
                     role.name !== "USER" && (
                       <div className="flex gap-2 items-center justify-end">
                         <UpdateButton
-                          style="outline"
-                          variant="accent"
+                          variant="outline"
+                          color="accent"
                           iconOnly
                           size="icon-sm"
                         >
                           Modifier
                         </UpdateButton>
                         <DeleteButton
-                          style="outline"
+                          variant="outline"
                           onClick={() => handleDelete(role.id)}
                           disabled={isLoading}
                           size="icon-sm"

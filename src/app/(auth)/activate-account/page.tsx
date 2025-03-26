@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import ActivateAccountForm from "@/components/users/activate-account-form";
+import ActivateAccountForm from "@/components/users/ActivateAccountForm";
 import Image from "next/image";
 
 export const metadata: Metadata = {

@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { CreateUserSchema, CreateUserSchemaType } from "@/schemas/UserSchema";
 import { toast } from "sonner";
-import { useRoleStore } from "@/context";
-import Input, { SelectInput } from "@/components/shared/Input";
+import { useRoleStore } from "@/context/store/RoleStore";
+import Input, { SelectInput } from "@/components/ui/inputs/Input";
 
 /**
  * Formulaire de création d'utilisateur pour les administrateurs

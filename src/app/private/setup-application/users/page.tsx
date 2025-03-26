@@ -1,8 +1,8 @@
 import { Metadata } from "next";
-import CreateUserForm from "@/components/users/create-user-form";
+import CreateUserForm from "@/components/users/CreateUserForm";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/auth";
-import UserList from "@/components/users/user-list";
+import UserList from "@/components/users/UserList";
 
 export const metadata: Metadata = {
   title: "Gestion des utilisateurs | Scolitrack",

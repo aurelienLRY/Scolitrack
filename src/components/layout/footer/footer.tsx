@@ -1,5 +1,5 @@
-import { Tooltip } from "@/components/shared/tooltip";
-import { CiLogout } from "react-icons/ci";
+import { Tooltip } from "@/components/ui/tooltip";
+import { LogOut } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 export default function Footer() {
@@ -22,7 +22,7 @@ export default function Footer() {
           <Tooltip content="Déconnexion" position="left">
             <form action={handleLogout}>
               <button type="submit">
-                <CiLogout className="text-4xl rotate-180 hover:text-accent cursor-pointer" />
+                <LogOut className="text-4xl rotate-180 hover:text-accent cursor-pointer" />
               </button>
             </form>
           </Tooltip>

@@ -1,6 +1,6 @@
 import { RoleList } from "@/components/roles-privileges";
-import { CreateRoleForm } from "@/components/roles-privileges/create-role-form";
-import PrivilegesManager from "@/components/roles-privileges/privileges-manager";
+import { CreateRoleForm } from "@/components/roles-privileges/CreateRoleForm";
+import PrivilegesManager from "@/components/roles-privileges/PrivilegesManager";
 
 export default function AdminRolesPage() {
   return (

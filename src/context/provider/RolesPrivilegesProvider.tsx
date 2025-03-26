@@ -1,6 +1,10 @@
 "use client";
-import { useEffect } from "react";
-import { useRoleStore, usePrivilegeStore } from "./index";
+import { useEffect, useState } from "react";
+import { usePrivilegeStore } from "@/context/store/PrivilegeStore";
+import { useRoleStore } from "@/context/store/RoleStore";
+
+import { useSession } from "next-auth/react";
+import { Loading } from "@/components/ui/Loading";
 
 interface RolesPrivilegesProviderProps {
   children: React.ReactNode;
@@ -17,19 +21,27 @@ export function RolesPrivilegesProvider({
   children,
   autoLoad = true,
 }: RolesPrivilegesProviderProps) {
-  const { fetchRoles, clearError: clearRoleError } = useRoleStore();
-  const { fetchPrivileges, clearError: clearPrivilegeError } =
+  const { fetchRoles, isLoading: isRoleLoading } = useRoleStore();
+  const { fetchPrivileges, isLoading: isPrivilegeLoading } =
     usePrivilegeStore();
+  const { status } = useSession();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "loading" || status === "unauthenticated") {
+      return;
+    } else if (autoLoad && (isRoleLoading || isPrivilegeLoading)) {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+  }, [status, isRoleLoading, isPrivilegeLoading, autoLoad]);
 
   // Effet pour charger les données au montage du composant
   useEffect(() => {
     if (autoLoad) {
       const loadData = async () => {
         try {
-          // Nettoyer les erreurs précédentes
-          clearRoleError();
-          clearPrivilegeError();
-
           // Charger les données en parallèle
           await Promise.all([fetchRoles(), fetchPrivileges()]);
         } catch (error) {
@@ -42,14 +54,11 @@ export function RolesPrivilegesProvider({
 
       loadData();
     }
-  }, [
-    autoLoad,
-    fetchRoles,
-    fetchPrivileges,
-    clearRoleError,
-    clearPrivilegeError,
-  ]);
+  }, [status, autoLoad, fetchRoles, fetchPrivileges]);
 
+  if (isLoading) {
+    return <Loading />;
+  }
   return <>{children}</>;
 }
 
