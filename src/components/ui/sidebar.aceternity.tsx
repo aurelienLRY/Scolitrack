@@ -116,7 +116,7 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-2 py-2 flex flex-row md:hidden  items-center justify-between  bg-background w-[50px] rounded-r-xl shadow shadow-primary/80 mb-5"
+          "h-10 px-2 py-2 flex flex-row md:hidden  items-center justify-between  bg-background w-[50px] rounded-r-xl shadow shadow-primary/80 mb-5 mt-5"
         )}
         {...props}
       >
