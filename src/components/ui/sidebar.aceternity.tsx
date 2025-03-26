@@ -165,7 +165,15 @@ export const SidebarLink = ({
   className?: string;
   props?: LinkProps;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar();
+
+  const handleClick = () => {
+    // Fermer la sidebar uniquement sur mobile
+    if (window.innerWidth < 768) {
+      setOpen(false);
+    }
+  };
+
   return (
     <Link
       href={link.href}
@@ -174,6 +182,7 @@ export const SidebarLink = ({
         "hover:text-accent transition-all duration-150",
         className
       )}
+      onClick={handleClick}
       {...props}
     >
       {link.icon}

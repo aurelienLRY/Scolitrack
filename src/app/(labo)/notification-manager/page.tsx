@@ -13,6 +13,7 @@ import {
 import { useNotification } from "@/hooks/useNotification";
 import { NotificationContent } from "@/types/notification.type";
 import { useRoleStore } from "@/context/store/RoleStore";
+import Textarea from "@/components/ui/inputs/textarea";
 
 export default function NotificationManager() {
   const { isSubscribed, subscribe, unsubscribe, pushMessage } =
@@ -77,16 +78,13 @@ export default function NotificationManager() {
           placeholder="Titre de la notification"
           required
         />
-
-        <Input
+        <Textarea
           label="Message"
           id="message"
           value={message}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
             setMessage(e.target.value)
           }
-          placeholder="Contenu de la notification"
-          required
         />
 
         <Select
