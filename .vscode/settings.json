@@ -1,3 +1,5 @@
 {
-  "cSpell.words": ["Scolitrack"]
+  "cSpell.words": ["Scolitrack"],
+  "cSpell.caseSensitive": true,
+  "files.caseSensitive": true
 }
