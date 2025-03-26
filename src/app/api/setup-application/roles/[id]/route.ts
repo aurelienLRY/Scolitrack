@@ -72,6 +72,7 @@ export const PUT = withPrivilege("UPDATE_DATA", async (req: NextRequest) => {
 
 // Supprimer un rôle
 export const DELETE = withPrivilege("DELETE_DATA", async (req: NextRequest) => {
+  console.log("delete role ");
   try {
     // Extraire l'ID des paramètres de l'URL
     const id = req.nextUrl.pathname.split("/").pop();

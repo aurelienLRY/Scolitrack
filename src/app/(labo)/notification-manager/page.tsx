@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
-import { Button } from "@/components/shared/button";
-import Input from "@/components/shared/Input";
-import { Label } from "@/components/shared/label";
+import { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import Input from "@/components/ui/inputs/Input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/shared/select";
+} from "@/components/ui/inputs/select";
 import { useNotification } from "@/hooks/useNotification";
 import { NotificationContent } from "@/types/notification.type";
+import { useRoleStore } from "@/context/store/RoleStore";
+import Textarea from "@/components/ui/inputs/textarea";
 
 export default function NotificationManager() {
   const { isSubscribed, subscribe, unsubscribe, pushMessage } =
@@ -22,6 +23,11 @@ export default function NotificationManager() {
   const [targetType, setTargetType] = useState<"user" | "role">("user");
   const [targetId, setTargetId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { roles, fetchRoles } = useRoleStore();
+
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,7 +59,7 @@ export default function NotificationManager() {
       <div className="mb-8">
         <Button
           onClick={isSubscribed ? unsubscribe : subscribe}
-          variant={isSubscribed ? "destructive" : "default"}
+          color={isSubscribed ? "destructive" : "default"}
         >
           {isSubscribed
             ? "Désactiver les notifications"
@@ -62,56 +68,45 @@ export default function NotificationManager() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md w-full">
-        <div className="space-y-2">
-          <Label htmlFor="title">Titre</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setTitle(e.target.value)
-            }
-            placeholder="Titre de la notification"
-            required
-          />
-        </div>
+        <Input
+          label="Titre"
+          id="title"
+          value={title}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setTitle(e.target.value)
+          }
+          placeholder="Titre de la notification"
+          required
+        />
+        <Textarea
+          label="Message"
+          id="message"
+          value={message}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+            setMessage(e.target.value)
+          }
+        />
+
+        <Select
+          label="Type de cible"
+          value={targetType}
+          onValueChange={(value: string) =>
+            setTargetType(value as "user" | "role")
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner le type de cible" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">Utilisateur spécifique</SelectItem>
+            <SelectItem value="role">Groupe par rôle</SelectItem>
+          </SelectContent>
+        </Select>
 
         <div className="space-y-2">
-          <Label htmlFor="message">Message</Label>
-          <Input
-            id="message"
-            value={message}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setMessage(e.target.value)
-            }
-            placeholder="Contenu de la notification"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="targetType">Type de cible</Label>
-          <Select
-            value={targetType}
-            onValueChange={(value: string) =>
-              setTargetType(value as "user" | "role")
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner le type de cible" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user">Utilisateur spécifique</SelectItem>
-              <SelectItem value="role">Groupe par rôle</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="targetId">
-            {targetType === "user" ? "ID de l'utilisateur" : "Rôle"}
-          </Label>
           {targetType === "user" ? (
             <Input
+              label="ID de l'utilisateur"
               id="targetId"
               value={targetId}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -121,21 +116,27 @@ export default function NotificationManager() {
               required
             />
           ) : (
-            <Select value={targetId} onValueChange={setTargetId}>
+            <Select value={targetId} onValueChange={setTargetId} label="Rôle">
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner le rôle" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="TEACHER">Enseignant</SelectItem>
-                <SelectItem value="USER">Utilisateur</SelectItem>
+                {roles.map((role) => (
+                  <SelectItem key={role.id} value={role.name}>
+                    {role.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} variant="accent">
+        <Button
+          type="submit"
+          disabled={isLoading}
+          variant="solid"
+          color="accent"
+        >
           {isLoading ? "Envoi en cours..." : "Envoyer la notification"}
         </Button>
       </form>

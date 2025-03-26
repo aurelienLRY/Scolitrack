@@ -4,8 +4,8 @@
  */
 export const appConfig = {
   // Informations de base de l'application
-  name: "Scolitack", // Nom complet de l'application
-  shortName: "Scolitack", // Nom court pour l'icône sur l'écran d'accueil
+  name: "Scolitrack", // Nom complet de l'application
+  shortName: "Scolitrack", // Nom court pour l'icône sur l'écran d'accueil
   description: "Portail d'école", // Description de l'application
   url: "/", // URL de base de l'application
   display: "standalone", // Mode d'affichage de la PWA (standalone, fullscreen, minimal-ui, browser)

@@ -1,5 +1,5 @@
-import { Tooltip } from "@/components/shared/tooltip";
-import { CiLogout } from "react-icons/ci";
+import { Tooltip } from "@/components/ui/tooltip";
+import { LogOut } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 export default function Footer() {
@@ -10,7 +10,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-100 dark:bg-gray-800 relative min-h-20">
+    <footer className="bg-background/20 relative min-h-20 border-t border-primary/10">
       <div className="container mx-auto px-4 py-8">
         <p className="text-center text-gray-600 dark:text-gray-400">
           &copy; {new Date().getFullYear()} Scolitrack. Tous droits réservés.
@@ -22,7 +22,7 @@ export default function Footer() {
           <Tooltip content="Déconnexion" position="left">
             <form action={handleLogout}>
               <button type="submit">
-                <CiLogout className="text-4xl rotate-180 hover:text-accent cursor-pointer" />
+                <LogOut className="text-4xl rotate-180 hover:text-accent cursor-pointer" />
               </button>
             </form>
           </Tooltip>

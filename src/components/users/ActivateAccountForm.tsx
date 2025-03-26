@@ -9,7 +9,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
-import Input from "@/components/shared/Input";
+import Input from "@/components/ui/inputs/Input";
 
 /**
  * Formulaire d'activation de compte

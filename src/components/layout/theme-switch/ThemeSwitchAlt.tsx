@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { IoSunny, IoMoon } from "react-icons/io5";
+import { Moon, Sun } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 export function ThemeSwitchAlt() {
@@ -21,8 +21,8 @@ export function ThemeSwitchAlt() {
     <Switch
       checked={resolvedTheme === "dark"}
       onChange={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      icon={<IoMoon className="h-4 w-4" />}
-      iconAlt={<IoSunny className="h-4 w-4" />}
+      icon={<Moon className="h-4 w-4" />}
+      iconAlt={<Sun className="h-4 w-4" />}
       label={resolvedTheme === "dark" ? "Mode sombre" : "Mode clair"}
     />
   );

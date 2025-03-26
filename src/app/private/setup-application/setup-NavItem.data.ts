@@ -1,16 +1,12 @@
-import { RiAdminLine } from "react-icons/ri";
-import { IoSchoolOutline } from "react-icons/io5";
+import { UserPlus, School, KeyRound, GraduationCap } from "lucide-react";
 
-import { RiChatPrivateLine } from "react-icons/ri";
-import { FaSchool } from "react-icons/fa";
-
-import { IconType } from "react-icons/lib";
+import { LucideIcon } from "lucide-react";
 
 interface AdminNavItem {
   label: string;
   href: string;
   description: string[];
-  icon: IconType;
+  icon: LucideIcon;
 }
 
 export const adminNavItems: AdminNavItem[] = [
@@ -22,7 +18,7 @@ export const adminNavItems: AdminNavItem[] = [
       "Renseigner les informations de l'établissement.",
       "adresse, téléphone, email, etc.",
     ],
-    icon: FaSchool,
+    icon: School,
   },
   {
     label: "Rôles & Privilèges",
@@ -31,7 +27,7 @@ export const adminNavItems: AdminNavItem[] = [
       "Administré les droits d'accès des utilisateurs.",
       "Définissez les différents rôles dans l'établissement et attribué leurs des fonctionnalités différentes.",
     ],
-    icon: RiChatPrivateLine,
+    icon: KeyRound,
   },
 
   {
@@ -41,7 +37,7 @@ export const adminNavItems: AdminNavItem[] = [
       "Gestion des utilisateurs.",
       "Créer, modifier, supprimer des utilisateurs.",
     ],
-    icon: RiAdminLine,
+    icon: UserPlus,
   },
   {
     label: "Classes",
@@ -50,6 +46,6 @@ export const adminNavItems: AdminNavItem[] = [
       "Gestion des classes.",
       "Créer, modifier, supprimer des classes.",
     ],
-    icon: IoSchoolOutline,
+    icon: GraduationCap,
   },
 ];

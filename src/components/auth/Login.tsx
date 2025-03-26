@@ -3,8 +3,8 @@ import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 
-import Input from "../shared/Input";
-import { Button } from "@/components/shared/button";
+import Input from "../ui/inputs/Input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { LoginSchema } from "@/schemas/LoginSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -99,7 +99,8 @@ export default function Login() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          variant="secondary"
+          variant="solid"
+          color="accent"
           className="max-w-[170px] min-w-fit"
         >
           {isSubmitting ? "Connexion en cours..." : "Se connecter"}

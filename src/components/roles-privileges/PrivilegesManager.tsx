@@ -1,10 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRoleStore, usePrivilegeStore } from "@/context";
+import { useRoleStore } from "@/context/store/RoleStore";
+import { usePrivilegeStore } from "@/context/store/PrivilegeStore";
 import { toast } from "sonner";
-import { Role, RolePrivilege } from "@/context/types";
-import Card from "../shared/card";
-import { Button } from "../shared/button";
+import { Role, RolePrivilege } from "@/context/store/types";
+import Card from "../ui/card";
+import { UpdateButton, SaveButton, Button } from "../ui/button";
+import { Checkbox } from "@/components/ui/inputs/checkbox";
 
 /**
  * Composant de gestion des privilèges
@@ -15,19 +17,10 @@ import { Button } from "../shared/button";
  */
 export default function PrivilegesManager() {
   // État et fonctions du store de rôles
-  const {
-    roles,
-    fetchRoles,
-    updateRole,
-    isLoading: rolesLoading,
-  } = useRoleStore();
+  const { roles, updateRole, isLoading: rolesLoading } = useRoleStore();
 
   // État et fonctions du store de privilèges
-  const {
-    privileges,
-    fetchPrivileges,
-    isLoading: privilegesLoading,
-  } = usePrivilegeStore();
+  const { privileges, isLoading: privilegesLoading } = usePrivilegeStore();
 
   // État local pour suivre les privilèges sélectionnés pour chaque rôle
   const [selectedPrivileges, setSelectedPrivileges] = useState<
@@ -37,15 +30,6 @@ export default function PrivilegesManager() {
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   // Indicateur de sauvegarde en cours
   const [savingPrivileges, setSavingPrivileges] = useState(false);
-
-  // Charger les données initiales (rôles et privilèges)
-  useEffect(() => {
-    const loadData = async () => {
-      await fetchRoles();
-      await fetchPrivileges();
-    };
-    loadData();
-  }, [fetchRoles, fetchPrivileges]);
 
   // Initialiser les privilèges sélectionnés à partir des rôles chargés
   useEffect(() => {
@@ -199,12 +183,12 @@ export default function PrivilegesManager() {
           <>
             <div className="max-w-[1200px] ">
               <div className="overflow-x-auto">
-                <table className="divide-y divide-primary overflow-x-auto">
+                <table className="divide-y divide-primary overflow-x-auto border-collapse border-2 border-primary">
                   <thead className="bg-primary/10">
                     <tr>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left font-medium text-xl text-text/50 uppercase tracking-wider"
+                        className="px-6 py-3 text-left font-medium text-xl text-text/80 uppercase tracking-wider"
                       >
                         Privilège
                       </th>
@@ -222,29 +206,29 @@ export default function PrivilegesManager() {
                             {showEditButton(role) && (
                               <div className="mt-2">
                                 {editingRoleId === role.id ? (
-                                  <Button
+                                  <SaveButton
                                     onClick={() =>
                                       handleSaveRolePrivileges(role.id)
                                     }
                                     disabled={savingPrivileges}
-                                    variant="accent"
-                                    size="sm"
-                                    className="bg-transparent border-accent border text-accent hover:text-white"
+                                    size="icon-sm"
+                                    variant="outline"
+                                    iconOnly
                                   >
                                     {savingPrivileges
                                       ? "Enregistrement..."
                                       : "Enregistrer"}
-                                  </Button>
+                                  </SaveButton>
                                 ) : (
-                                  <Button
+                                  <UpdateButton
                                     onClick={() => handleToggleEdit(role.id)}
                                     disabled={editingRoleId !== null}
-                                    variant="accent"
-                                    size="sm"
-                                    className="bg-transparent border-accent border text-accent hover:text-white"
+                                    size="icon-sm"
+                                    variant="outline"
+                                    iconOnly
                                   >
                                     Modifier
-                                  </Button>
+                                  </UpdateButton>
                                 )}
                               </div>
                             )}
@@ -257,14 +241,9 @@ export default function PrivilegesManager() {
                     {privileges.map((privilege) => (
                       <tr key={privilege.id} className="hover:bg-slate-400/10">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-medium">
+                          <span className="font-medium ">
                             {privilege.description}
                           </span>
-                          {privilege.name && (
-                            <p className="text-xs text-text/10">
-                              {privilege.name}
-                            </p>
-                          )}
                         </td>
 
                         {sortedRoles.map((role) => {
@@ -276,26 +255,16 @@ export default function PrivilegesManager() {
                                 editingRoleId === role.id
                                   ? "bg-blue-50/50"
                                   : isChecked
-                                  ? "bg-green-50/50"
-                                  : ""
+                                  ? "bg-emerald-500/30 dark:bg-emerald-500/10"
+                                  : "bg-red-500/30 dark:bg-red-500/10"
                               }`}
                             >
                               <div className="flex justify-center">
-                                <input
-                                  type="checkbox"
+                                <Checkbox
                                   checked={isChecked}
-                                  onChange={() =>
+                                  onCheckedChange={() =>
                                     handlePrivilegeToggle(role.id, privilege.id)
                                   }
-                                  className={`h-5 w-5 rounded ${
-                                    isChecked
-                                      ? "text-accent focus:ring-accent"
-                                      : "text-primary focus:ring-primary"
-                                  } border-gray-300 ${
-                                    editingRoleId === role.id
-                                      ? "cursor-pointer"
-                                      : "cursor-not-allowed"
-                                  }`}
                                   disabled={isCheckboxDisabled(role)}
                                 />
                               </div>
@@ -322,7 +291,8 @@ export default function PrivilegesManager() {
                 <div className="mt-2 flex space-x-2">
                   <Button
                     onClick={() => handleToggleEdit(null)}
-                    variant="secondary"
+                    variant="solid"
+                    color="secondary"
                     size="sm"
                   >
                     Annuler

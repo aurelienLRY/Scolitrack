@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       subscriptions = await prisma.pushSubscription.findMany({
         where: {
           user: {
-            role: target.id,
+            roleName: target.id,
           },
         },
       });

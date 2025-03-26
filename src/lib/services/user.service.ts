@@ -29,6 +29,8 @@ export async function createUser(
   const tokenExpiry = new Date();
   tokenExpiry.setHours(tokenExpiry.getHours() + 72);
 
+  console.log("userData", userData);
+
   // Créer l'utilisateur sans mot de passe
   const user = await prisma.user.create({
     data: {
@@ -36,7 +38,7 @@ export async function createUser(
       email: userData.email,
       role: {
         connect: {
-          name: userData.role,
+          id: userData.role,
         },
       },
       resetToken: activationToken,

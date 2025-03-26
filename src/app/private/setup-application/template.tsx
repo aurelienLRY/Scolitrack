@@ -1,9 +1,12 @@
 "use client";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 import { adminNavItems } from "./setup-NavItem.data";
+import { useRoleStore } from "@/context/store/RoleStore";
+import { usePrivilegeStore } from "@/context/store/PrivilegeStore";
 
 export default function AdminTemplate({
   children,
@@ -11,6 +14,14 @@ export default function AdminTemplate({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { fetchRoles } = useRoleStore();
+  const { fetchPrivileges } = usePrivilegeStore();
+
+  React.useEffect(() => {
+    fetchRoles();
+    fetchPrivileges();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>

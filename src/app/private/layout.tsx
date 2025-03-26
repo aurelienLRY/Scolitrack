@@ -1,4 +1,3 @@
-import { SidebarProvider } from "@/components/layout/sidebar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,5 +10,5 @@ export default async function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <SidebarProvider>{children}</SidebarProvider>;
+  return children;
 }

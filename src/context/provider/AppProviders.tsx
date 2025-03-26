@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { RolesPrivilegesProvider } from "./RolesPrivilegesProvider";
+import { RolesPrivilegesProvider } from "@/context/provider/RolesPrivilegesProvider";
 
 interface AppProvidersProps {
   children: ReactNode;
