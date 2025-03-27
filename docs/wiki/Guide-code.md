@@ -59,25 +59,15 @@ my-next-app/
 Le dossier `src/app/` est la pierre angulaire de l’App Router introduit avec Next.js 13+.
 
 - **(public-pages)** : Contient les pages accessibles à tous (public).
-
   - Exemple : `layout.tsx` pour définir un layout commun (header/footer) pour les pages publiques.
-
 - **(protected-pages)** : Gère les pages protégées nécessitant une authentification.
-
   - Exemple : `layout.tsx` pour gérer le header spécifique aux utilisateurs connectés.
-
-- **api/** : Contient les routes API avec des endpoints RESTful.
-
+- **api/** : Contient les routes API avec des endpoints RESTful
   - Exemple : `src/app/api/users/route.ts` pour gérer les requêtes sur `/api/users`.
-
 - **layout.tsx** : Définit le layout global par défaut (header, footer, providers globaux).
-
 - **page.tsx** : Définit la page d’accueil ou le contenu principal de la route racine (`/`).
-
 - **error.tsx** : Gère les erreurs locales pour des routes spécifiques.
-
 - **loading.tsx** : Affiche un écran de chargement pendant les opérations asynchrones.
-
 - **global-error.tsx** : Gère les erreurs globales de l’application.
 
 #### **2. src/components/**
@@ -85,13 +75,9 @@ Le dossier `src/app/` est la pierre angulaire de l’App Router introduit avec N
 Regroupe les composants réutilisables de l’application.
 
 - **ui/** : Contient les composants de base du design system (boutons, formulaires, etc.).
-
   - Exemple : `Button.tsx` pour un bouton réutilisable.
-
 - **layout/** : Contient des composants liés à la mise en page (header, footer, sidebars).
-
   - Exemple : `Header.tsx`.
-
 - **shared/** : Composants partagés spécifiques (cartes, badges, etc.).
 
 #### **3. src/lib/**

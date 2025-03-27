@@ -6,75 +6,40 @@ Ce guide explique comment utiliser et étendre les fonctionnalités PWA déjà c
 
 ```plaintext
 src/
-
 ├── app/
-
 │   ├── manifest.ts        # Métadonnées de la PWA
-
 │   ├── layout.tsx         # Layout principal avec métadonnées
-
 │   └── metadata.ts        # Configuration des métadonnées globales
-
 ├── components/
-
 │   ├── ui/
-
 │   │   └── PWAInstallPrompt.tsx  # Composant d'installation
-
 │   └── notification/
-
 │       └── NotificationToggle.tsx # Toggle pour activer/désactiver les notifications
-
 ├── hooks/
-
 │   └── useNotification.ts # Hook de gestion des notifications
-
 ├── config/
-
 │   ├── app.config.ts      # Configuration générale de l'application
-
 │   ├── pwa.config.ts      # Configuration de la PWA
-
 │   └── notification.constants.ts # Constantes pour les notifications
-
 ├── lib/
-
 │   └── servicesWorker/
-
 │       ├── index.ts       # Configuration du service worker principal
-
 │       └── webPush.services.ts # Services pour les notifications push
-
 ├── types/
-
 │   └── notification.type.ts # Types pour les notifications
-
 └── app/
-
     └── api/
-
         └── notification/  # API pour les notifications
-
             ├── push/      # Envoi de notifications
-
             ├── subscribe/ # Abonnement aux notifications
-
             └── unsubscribe/ # Désabonnement
 
-
-
 public/
-
 ├── sw.js                # Service Worker généré au build
-
 └── icons/
-
     └── PWA/             # Icônes de la PWA
-
         ├── android/     # Icônes Android
-
         ├── ios/         # Icônes iOS
-
         └── windows/     # Icônes Windows
 ```
 
@@ -90,20 +55,20 @@ Le projet utilise `@ducanh2912/next-pwa` pour générer automatiquement le servi
 
 1. **app.config.ts**
 
-   - Contient la configuration générale de l'application
-   - Définit le nom, la description, les couleurs, etc.
-   - Définit la portée (`scope`) et les comportements de l'application
+- Contient la configuration générale de l'application
+     - Définit le nom, la description, les couleurs, etc.
+     - Définit la portée (`scope`) et les comportements de l'application
 
 2. **pwa.config.ts**
 
-   - Configure les options spécifiques à la PWA
-   - Paramètres de l'invite d'installation
-   - Comportements de mise en cache
+- Configure les options spécifiques à la PWA
+     - Paramètres de l'invite d'installation
+     - Comportements de mise en cache
 
 3. **notification.constants.ts**
 
-   - Définit les constantes utilisées pour les notifications
-   - Contient les valeurs par défaut pour les icônes, vibrations, etc.
+- Définit les constantes utilisées pour les notifications
+     - Contient les valeurs par défaut pour les icônes, vibrations, etc.
 
 ## 3. Service Worker
 
@@ -111,9 +76,9 @@ Le projet utilise `@ducanh2912/next-pwa` pour générer automatiquement le servi
 
 Le service worker est configuré dans `src/lib/servicesWorker/index.ts` mais est **automatiquement généré** en tant que `sw.js` lors du build. Il gère :
 
-- La mise en cache des ressources 
-- Les stratégies de mise à jour 
-- Le fonctionnement hors ligne 
+- La mise en cache des ressources
+- Les stratégies de mise à jour
+- Le fonctionnement hors ligne
 - La réception et l'affichage des notifications push
 
 ### Comment personnaliser le Service Worker
@@ -121,13 +86,11 @@ Le service worker est configuré dans `src/lib/servicesWorker/index.ts` mais est
 Pour modifier le comportement du service worker :
 
 1. **Ne modifiez pas directement `public/sw.js`** - Il est généré automatiquement.
-  
+
 2. Modifiez plutôt les configurations dans :
-  
 
-   - `src/lib/servicesWorker/index.ts` - Pour la gestion des notifications
-
-   - `next.config.js` - Pour les stratégies de mise en cache
+- `src/lib/servicesWorker/index.ts` - Pour la gestion des notifications
+- `next.config.js` - Pour les stratégies de mise en cache
 
 ## 4. Notifications Push
 
@@ -135,31 +98,25 @@ Pour modifier le comportement du service worker :
 
 1. **Hook `useNotification`**
 
-   Le hook `useNotification` dans `src/hooks/useNotification.ts` fournit toutes les fonctionnalités nécessaires pour gérer les notifications côté client :
+Le hook `useNotification` dans `src/hooks/useNotification.ts` fournit toutes les fonctionnalités nécessaires pour gérer les notifications côté client :
 
-   ```typescript
-
-   const {
-
-     isSubscribed, // Si l'utilisateur est abonné aux notifications
-     isLoading, // Si la vérification est en cours
-     subscribe, // Fonction pour s'abonner
-     unsubscribe, // Fonction pour se désabonner
-     pushMessage, // Fonction pour envoyer une notification
-
-   } = useNotification();
-
-   ```
+```typescript
+const {
+  isSubscribed, // Si l'utilisateur est abonné aux notifications
+  isLoading, // Si la vérification est en cours
+  subscribe, // Fonction pour s'abonner
+  unsubscribe, // Fonction pour se désabonner
+  pushMessage, // Fonction pour envoyer une notification
+} = useNotification();
+```
 
 2. **Composant `NotificationToggle`**
 
-   Le composant `NotificationToggle` dans `src/components/notification/NotificationToggle.tsx` permet à l'utilisateur d'activer/désactiver les notifications dans l'interface :
+Le composant `NotificationToggle` dans `src/components/notification/NotificationToggle.tsx` permet à l'utilisateur d'activer/désactiver les notifications dans l'interface :
 
-   ```tsx
-
-   <NotificationToggle />
-
-   ```
+```tsx
+<NotificationToggle />
+```
 
 ### Comment envoyer une notification
 
@@ -231,8 +188,6 @@ async function sendServerNotification() {
     icon: "/custom-icon.png", // Icône personnalisée
   };
 
-
-
   const response = await fetch("/api/notification/push", {
     method: "POST",
     headers: {
@@ -292,7 +247,7 @@ function NotificationSettings() {
     <div>
       <h2>Paramètres de notification</h2>
       <button onClick={isSubscribed ? unsubscribe : subscribe}>
-       {isSubscribed
+        {isSubscribed
           ? "Désactiver les notifications"
           : "Activer les notifications"}
       </button>
@@ -355,12 +310,9 @@ Le service worker est configuré pour gérer les clics sur les notifications. Po
 // Exemple de modifications dans index.ts
 
 self.addEventListener("notificationclick", (event) => {
-
   // Fermer la notification
 
   event.notification.close();
-
-
 
   // Extraire l'action et les données
 
@@ -369,7 +321,6 @@ self.addEventListener("notificationclick", (event) => {
   // Définir le comportement selon l'action
   switch (action) {
     case "open":
-
       // Ouvrir la page spécifiée
 
       return event.waitUntil(navigateToUrl(data.path || "/"));
@@ -378,7 +329,7 @@ self.addEventListener("notificationclick", (event) => {
       return;
     default:
       // Comportement par défaut : ouvrir la page spécifiée
-     return event.waitUntil(navigateToUrl(data.path || "/"));
+      return event.waitUntil(navigateToUrl(data.path || "/"));
   }
 });
 ```
@@ -391,39 +342,28 @@ Si vous voyez une notification "Appuyer pour copier l'URL" lors de l'ouverture d
 
 1. Vérifiez la configuration dans `app.config.ts` :
 
-   ```typescript
-
-   // Ajoutez cette ligne dans app.config.ts
-
-   handle_links: "preferred", // Préférer ouvrir les liens dans la PWA
-
-   ```
+```typescript
+// Ajoutez cette ligne dans app.config.ts
+handle_links: "preferred", // Préférer ouvrir les liens dans la PWA
+```
 
 2. Assurez-vous que le service worker gère correctement les clics de notification :
 
-   ```typescript
+```typescript
+// Dans src/lib/servicesWorker/index.ts
 
-   // Dans src/lib/servicesWorker/index.ts
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
 
-   self.addEventListener("notificationclick", (event) => {
+  const url = new URL(
+    event.notification.data?.path || "/",
+    self.location.origin
+  ).href;
 
-     event.notification.close();
-
-     const url = new URL(
-
-       event.notification.data?.path || "/",
-
-       self.location.origin
-
-     ).href;
-
-     // Utiliser l'URL complète pour éviter les problèmes de navigation
-
-     event.waitUntil(navigateToUrl(url));
-
-   });
-
-   ```
+  // Utiliser l'URL complète pour éviter les problèmes de navigation
+  event.waitUntil(navigateToUrl(url));
+});
+```
 
 3. Vérifiez que la PWA est bien installée et configurée comme application par défaut pour son domaine sur l'appareil.
 
@@ -431,8 +371,8 @@ Si vous voyez une notification "Appuyer pour copier l'URL" lors de l'ouverture d
 
 1. Vérifiez la console pour les erreurs
 2. Assurez-vous que les clés VAPID sont correctement configurées dans `.env.local`
-3. Vérifiez que le service worker est bien enregistré dans le navigateur 
-4. Assurez-vous que l'utilisateur a donné les permissions nécessaires 
+3. Vérifiez que le service worker est bien enregistré dans le navigateur
+4. Assurez-vous que l'utilisateur a donné les permissions nécessaires
 
 ## 8. Utilisation en Environnement de Production
 
@@ -447,9 +387,7 @@ Si vous voyez une notification "Appuyer pour copier l'URL" lors de l'ouverture d
 
 ```
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=votre_clé_publique
-
 VAPID_PRIVATE_KEY=votre_clé_privée
-
 WEB_PUSH_EMAIL=votre_email@exemple.com
 ```
 
@@ -466,9 +404,6 @@ Ajoutez les clés au fichier `.env.local` ou au gestionnaire de secrets de votre
 ## 10. Ressources et Documentation
 
 - [Documentation de web-push](https://www.npmjs.com/package/web-push)
-  
 - [Guide Web Push MDN](https://developer.mozilla.org/fr/docs/Web/API/Push_API)
-  
 - [next-pwa](https://www.npmjs.com/package/@ducanh2912/next-pwa)
-  
 - [PWA Builder](https://www.pwabuilder.com/) - Pour tester et générer des ressources PWA
