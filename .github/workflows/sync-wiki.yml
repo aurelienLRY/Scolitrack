@@ -1,33 +1,49 @@
 name: Sync Wiki
 
 on:
+  workflow_dispatch: # Déclenchement manuel
   push:
-    branches: [master]
+    branches:
+      - master
+      - main
     paths:
-      - "docs/wiki/**"
-  pull_request:
-    branches: [master]
-    paths:
-      - "docs/wiki/**"
+      - "docs/**" # Surveille tout le dossier docs
 
 jobs:
   update-wiki:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Clone wiki
         run: |
-          git clone https://x-access-token:${{ secrets.WIKI_TOKEN }}@github.com/aurelienLRY/Scolitrack.wiki.git wiki
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
 
-      - name: Sync docs/wiki with Wiki
+      - name: Sync docs with Wiki
         run: |
-          cp -r docs/wiki/* wiki/
+          # Copier tout le contenu du dossier docs vers le wiki
+          cp -r docs/* wiki/
           cd wiki
+
+          # Configuration Git
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add .
-          git diff-index --quiet HEAD || git commit -m "🔄 Wiki auto-sync from docs/wiki"
-          git push
+
+          # Vérifier s'il y a des changements
+          if [[ -n "$(git status --porcelain)" ]]; then
+            # Ajouter et commiter les changements
+            git add .
+            git commit -m "📚 Docs: Synchronisation automatique depuis le dossier docs
+
+            Mise à jour déclenchée par ${{ github.event_name }}
+            Commit: ${{ github.sha }}"
+            git push
+          else
+            echo "Aucun changement détecté dans le wiki"
+          fi
