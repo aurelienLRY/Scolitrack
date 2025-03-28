@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, signOut } from "@/lib/auth/auth";
+import { auth } from "@/lib/auth/auth";
 
 /**
  * Type de gestionnaire pour les routes d'API Next.js
@@ -8,13 +8,6 @@ type RouteHandler = (
   request: NextRequest,
   ...args: unknown[]
 ) => Promise<NextResponse> | NextResponse;
-
-/**
- * Déconnexion de l'utilisateur
- */
-export async function logout() {
-  await signOut({ redirectTo: "/" });
-}
 
 /**
  * Middleware qui vérifie si l'utilisateur est authentifié
@@ -121,7 +114,6 @@ export async function useHasPrivilege(privilege: string): Promise<boolean> {
 }
 
 const AUTH_SERVICES = {
-  logout,
   isAuthenticated,
   withPrivilege,
   checkPrivilege,

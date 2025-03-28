@@ -1,3 +1,4 @@
+"use server";
 import { NextRequest } from "next/server";
 import { roleService } from "@/lib/services/role.service";
 import { withPrivilege } from "@/lib/services/auth.service";

@@ -1,5 +1,5 @@
 import { NextAuthConfig } from "next-auth";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma/prismaForAuth";
 import { LoginSchema } from "@/schemas/LoginSchema";
 
 import Credentials from "next-auth/providers/credentials";

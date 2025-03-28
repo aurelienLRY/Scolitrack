@@ -1,7 +1,5 @@
 import { Metadata } from "next";
 import CreateUserForm from "@/components/users/CreateUserForm";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/auth";
 import UserList from "@/components/users/UserList";
 
 export const metadata: Metadata = {
@@ -11,11 +9,6 @@ export const metadata: Metadata = {
 
 export default async function AdminUsersPage() {
   // Vérifier l'authentification et les autorisations
-  const session = await auth();
-
-  if (!session) {
-    redirect("/");
-  }
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">

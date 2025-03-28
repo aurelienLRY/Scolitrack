@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+"use server";
+import { prisma } from "@/lib/prisma/prisma";
 import { randomBytes } from "crypto";
 import { sendResetPasswordEmail } from "@/lib/nodemailer/reset-passeword.email";
 import {
