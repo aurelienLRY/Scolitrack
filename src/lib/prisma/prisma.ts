@@ -3,6 +3,7 @@ import { encrypt, decrypt } from "@/lib/services/crypto.service";
 
 /**
  * Prisma client
+ * @description Prisma client pour la base de données
  */
 
 // Singleton pour Prisma
