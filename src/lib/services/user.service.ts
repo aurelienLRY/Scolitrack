@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma/prisma";
 import { User } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcryptjs";
@@ -28,8 +28,6 @@ export async function createUser(
   // Générer une date d'expiration (72 heures)
   const tokenExpiry = new Date();
   tokenExpiry.setHours(tokenExpiry.getHours() + 72);
-
-  console.log("userData", userData);
 
   // Créer l'utilisateur sans mot de passe
   const user = await prisma.user.create({
@@ -112,7 +110,7 @@ export async function getUsers(page = 1, limit = 10) {
         id: true,
         name: true,
         email: true,
-        role: true,
+        roleName: true,
         emailVerified: true,
         createdAt: true,
         updatedAt: true,

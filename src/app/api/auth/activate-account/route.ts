@@ -1,3 +1,4 @@
+"use server";
 import { NextRequest } from "next/server";
 import { ActivateAccountSchema } from "@/schemas/UserSchema";
 import { activateAccount } from "@/lib/services/user.service";

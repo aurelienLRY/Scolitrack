@@ -43,6 +43,7 @@ export const POST = withPrivilege(
     try {
       // Récupérer les données du corps de la requête
       const body = await request.json();
+      console.log(body);
 
       // Valider les données
       const validatedData = await CreateUserSchema.validate(body);

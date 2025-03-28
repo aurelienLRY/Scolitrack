@@ -17,7 +17,7 @@ interface User {
   id: string;
   name: string | null;
   email: string;
-  role: { name: string };
+  roleName: string;
   emailVerified: boolean;
   createdAt: string;
 }
@@ -44,13 +44,13 @@ export default function UserList() {
     try {
       const response = await fetch(
         `/api/users?page=${page}&limit=${pagination.limit}`
-      );
+      ).then((res) => res.json());
 
-      if (!response.ok) {
+      if (!response.success) {
         throw new Error("Erreur lors de la récupération des utilisateurs");
       }
 
-      const { data, meta } = await response.json();
+      const { data, meta } = response;
       setUsers(data);
       setPagination(meta);
     } catch (error) {
@@ -175,18 +175,18 @@ export default function UserList() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Badge
                     variant={
-                      user.role.name === "SUPER_ADMIN"
+                      user.roleName === "SUPER_ADMIN"
                         ? "primary"
-                        : user.role.name === "ADMIN"
+                        : user.roleName === "ADMIN"
                         ? "secondary"
-                        : user.role.name === "TEACHER"
+                        : user.roleName === "TEACHER"
                         ? "accent"
                         : "success"
                     }
                     styleVariant="soft"
                     size="sm"
                   >
-                    {user.role.name}
+                    {user.roleName}
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
