@@ -9,8 +9,8 @@ import { cva, type VariantProps } from "class-variance-authority";
 const cardVariants = cva("rounded-lg border transition-all duration-200", {
   variants: {
     variant: {
-      default: "border-input bg-background",
-      primary: "border-primary bg-background",
+      default: " bg-background border-input backdrop-blur-sm ",
+      primary: "border-primary/30 bg-primary/5 backdrop-blur-sm",
       destructive: "border-destructive bg-background",
       secondary: "border-secondary bg-background",
       accent: "border-accent bg-background",

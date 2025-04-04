@@ -132,3 +132,13 @@ export async function getUsers(page = 1, limit = 10) {
     },
   };
 }
+
+export async function getUserByRole(role: string) {
+  const users = await prisma.user.findMany({
+    where: {
+      roleName: role,
+    },
+  });
+
+  return users;
+}

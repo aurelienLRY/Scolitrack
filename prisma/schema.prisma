@@ -57,6 +57,7 @@ model User {
   pushSubscriptions PushSubscription[]
   sessions          Session[]
   role              Role               @relation(fields: [roleName], references: [name])
+  establishment     Establishment?
 
   @@index([roleName], map: "User_roleName_fkey")
 }
@@ -113,4 +114,24 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Establishment {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  postalCode  String
+  city        String
+  email       String?
+  phone       String?
+  website     String?
+  adminId     String   @unique
+  logoUrl     String?
+  logoFileId  String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  admin       User     @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
 }

@@ -1,14 +1,5 @@
 import { NextResponse } from "next/server";
-
-/**
- * Interface pour une réponse API standardisée
- */
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  feedback?: string;
-  meta?: Record<string, unknown>;
-}
+import { ApiResponse } from "@/types/api.type";
 
 /**
  * Codes HTTP standards pour les réponses API
@@ -43,14 +34,14 @@ export function apiResponse<T>({
 }: {
   success: boolean;
   data?: T;
-  feedback?: string;
+  feedback: string;
   status?: number;
   meta?: Record<string, unknown>;
 }): NextResponse {
   const responseBody: ApiResponse<T> = {
     success,
+    feedback: feedback,
     ...(data !== undefined && { data }),
-    ...(feedback !== undefined && { feedback }),
     ...(meta !== undefined && { meta }),
   };
 
@@ -71,7 +62,7 @@ export function successResponse<T>({
   meta,
 }: {
   data?: T;
-  feedback?: string;
+  feedback: string;
   status?: number;
   meta?: Record<string, unknown>;
 }): NextResponse {

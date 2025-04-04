@@ -21,6 +21,7 @@
 
   /* Couleurs de fond et texte */
   --color-background: light-dark(#d7d7d7, #0e1a27);
+  --color-background-component: light-dark(#0e1a27, #010716);
   --color-background-body: light-dark(#ffffff, #000f1f);
   --color-text: light-dark(#0e1a27, #ffffff);
 }

@@ -47,6 +47,7 @@ async function main() {
     },
     { name: "DELETE_DATA", description: "Supprimer des données" },
     { name: "UPDATE_DATA", description: "Modifier des données" },
+    { name: "UPLOAD_FILES", description: "Télécharger des fichiers" },
   ];
 
   for (const privilege of privileges) {

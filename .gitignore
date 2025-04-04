@@ -44,3 +44,4 @@ next-env.d.ts
 **/public/workbox-*.js
 **/public/sw.js
 **/public/worker-*.js
+**/public/images/uploads/* 

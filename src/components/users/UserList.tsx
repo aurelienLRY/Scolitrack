@@ -1,79 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { toast } from "sonner";
+import React from "react";
 import { formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badges";
 import ScrollableTable from "@/components/ui/ScrollableTable";
-
-interface Pagination {
-  total: number;
-  pages: number;
-  page: number;
-  limit: number;
-}
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  roleName: string;
-  emailVerified: boolean;
-  createdAt: string;
-}
+import { usePaginatedUsers } from "@/hooks/useUsers";
+import { Loading } from "@/components/ui/Loading";
 
 /**
  * Composant qui affiche la liste des utilisateurs avec pagination
  */
 export default function UserList() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({
-    total: 0,
-    pages: 0,
-    page: 1,
-    limit: 10,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Récupérer les utilisateurs
-  const fetchUsers = async (page = 1) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        `/api/users?page=${page}&limit=${pagination.limit}`
-      ).then((res) => res.json());
-
-      if (!response.success) {
-        throw new Error("Erreur lors de la récupération des utilisateurs");
-      }
-
-      const { data, meta } = response;
-      setUsers(data);
-      setPagination(meta);
-    } catch (error) {
-      console.error("Erreur:", error);
-      setError("Impossible de charger la liste des utilisateurs");
-      toast.error("Impossible de charger la liste des utilisateurs");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Charger les utilisateurs au chargement du composant
-  useEffect(() => {
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Changer de page
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= pagination.pages) {
-      fetchUsers(newPage);
-    }
-  };
+  const { users, pagination, isLoading, error, goToPage } = usePaginatedUsers();
 
   // Formater la date relative
   const formatDate = (dateString: string | null) => {
@@ -103,14 +41,8 @@ export default function UserList() {
   }
 
   // Afficher un indicateur de chargement
-  if (isLoading && users.length === 0) {
-    return (
-      <div className="px-4 py-5 sm:p-6">
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
-        </div>
-      </div>
-    );
+  if (isLoading || !users) {
+    return <Loading />;
   }
 
   // Afficher un message si aucun utilisateur n'est trouvé
@@ -199,7 +131,7 @@ export default function UserList() {
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(user.createdAt)}
+                  {formatDate(user.createdAt.toISOString())}
                 </td>
               </tr>
             ))}
@@ -212,7 +144,7 @@ export default function UserList() {
         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
-              onClick={() => handlePageChange(pagination.page - 1)}
+              onClick={() => goToPage(pagination.page - 1)}
               disabled={pagination.page === 1}
               className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
                 pagination.page === 1
@@ -223,7 +155,7 @@ export default function UserList() {
               Précédent
             </button>
             <button
-              onClick={() => handlePageChange(pagination.page + 1)}
+              onClick={() => goToPage(pagination.page + 1)}
               disabled={pagination.page === pagination.pages}
               className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
                 pagination.page === pagination.pages
@@ -258,7 +190,7 @@ export default function UserList() {
                 aria-label="Pagination"
               >
                 <button
-                  onClick={() => handlePageChange(pagination.page - 1)}
+                  onClick={() => goToPage(pagination.page - 1)}
                   disabled={pagination.page === 1}
                   className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${
                     pagination.page === 1
@@ -274,7 +206,7 @@ export default function UserList() {
                   (page) => (
                     <button
                       key={page}
-                      onClick={() => handlePageChange(page)}
+                      onClick={() => goToPage(page)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                         page === pagination.page
                           ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
@@ -287,7 +219,7 @@ export default function UserList() {
                 )}
 
                 <button
-                  onClick={() => handlePageChange(pagination.page + 1)}
+                  onClick={() => goToPage(pagination.page + 1)}
                   disabled={pagination.page === pagination.pages}
                   className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
                     pagination.page === pagination.pages

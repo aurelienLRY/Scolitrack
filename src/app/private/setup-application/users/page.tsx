@@ -1,13 +1,7 @@
-import { Metadata } from "next";
 import CreateUserForm from "@/components/users/CreateUserForm";
 import UserList from "@/components/users/UserList";
 
-export const metadata: Metadata = {
-  title: "Gestion des utilisateurs | Scolitrack",
-  description: "Créer et gérer les utilisateurs de la plateforme",
-};
-
-export default async function AdminUsersPage() {
+export default function AdminUsersPage() {
   // Vérifier l'authentification et les autorisations
 
   return (
