@@ -41,7 +41,7 @@ export const adminNavItems: AdminNavItem[] = [
   },
   {
     label: "Classes",
-    href: "/private/setup-application/classes",
+    href: "/private/setup-application/classrooms",
     description: [
       "Gestion des classes.",
       "Créer, modifier, supprimer des classes.",

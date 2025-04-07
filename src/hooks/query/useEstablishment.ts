@@ -6,7 +6,7 @@ import {
   ApiQueryResult,
   ApiMutationResult,
 } from "@/hooks/query/useQuery";
-import { Establishment, User } from "@prisma/client";
+import { Establishment, User, EducationLevel } from "@prisma/client";
 import FetchService from "@/lib/services/fetch.service";
 import {
   establishmentUpdateSchema,
@@ -17,7 +17,10 @@ import {
 
 // Clé de query pour les établissements
 export const ESTABLISHMENT_QUERY_KEY = ["establishment"];
-export type EstablishmentWithAdmin = Establishment & { admin?: User };
+export type EstablishmentWithAdmin = Establishment & {
+  admin?: User;
+  EducationLevel: EducationLevel[];
+};
 
 /**
  * Hook pour récupérer un établissement

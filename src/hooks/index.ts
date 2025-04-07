@@ -9,6 +9,17 @@ export {
   type EstablishmentWithAdmin,
 } from "./query/useEstablishment";
 
+// Hooks pour les classes
+export {
+  useClassRooms,
+  useCreateClassRoom,
+  useUpdateClassRoom,
+  useDeleteClassRoom,
+  useClassRoomPersonnel,
+  useAssignPersonnelToClassRoom,
+  useRemovePersonnelFromClassRoom,
+} from "./query/useClassRoom";
+
 // Hooks pour les utilisateurs
 export {
   useUsers,

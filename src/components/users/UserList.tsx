@@ -14,7 +14,7 @@ export default function UserList() {
   const { users, pagination, isLoading, error, goToPage } = usePaginatedUsers();
 
   // Formater la date relative
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | Date | null) => {
     if (!dateString) return "Non vérifié";
 
     return formatRelative(new Date(dateString), new Date(), {
@@ -131,7 +131,7 @@ export default function UserList() {
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(user.createdAt.toISOString())}
+                  {formatDate(user.createdAt)}
                 </td>
               </tr>
             ))}

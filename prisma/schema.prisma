@@ -42,22 +42,24 @@ model RolePrivilege {
 }
 
 model User {
-  id                String             @id @default(cuid())
+  id                String               @id @default(cuid())
   name              String?
-  email             String             @unique
+  email             String               @unique
   emailVerified     DateTime?
   image             String?
   password          String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  resetToken        String?            @unique
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  resetToken        String?              @unique
   resetTokenExpiry  DateTime?
-  roleName          String             @default("USER")
+  roleName          String               @default("USER")
   accounts          Account[]
   pushSubscriptions PushSubscription[]
   sessions          Session[]
-  role              Role               @relation(fields: [roleName], references: [name])
+  role              Role                 @relation(fields: [roleName], references: [name])
   establishment     Establishment?
+  classPersonnel    ClassRoomPersonnel[]
+  activityLogs      ActivityLog[]
 
   @@index([roleName], map: "User_roleName_fkey")
 }
@@ -117,21 +119,90 @@ model PushSubscription {
 }
 
 model Establishment {
-  id          String   @id @default(cuid())
-  name        String
-  address     String
-  postalCode  String
-  city        String
-  email       String?
-  phone       String?
-  website     String?
-  adminId     String   @unique
-  logoUrl     String?
-  logoFileId  String?
-  description String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  admin       User     @relation(fields: [adminId], references: [id])
+  id             String           @id @default(cuid())
+  name           String
+  address        String
+  postalCode     String
+  city           String
+  email          String?
+  phone          String?
+  website        String?
+  adminId        String           @unique
+  logoUrl        String?
+  logoFileId     String?
+  description    String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  admin          User             @relation(fields: [adminId], references: [id])
+  classRooms     ClassRoom[]
+  EducationLevel EducationLevel[]
 
   @@index([adminId])
+}
+
+model ClassRoom {
+  id              String                    @id @default(uuid())
+  name            String
+  capacity        Int
+  logoUrl         String?
+  logoFileId      String?
+  colorCode       String?
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
+  establishmentId String
+  classPersonnel  ClassRoomPersonnel[]
+  educationLevels ClassRoomEducationLevel[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([establishmentId])
+}
+
+model EducationLevel {
+  id              String                    @id @default(uuid())
+  name            String
+  code            String
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
+  establishmentId String
+  classRooms      ClassRoomEducationLevel[]
+  establishedAt   DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@unique([name, establishmentId])
+  @@index([establishmentId])
+}
+
+model ClassRoomEducationLevel {
+  classRoomId      String
+  educationLevelId String
+  assignedAt       DateTime       @default(now())
+  classRoom        ClassRoom      @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id], onDelete: Cascade)
+
+  @@id([classRoomId, educationLevelId])
+  @@index([classRoomId])
+  @@index([educationLevelId])
+}
+
+model ClassRoomPersonnel {
+  classRoomId String
+  userId      String
+  roleInClass String?
+  assignedAt  DateTime  @default(now())
+  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([classRoomId, userId])
+  @@index([classRoomId])
+  @@index([userId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

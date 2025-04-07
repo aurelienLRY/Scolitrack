@@ -23,6 +23,7 @@ export default function EstablishmentCard({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
+      className="w-full"
     >
       <Card className="p-8" variant="primary">
         <div className="text-center mb-6">
@@ -51,9 +52,10 @@ export default function EstablishmentCard({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
+      className="w-full"
     >
       <Card
-        className="p-6 flex flex-col md:flex-row gap-4 md:gap-12 items-center md:items-start overflow-auto max-w-fit"
+        className="h-full p-6 flex flex-col md:flex-row gap-4 md:gap-12 items-center md:items-start overflow-auto "
         variant="primary"
       >
         <div className={cn("my-auto", !establishment.logoUrl && "opacity-50")}>
