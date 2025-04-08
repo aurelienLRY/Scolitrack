@@ -1,11 +1,18 @@
 // prisma/seed.ts
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import {
+  PrivilegeName,
+  PRIVILEGES,
+  ADMIN_EXCLUDED_PRIVILEGES,
+  RoleDefinition,
+} from "@/config/privileges.config";
+
 const prisma = new PrismaClient();
 
 async function main() {
   // Créer les rôles permanents
-  const roles = [
+  const roles: RoleDefinition[] = [
     {
       name: "SUPER_ADMIN",
       isPermanent: true,
@@ -36,21 +43,8 @@ async function main() {
     console.log(`Rôle ${role.name} créé ou maintenu.`);
   }
 
-  // Créer des privilèges de base
-  const privileges = [
-    { name: "SETUP_APPLICATION", description: "Paramétrer l'application" },
-    { name: "MANAGE_USERS", description: "Gérer les utilisateurs" },
-    { name: "MANAGE_STUDENTS", description: "Gérer les élèves" },
-    {
-      name: "MANAGE_MEDICAL_INFORMATIONS",
-      description: "Gérer les informations médicales",
-    },
-    { name: "DELETE_DATA", description: "Supprimer des données" },
-    { name: "UPDATE_DATA", description: "Modifier des données" },
-    { name: "UPLOAD_FILES", description: "Télécharger des fichiers" },
-  ];
-
-  for (const privilege of privileges) {
+  // Créer des privilèges de base à partir des constantes partagées
+  for (const privilege of PRIVILEGES) {
     await prisma.privilege.upsert({
       where: { name: privilege.name },
       update: {},
@@ -95,18 +89,10 @@ async function main() {
     console.log("Tous les privilèges attribués au SUPER_ADMIN.");
   }
 
-  // Attribuer certains privilèges à ADMIN (tous sauf la gestion des rôles)
+  // Attribuer certains privilèges à ADMIN (tous sauf ceux exclus)
   if (adminRole) {
     const adminPrivileges = allPrivileges.filter(
-      (p) =>
-        ![
-          "SETUP_APPLICATION",
-          "MANAGE_USERS",
-          "MANAGE_STUDENTS",
-          "MANAGE_MEDICAL_INFORMATIONS",
-          "DELETE_DATA",
-          "UPDATE_DATA",
-        ].includes(p.name)
+      (p) => !ADMIN_EXCLUDED_PRIVILEGES.includes(p.name as PrivilegeName)
     );
 
     for (const privilege of adminPrivileges) {
@@ -128,7 +114,7 @@ async function main() {
   }
 
   // Créer un super administrateur si nécessaire
-  const adminEmail = process.env.SUPER_ADMIN_EMAIL || "admin@admin.com";
+  const adminEmail = process.env.SUPER_ADMIN_EMAIL || "admin@scolitrack.com";
 
   // Vérifier si un super admin existe déjà
   const superAdminExists = await prisma.user.findFirst({
@@ -140,7 +126,7 @@ async function main() {
 
   if (!superAdminExists && superAdminRole) {
     const hashedPassword = await bcrypt.hash(
-      process.env.SUPER_ADMIN_PASSWORD || "admin123",
+      process.env.SUPER_ADMIN_PASSWORD || "admin@scolitrack.com",
       10
     );
 

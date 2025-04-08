@@ -10,7 +10,6 @@ export const USER_PRE_MIDDLEWARE = (params: Prisma.MiddlewareParams) => {
     (params.action === "create" || params.action === "update") &&
     params.args.data?.name
   ) {
-    console.log("---------- USER_PRE_MIDDLEWARE ----------");
     params.args.data.name = encrypt(params.args.data.name);
   }
 };
@@ -67,9 +66,6 @@ export const USER_POST_MIDDLEWARE = (
       return result;
     }
 
-    console.log("---------- USER_POST_MIDDLEWARE ----------");
-    console.log("Params action: ", params.action);
-
     // Cas spécial pour count qui retourne juste un nombre
     if (params.action === "count") {
       // Résultat count est juste un chiffre, pas besoin de déchiffrer
@@ -78,7 +74,6 @@ export const USER_POST_MIDDLEWARE = (
 
     // Traitement des résultats selon leur type
     if (Array.isArray(result)) {
-      console.log("USER_POST_MIDDLEWARE: Array détecté");
       // Collection d'utilisateurs (findMany)
       const decryptedResults = result.map((user) => {
         if (!user) return user;
@@ -93,7 +88,6 @@ export const USER_POST_MIDDLEWARE = (
       return decryptedResults;
     } else if (isUser(result)) {
       // Utilisateur unique (findFirst/findUnique)
-      console.log("USER_POST_MIDDLEWARE: Objet unique détecté");
 
       const decryptedName = safeDecrypt(result.name as string);
       return {

@@ -58,12 +58,8 @@ export const CLASSROOM_PERSONNEL_POST_MIDDLEWARE = async (
       return result;
     }
 
-    console.log("---------- CLASSROOM_PERSONNEL_POST_MIDDLEWARE ----------");
-    console.log("Params action: ", params.action);
-
     // Traitement des résultats selon leur type
     if (Array.isArray(result)) {
-      console.log("CLASSROOM_PERSONNEL_POST_MIDDLEWARE: Array détecté");
       // Collection de personnel (findMany)
       return result.map((personnel) => {
         if (!personnel) return personnel;
@@ -82,7 +78,6 @@ export const CLASSROOM_PERSONNEL_POST_MIDDLEWARE = async (
         return personnel;
       });
     } else if (hasUser(result) && result.user?.name) {
-      console.log("CLASSROOM_PERSONNEL_POST_MIDDLEWARE: Objet unique détecté");
       // Personnel unique (findFirst/findUnique)
       const decryptedName = safeDecrypt(result.user.name);
 

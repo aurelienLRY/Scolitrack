@@ -16,7 +16,7 @@ export const classRoomSchema = yup.object({
   colorCode: yup.string().nullable(),
 });
 
-export type ClassRoomFormData = yup.InferType<typeof classRoomSchema>;
+export type TClassRoomFormData = yup.InferType<typeof classRoomSchema>;
 
 /**
  * Schéma pour la mise à jour d'une salle de classe
@@ -30,7 +30,7 @@ export const classRoomUpdateSchema = yup.object({
   colorCode: yup.string().nullable().optional(),
 });
 
-export type ClassRoomUpdateFormData = yup.InferType<
+export type TClassRoomUpdateFormData = yup.InferType<
   typeof classRoomUpdateSchema
 >;
 
@@ -42,6 +42,6 @@ export const classRoomPersonnelSchema = yup.object({
   roleInClass: yup.string().nullable(),
 });
 
-export type ClassRoomPersonnelFormData = yup.InferType<
+export type TClassRoomPersonnelFormData = yup.InferType<
   typeof classRoomPersonnelSchema
 >;

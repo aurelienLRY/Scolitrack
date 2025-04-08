@@ -7,14 +7,16 @@ import {
   ApiMutationResult,
 } from "@/hooks/query/useQuery";
 import FetchService from "@/lib/services/fetch.service";
-import { ClassRoomWithPersonnel } from "@/types/classroom.type";
-import { ClassRoom, ClassRoomPersonnel } from "@prisma/client";
 import {
-  ClassRoomFormData,
-  ClassRoomUpdateFormData,
-  ClassRoomPersonnelFormData,
+  ClassRoomComplete,
+  ClassRoomPersonnelWithUser,
+} from "@/types/classroom.type";
+import { ClassRoomPersonnel } from "@prisma/client";
+import {
+  TClassRoomFormData,
+  TClassRoomUpdateFormData,
+  TClassRoomPersonnelFormData,
 } from "@/schemas/ClassRoomSchema";
-import { ClassRoomFullData } from "@/types/classroom.type";
 
 // Clé de query pour les salles de classe
 export const CLASSROOM_QUERY_KEY = ["classroom"];
@@ -26,7 +28,7 @@ export const CLASSROOM_QUERY_KEY = ["classroom"];
  * Il utilise useApiQuery pour gérer la requête et le cache.
  *
  * @param {string} establishmentId - L'ID de l'établissement
- * @returns {ApiQueryResult<ClassRoomWithPersonnel[]>} Un objet contenant les données des salles de classe et l'état de la requête
+ * @returns {ApiQueryResult<ClassRoomComplete[]>} Un objet contenant les données des salles de classe et l'état de la requête
  *
  * @example
  * ```tsx
@@ -50,8 +52,8 @@ export const CLASSROOM_QUERY_KEY = ["classroom"];
  */
 export function useClassRooms(
   establishmentId: string
-): ApiQueryResult<ClassRoomWithPersonnel[]> {
-  return useApiQuery<ClassRoomWithPersonnel[]>({
+): ApiQueryResult<ClassRoomComplete[]> {
+  return useApiQuery<ClassRoomComplete[]>({
     queryKey: [...CLASSROOM_QUERY_KEY, establishmentId],
     url: `/api/setup-application/classrooms?establishmentId=${establishmentId}`,
     enabled: !!establishmentId,
@@ -65,7 +67,7 @@ export function useClassRooms(
  * Il utilise useApiQuery pour gérer la requête et le cache.
  *
  * @param {string} id - L'ID de la salle de classe à récupérer
- * @returns {ApiQueryResult<ClassRoomWithPersonnel>} Un objet contenant les données de la salle de classe et l'état de la requête
+ * @returns {ApiQueryResult<ClassRoomComplete>} Un objet contenant les données de la salle de classe et l'état de la requête
  *
  * @example
  * ```tsx
@@ -80,15 +82,14 @@ export function useClassRooms(
  *   return (
  *     <div>
  *       <h1>{data?.data.name}</h1>
- *       <p>Niveau: {data?.data.level}</p>
  *       <p>Capacité: {data?.data.capacity}</p>
  *     </div>
  *   );
  * }
  * ```
  */
-export function useClassRoom(id: string): ApiQueryResult<ClassRoomFullData> {
-  return useApiQuery<ClassRoomFullData>({
+export function useClassRoom(id: string): ApiQueryResult<ClassRoomComplete> {
+  return useApiQuery<ClassRoomComplete>({
     queryKey: [...CLASSROOM_QUERY_KEY, id],
     url: `/api/setup-application/classrooms/${id}`,
     enabled: !!id,
@@ -101,7 +102,7 @@ export function useClassRoom(id: string): ApiQueryResult<ClassRoomFullData> {
  * Ce hook permet de créer une nouvelle salle de classe via l'API.
  * Il utilise useApiMutation pour gérer la requête et le cache.
  *
- * @returns {ApiMutationResult<ClassRoom, ClassRoomFormData>} Un objet contenant la mutation et l'état de la requête
+ * @returns {ApiMutationResult<ClassRoomComplete, TClassRoomFormData>} Un objet contenant la mutation et l'état de la requête
  *
  * @example
  * ```tsx
@@ -110,7 +111,7 @@ export function useClassRoom(id: string): ApiQueryResult<ClassRoomFullData> {
  * function CreateClassRoomForm() {
  *   const { mutate, isLoading, error } = useCreateClassRoom();
  *
- *   const handleSubmit = (data: ClassRoomFormData) => {
+ *   const handleSubmit = (data: TClassRoomFormData) => {
  *     mutate(data);
  *   };
  *
@@ -126,10 +127,10 @@ export function useClassRoom(id: string): ApiQueryResult<ClassRoomFullData> {
  * ```
  */
 export function useCreateClassRoom(): ApiMutationResult<
-  ClassRoom,
-  ClassRoomFormData
+  ClassRoomComplete,
+  TClassRoomFormData
 > {
-  return useApiMutation<ClassRoom, ClassRoomFormData>({
+  return useApiMutation<ClassRoomComplete, TClassRoomFormData>({
     mutationFn: (data) =>
       FetchService.post("/api/setup-application/classrooms", data),
     invalidateQueries: [CLASSROOM_QUERY_KEY],
@@ -143,7 +144,7 @@ export function useCreateClassRoom(): ApiMutationResult<
  * Il utilise useApiMutation pour gérer la requête et le cache.
  *
  * @param {string} id - L'ID de la salle de classe à mettre à jour
- * @returns {ApiMutationResult<ClassRoom, ClassRoomUpdateFormData>} Un objet contenant la mutation et l'état de la requête
+ * @returns {ApiMutationResult<ClassRoomComplete, TClassRoomUpdateFormData>} Un objet contenant la mutation et l'état de la requête
  *
  * @example
  * ```tsx
@@ -152,7 +153,7 @@ export function useCreateClassRoom(): ApiMutationResult<
  * function UpdateClassRoomForm({ id }) {
  *   const { mutate, isLoading, error } = useUpdateClassRoom(id);
  *
- *   const handleSubmit = (data: ClassRoomUpdateFormData) => {
+ *   const handleSubmit = (data: TClassRoomUpdateFormData) => {
  *     mutate(data);
  *   };
  *
@@ -169,8 +170,8 @@ export function useCreateClassRoom(): ApiMutationResult<
  */
 export function useUpdateClassRoom(
   id: string
-): ApiMutationResult<ClassRoom, ClassRoomUpdateFormData> {
-  return useApiMutation<ClassRoom, ClassRoomUpdateFormData>({
+): ApiMutationResult<ClassRoomComplete, TClassRoomUpdateFormData> {
+  return useApiMutation<ClassRoomComplete, TClassRoomUpdateFormData>({
     mutationFn: (data) =>
       FetchService.put(`/api/setup-application/classrooms/${id}`, data),
     invalidateQueries: id
@@ -185,7 +186,7 @@ export function useUpdateClassRoom(
  * Ce hook permet de supprimer une salle de classe existante via l'API.
  * Il utilise useApiMutation pour gérer la requête et le cache.
  *
- * @returns {ApiMutationResult<ClassRoom, string>} Un objet contenant la mutation et l'état de la requête
+ * @returns {ApiMutationResult<ClassRoomComplete, string>} Un objet contenant la mutation et l'état de la requête
  *
  * @example
  * ```tsx
@@ -206,8 +207,11 @@ export function useUpdateClassRoom(
  * }
  * ```
  */
-export function useDeleteClassRoom(): ApiMutationResult<ClassRoom, string> {
-  return useApiMutation<ClassRoom, string>({
+export function useDeleteClassRoom(): ApiMutationResult<
+  ClassRoomComplete,
+  string
+> {
+  return useApiMutation<ClassRoomComplete, string>({
     mutationFn: (id) =>
       FetchService.delete(`/api/setup-application/classrooms/${id}`),
     invalidateQueries: [CLASSROOM_QUERY_KEY],
@@ -221,7 +225,7 @@ export function useDeleteClassRoom(): ApiMutationResult<ClassRoom, string> {
  * Il utilise useApiQuery pour gérer la requête et le cache.
  *
  * @param {string} classRoomId - L'ID de la salle de classe
- * @returns {ApiQueryResult<ClassRoomPersonnel[]>} Un objet contenant les données du personnel et l'état de la requête
+ * @returns {ApiQueryResult<ClassRoomPersonnelWithUser[]>} Un objet contenant les données du personnel et l'état de la requête
  *
  * @example
  * ```tsx
@@ -245,8 +249,8 @@ export function useDeleteClassRoom(): ApiMutationResult<ClassRoom, string> {
  */
 export function useClassRoomPersonnel(
   classRoomId: string
-): ApiQueryResult<ClassRoomPersonnel[]> {
-  return useApiQuery<ClassRoomPersonnel[]>({
+): ApiQueryResult<ClassRoomPersonnelWithUser[]> {
+  return useApiQuery<ClassRoomPersonnelWithUser[]>({
     queryKey: [...CLASSROOM_QUERY_KEY, classRoomId, "personnel"],
     url: `/api/setup-application/classrooms/${classRoomId}/personnel`,
     enabled: !!classRoomId,
@@ -260,7 +264,7 @@ export function useClassRoomPersonnel(
  * Il utilise useApiMutation pour gérer la requête et le cache.
  *
  * @param {string} classRoomId - L'ID de la salle de classe
- * @returns {ApiMutationResult<ClassRoomPersonnel, ClassRoomPersonnelFormData>} Un objet contenant la mutation et l'état de la requête
+ * @returns {ApiMutationResult<ClassRoomPersonnel, TClassRoomPersonnelFormData>} Un objet contenant la mutation et l'état de la requête
  *
  * @example
  * ```tsx
@@ -269,7 +273,7 @@ export function useClassRoomPersonnel(
  * function AssignPersonnelForm({ classRoomId }) {
  *   const { mutate, isLoading } = useAssignPersonnelToClassRoom(classRoomId);
  *
- *   const handleSubmit = (data: ClassRoomPersonnelFormData) => {
+ *   const handleSubmit = (data: TClassRoomPersonnelFormData) => {
  *     mutate(data);
  *   };
  *
@@ -290,8 +294,8 @@ export function useClassRoomPersonnel(
  */
 export function useAssignPersonnelToClassRoom(
   classRoomId: string
-): ApiMutationResult<ClassRoomPersonnel, ClassRoomPersonnelFormData> {
-  return useApiMutation<ClassRoomPersonnel, ClassRoomPersonnelFormData>({
+): ApiMutationResult<ClassRoomPersonnel, TClassRoomPersonnelFormData> {
+  return useApiMutation<ClassRoomPersonnel, TClassRoomPersonnelFormData>({
     mutationFn: (data) =>
       FetchService.post(
         `/api/setup-application/classrooms/${classRoomId}/personnel`,

@@ -5,7 +5,7 @@ import {
   imageService,
   ImageStorageOptions,
 } from "@/lib/services/image.service";
-import { withPrivilege } from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import {
   handleApiError,
   HttpStatus,
@@ -15,7 +15,7 @@ import {
 
 // Route pour télécharger une image
 export const POST = withPrivilege(
-  "UPLOAD_FILES", // Vous pouvez ajuster selon vos privilèges existants
+  PrivilegeName.UPLOAD_FILES, // Vous pouvez ajuster selon vos privilèges existants
   async (req: NextRequest) => {
     try {
       const formData = await req.formData();

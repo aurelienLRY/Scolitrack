@@ -1,49 +1,71 @@
 import {
   ClassRoom,
   ClassRoomPersonnel,
-  EducationLevel,
-  User,
+  ClassRoomEducationLevel,
 } from "@prisma/client";
 
 /**
- * Interface pour une salle de classe avec son personnel
+ * Type pour représenter un utilisateur simplifié (pour le personnel)
+ */
+export type UserBasic = {
+  id: string;
+  name: string | null;
+  email: string;
+  image?: string | null;
+  roleName: string | null;
+};
+
+/**
+ * Type pour représenter un niveau d'éducation simplifié
+ */
+export type EducationLevelBasic = {
+  id: string;
+  name: string;
+  code: string;
+};
+
+/**
+ * Type pour une relation ClassRoom-EducationLevel avec les données du niveau
+ */
+export type ClassRoomEducationLevelWithLevel = ClassRoomEducationLevel & {
+  educationLevel: EducationLevelBasic;
+};
+
+/**
+ * Type pour une relation ClassRoom-Personnel avec les données de l'utilisateur
+ */
+export type ClassRoomPersonnelWithUser = ClassRoomPersonnel & {
+  user: UserBasic;
+};
+
+/**
+ * Interface uniformisée pour une salle de classe complète
+ * Cette interface est utilisée partout dans l'application pour représenter une classe
+ * avec toutes ses relations (personnel et niveaux d'éducation)
+ */
+export interface ClassRoomComplete extends ClassRoom {
+  // Personnel associé à la classe
+  classPersonnel: ClassRoomPersonnelWithUser[];
+
+  // Niveaux d'éducation associés à la classe
+  educationLevels: ClassRoomEducationLevelWithLevel[];
+}
+
+// Les interfaces ci-dessous sont conservées pour la rétrocompatibilité
+// mais devraient être remplacées progressivement par ClassRoomComplete
+
+/**
+ * @deprecated Utiliser ClassRoomComplete à la place
  */
 export interface ClassRoomWithPersonnel extends ClassRoom {
-  classPersonnel: (ClassRoomPersonnel & {
-    user: {
-      id: string;
-      name: string | null;
-      email: string;
-      image?: string | null;
-      roleName: string | null;
-    };
-  })[];
-  educationLevels?: {
-    educationLevel: {
-      id: string;
-      name: string;
-      code: string;
-    };
-  }[];
+  classPersonnel: ClassRoomPersonnelWithUser[];
+  educationLevels: ClassRoomEducationLevelWithLevel[];
 }
 
 /**
- * Interface pour le personnel d'une salle de classe avec informations utilisateur
- */
-export interface ClassRoomPersonnelWithUser extends ClassRoomPersonnel {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    image?: string | null;
-    roleName: string | null;
-  };
-}
-
-/**
- * Interface pour les données complètes d'une salle de classe
+ * @deprecated Utiliser ClassRoomComplete à la place
  */
 export interface ClassRoomFullData extends ClassRoom {
-  classPersonnel: User[];
-  educationLevels: EducationLevel[];
+  classPersonnel: ClassRoomPersonnelWithUser[];
+  educationLevels: ClassRoomEducationLevelWithLevel[];
 }

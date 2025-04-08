@@ -5,7 +5,6 @@ import {
   getEstablishmentById,
   updateEstablishment,
 } from "@/lib/services/establishment.service";
-import { auth } from "@/lib/auth/auth";
 import * as yup from "yup";
 import {
   establishmentSchema,
@@ -20,21 +19,36 @@ import {
   HttpStatus,
 } from "@/lib/services/api.service";
 
-// Récupérer l'établissement
+// Type pour les query params
+interface EstablishmentQueryParams {
+  id?: string;
+}
+
+/**
+ * Extrait et type les query params de la requête
+ * @param req - La requête HTTP
+ * @returns Les query params typés
+ */
+function getQueryParams(req: NextRequest): EstablishmentQueryParams {
+  const { searchParams } = new URL(req.url);
+  return {
+    id: searchParams.get("id") || undefined,
+  };
+}
+
+/**
+ * Récupérer l'établissement
+ * @param req - La requête HTTP entrante
+ * @returns Réponse de succès avec les données de l'établissement, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 404 si l'établissement n'est pas trouvé
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session) {
-      return errorResponse({
-        feedback: "Non autorisé",
-        status: HttpStatus.UNAUTHORIZED,
-      });
-    }
-
     // Récupération d'un établissement spécifique par ID
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const params = getQueryParams(req);
+    const { id } = params;
     let establishment = null;
 
     if (id) {
@@ -67,18 +81,16 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Créer ou mettre à jour l'établissement
+/**
+ * Créer ou mettre à jour l'établissement
+ * @param req - La requête HTTP entrante contenant les données de l'établissement à créer ou mettre à jour
+ * @returns Réponse de succès avec les données de l'établissement créé ou mis à jour, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 400 si les données d'entrée sont invalides
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || !session.user) {
-      return errorResponse({
-        feedback: "Non autorisé",
-        status: HttpStatus.UNAUTHORIZED,
-      });
-    }
-
     const body = await req.json();
 
     // Valider les données d'entrée avec Yup
@@ -133,23 +145,18 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Mettre à jour l'établissement
+/**
+ * Mettre à jour l'établissement
+ * @param req - La requête HTTP entrante contenant les données de l'établissement à mettre à jour
+ * @returns Réponse de succès avec les données de l'établissement mis à jour, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 400 si les données d'entrée sont invalides
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
 export async function PUT(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || !session.user) {
-      return errorResponse({
-        feedback: "Non autorisé",
-        status: HttpStatus.UNAUTHORIZED,
-      });
-    }
-    console.log("req", req);
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
-
-    console.log("id", id);
+    const params = getQueryParams(req);
+    const { id } = params;
 
     if (!id) {
       return errorResponse({
@@ -166,8 +173,6 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-
-    console.log("body", body);
 
     // Valider les données d'entrée avec Yup
     try {

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { CreateUserSchema } from "@/schemas/UserSchema";
-import { withPrivilege } from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import {
   createUser,
   getUsers,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
  * POST /api/users - Créer un nouvel utilisateur
  */
 export const POST = withPrivilege(
-  "MANAGE_USERS",
+  PrivilegeName.MANAGE_USERS,
   async (request: NextRequest) => {
     try {
       // Récupérer les données du corps de la requête

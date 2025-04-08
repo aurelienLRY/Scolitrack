@@ -4,7 +4,7 @@ import { formatRelative } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badges";
 import ScrollableTable from "@/components/ui/ScrollableTable";
-import { usePaginatedUsers } from "@/hooks/useUsers";
+import { usePaginatedUsers } from "@/hooks/query/useUsers";
 import { Loading } from "@/components/ui/Loading";
 
 /**

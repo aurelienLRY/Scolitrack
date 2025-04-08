@@ -1,7 +1,6 @@
 "use server";
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
-import { withPrivilege } from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { classRoomService } from "@/lib/services/classroom.service";
 import {
   successResponse,
@@ -12,135 +11,114 @@ import {
   HttpStatus,
 } from "@/lib/services/api.service";
 
-// Type d'interface pour les paramètres
-interface Params {
-  params: {
-    id: string;
-  };
+/**
+ * Récupérer le personnel d'une classe
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec le personnel de la classe récupéré, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ */
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  try {
+    const { id } = await context.params;
+
+    // Vérifier si la classe existe
+    const classRoom = await classRoomService.getClassRoomById(id);
+
+    if (!classRoom) {
+      return notFoundResponse("Classe non trouvée");
+    }
+
+    // Récupérer le personnel de la classe
+    const personnel = classRoom.classPersonnel;
+
+    return successResponse({
+      data: personnel,
+      feedback: "Personnel de la classe récupéré avec succès",
+    });
+  } catch (error) {
+    return handleApiError(
+      error,
+      "Erreur lors de la récupération du personnel de la classe"
+    );
+  }
 }
 
-// Fonction pour récupérer le personnel d'une classe
-export const GET = withPrivilege(
-  "SETUP_APPLICATION",
-  async (req: NextRequest, ...args: unknown[]) => {
+/**
+ * Attribuer un membre du personnel à une classe
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec le membre du personnel attribué à la classe, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ */
+export async function POST(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  try {
+    const { id } = await context.params;
+
+    // Vérifier si la classe existe
+    const classRoom = await classRoomService.getClassRoomById(id);
+
+    if (!classRoom) {
+      return notFoundResponse("Classe non trouvée");
+    }
+
+    const body = await req.json();
+
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const classRoomId = context.params.id;
-
-      // Vérifier si la classe existe
-      const classRoom = await classRoomService.getClassRoomById(classRoomId);
-
-      if (!classRoom) {
-        return notFoundResponse("Classe non trouvée");
-      }
-
-      // Récupérer le personnel de la classe
-      const personnel = await classRoomService.getClassRoomPersonnel(
-        classRoomId
+      // La validation est maintenant gérée dans le service
+      const result = await classRoomService.assignPersonnelToClassRoom(
+        id,
+        body
       );
 
-      return successResponse({
-        data: personnel,
-        feedback: "Personnel de la classe récupéré avec succès",
+      // TODO: Journaliser l'action (audit)
+      // await activityLogService.logActivity({
+      //   userId: session.user.id,
+      //   action: "ASSIGN_PERSONNEL_TO_CLASSROOM",
+      //   details: JSON.stringify({ classRoomId, userId: body.userId, role: body.roleInClass }),
+      // });
+
+      return createdResponse({
+        data: result,
+        feedback: `Membre du personnel attribué à la classe "${classRoom.name}" avec succès`,
       });
     } catch (error) {
-      return handleApiError(
-        error,
-        "Erreur lors de la récupération du personnel de la classe"
-      );
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Erreur de validation inconnue";
+      return errorResponse({
+        feedback: "Données invalides",
+        status: HttpStatus.BAD_REQUEST,
+        data: { error: errorMessage },
+      });
     }
+  } catch (error) {
+    return handleApiError(
+      error,
+      "Erreur lors de l'attribution du membre du personnel à la classe"
+    );
   }
-);
+}
 
-// Fonction pour attribuer un membre du personnel à une classe
-export const POST = withPrivilege(
-  "SETUP_APPLICATION",
-  async (req: NextRequest, ...args: unknown[]) => {
-    try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const classRoomId = context.params.id;
-
-      // Vérifier si la classe existe
-      const classRoom = await classRoomService.getClassRoomById(classRoomId);
-
-      if (!classRoom) {
-        return notFoundResponse("Classe non trouvée");
-      }
-
-      const body = await req.json();
-
-      try {
-        // La validation est maintenant gérée dans le service
-        const result = await classRoomService.assignPersonnelToClassRoom(
-          classRoomId,
-          body
-        );
-
-        // TODO: Journaliser l'action (audit)
-        // await activityLogService.logActivity({
-        //   userId: session.user.id,
-        //   action: "ASSIGN_PERSONNEL_TO_CLASSROOM",
-        //   details: JSON.stringify({ classRoomId, userId: body.userId, role: body.roleInClass }),
-        // });
-
-        return createdResponse({
-          data: result,
-          feedback: `Membre du personnel attribué à la classe "${classRoom.name}" avec succès`,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Erreur de validation inconnue";
-        return errorResponse({
-          feedback: "Données invalides",
-          status: HttpStatus.BAD_REQUEST,
-          data: { error: errorMessage },
-        });
-      }
-    } catch (error) {
-      return handleApiError(
-        error,
-        "Erreur lors de l'attribution du membre du personnel à la classe"
-      );
-    }
-  }
-);
-
-// Fonction pour supprimer un membre du personnel d'une classe
+/**
+ * Supprimer un membre du personnel d'une classe
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec le membre du personnel supprimé de la classe, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ */
 export const DELETE = withPrivilege(
-  "DELETE_DATA",
-  async (req: NextRequest, ...args: unknown[]) => {
+  PrivilegeName.DELETE_DATA,
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const classRoomId = context.params.id;
+      const { id } = await context.params;
       const { searchParams } = new URL(req.url);
       const userId = searchParams.get("userId");
 
@@ -152,7 +130,7 @@ export const DELETE = withPrivilege(
       }
 
       // Vérifier si la classe existe
-      const classRoom = await classRoomService.getClassRoomById(classRoomId);
+      const classRoom = await classRoomService.getClassRoomById(id);
 
       if (!classRoom) {
         return notFoundResponse("Classe non trouvée");
@@ -160,7 +138,7 @@ export const DELETE = withPrivilege(
 
       // Supprimer le membre du personnel de la classe
       const result = await classRoomService.removePersonnelFromClassRoom(
-        classRoomId,
+        id,
         userId
       );
 

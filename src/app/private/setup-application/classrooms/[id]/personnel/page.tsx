@@ -13,8 +13,8 @@ import {
   useAssignPersonnelToClassRoom,
   useRemovePersonnelFromClassRoom,
 } from "@/hooks/query/useClassRoom";
-import { ClassRoomPersonnelFormData } from "@/schemas/ClassRoomSchema";
-import { useUsers } from "@/hooks/useUsers";
+import { TClassRoomPersonnelFormData } from "@/schemas/ClassRoomSchema";
+import { useUsers } from "@/hooks/query/useUsers";
 import { motion } from "framer-motion";
 import ClassRoomHeader from "@/components/classRoom/ClassRoomHeader";
 
@@ -118,7 +118,7 @@ export default function PersonnelPage() {
 
   // Fonction pour ajouter un membre du personnel
   const handleAssignPersonnel = (userId: string) => {
-    const formData: ClassRoomPersonnelFormData = {
+    const formData: TClassRoomPersonnelFormData = {
       userId,
       roleInClass: null, // Par défaut, pas de rôle spécifique
     };

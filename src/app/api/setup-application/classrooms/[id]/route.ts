@@ -1,7 +1,6 @@
 "use server";
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
-import { withPrivilege } from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { classRoomService } from "@/lib/services/classroom.service";
 import {
   successResponse,
@@ -11,65 +10,48 @@ import {
   HttpStatus,
 } from "@/lib/services/api.service";
 
-// Type d'interface pour les paramètres
-interface Params {
-  params: {
-    id: string;
-  };
+/**
+ * Récupérer une classe spécifique
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec la classe récupérée, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 404 si la classe n'est pas trouvée
+ */
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  try {
+    const { id } = await context.params;
+
+    const classRoom = await classRoomService.getClassRoomById(id);
+
+    if (!classRoom) {
+      return notFoundResponse("Classe non trouvée");
+    }
+
+    return successResponse({
+      data: classRoom,
+      feedback: `Classe "${classRoom.name}" récupérée avec succès`,
+    });
+  } catch (error) {
+    return handleApiError(error, "Erreur lors de la récupération de la classe");
+  }
 }
 
-// Fonction pour récupérer une classe spécifique
-export const GET = withPrivilege(
-  "SETUP_APPLICATION",
-  async (req: NextRequest, ...args: unknown[]) => {
-    try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const id = context.params.id;
-
-      const classRoom = await classRoomService.getClassRoomById(id);
-
-      if (!classRoom) {
-        return notFoundResponse("Classe non trouvée");
-      }
-
-      return successResponse({
-        data: classRoom,
-        feedback: `Classe "${classRoom.name}" récupérée avec succès`,
-      });
-    } catch (error) {
-      return handleApiError(
-        error,
-        "Erreur lors de la récupération de la classe"
-      );
-    }
-  }
-);
-
-// Fonction pour mettre à jour une classe
+/**
+ * Mettre à jour une classe
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec la classe mise à jour, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ */
 export const PUT = withPrivilege(
-  "SETUP_APPLICATION",
-  async (req: NextRequest, ...args: unknown[]) => {
+  PrivilegeName.UPDATE_DATA,
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const id = context.params.id;
+      const { id } = await context.params;
 
       // Vérifier si la classe existe
       const existingClassRoom = await classRoomService.getClassRoomById(id);
@@ -118,22 +100,18 @@ export const PUT = withPrivilege(
   }
 );
 
-// Fonction pour supprimer une classe
+/**
+ * Supprimer une classe
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec la classe supprimée, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ */
 export const DELETE = withPrivilege(
-  "SETUP_APPLICATION",
-  async (req: NextRequest, ...args: unknown[]) => {
+  PrivilegeName.DELETE_DATA,
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const id = context.params.id;
+      const id = await context.params.id;
 
       // Vérifier si la classe existe
       const existingClassRoom = await classRoomService.getClassRoomById(id);

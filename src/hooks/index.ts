@@ -26,7 +26,7 @@ export {
   useAdmins,
   USERS_QUERY_KEY,
   ADMINS_QUERY_KEY,
-} from "./useUsers";
+} from "./query/useUsers";
 
 // Hooks pour les rôles et privilèges
 export { usePrivileges } from "./query/usePrivileges";

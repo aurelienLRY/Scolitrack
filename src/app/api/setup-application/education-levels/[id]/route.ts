@@ -1,8 +1,7 @@
 "use server";
 
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth/auth";
-import { withPrivilege } from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { educationLevelService } from "@/lib/services/educationLevel.service";
 import {
   successResponse,
@@ -12,29 +11,29 @@ import {
   HttpStatus,
 } from "@/lib/services/api.service";
 
-// Type d'interface pour les paramètres
-interface Params {
+/**
+ * Type sécifique pour les paramètres de cette route
+ */
+type EducationLevelParams = {
   params: {
     id: string;
   };
-}
+};
 
-// Fonction pour mettre à jour un niveau d'éducation
-export const PUT = withPrivilege(
-  "UPDATE_DATA",
-  async (req: NextRequest, ...args: unknown[]) => {
+/**
+ * Fonction pour mettre à jour un niveau d'éducation
+ * @param req - La requête HTTP entrante
+ * @param context - Le contexte contenant les paramètres de route
+ * @returns Réponse de succès avec le niveau d'éducation mis à jour, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 404 si le niveau d'éducation n'est pas trouvé
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
+export const PUT = withPrivilege<unknown, EducationLevelParams>(
+  PrivilegeName.UPDATE_DATA,
+  async (req: NextRequest, context: EducationLevelParams) => {
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const id = context.params.id;
+      const { id } = await context.params;
 
       // Vérifier si le niveau existe
       const existingLevel = await educationLevelService.getEducationLevelById(
@@ -77,22 +76,20 @@ export const PUT = withPrivilege(
   }
 );
 
-// Fonction pour supprimer un niveau d'éducation
-export const DELETE = withPrivilege(
-  "DELETE_DATA",
-  async (req: NextRequest, ...args: unknown[]) => {
+/**
+ * Fonction pour supprimer un niveau d'éducation
+ * @param req - La requête HTTP entrante
+ * @param context - Le contexte contenant les paramètres de route
+ * @returns Réponse de succès avec le niveau d'éducation supprimé, ou une erreur appropriée
+ * @throws Erreur 401 si l'utilisateur n'est pas authentifié
+ * @throws Erreur 404 si le niveau d'éducation n'est pas trouvé
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
+export const DELETE = withPrivilege<unknown, EducationLevelParams>(
+  PrivilegeName.DELETE_DATA,
+  async (req: NextRequest, context: EducationLevelParams) => {
     try {
-      const session = await auth();
-      const context = args[0] as Params;
-
-      if (!session?.user) {
-        return errorResponse({
-          feedback: "Non autorisé",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-
-      const id = context.params.id;
+      const { id } = await context.params;
 
       // Vérifier si le niveau existe
       const existingLevel = await educationLevelService.getEducationLevelById(

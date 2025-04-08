@@ -1,3 +1,5 @@
+import { PrivilegeName } from "@/config/privileges.config";
+
 export type TPrivilegeRoute = {
   path: string;
   privilege: string;
@@ -20,11 +22,11 @@ const publicRoutes = [
 const privilegesApiRoutes: TPrivilegeRoute[] = [
   {
     path: "/api/setup-application",
-    privilege: "SETUP_APPLICATION",
+    privilege: PrivilegeName.SETUP_APPLICATION,
   },
   {
     path: "/api/users/[id]/role",
-    privilege: "SETUP_APPLICATION",
+    privilege: PrivilegeName.SETUP_APPLICATION,
   },
 
   // Ajoutez d'autres routes API protégées ici
@@ -36,7 +38,7 @@ const privilegesApiRoutes: TPrivilegeRoute[] = [
 const privilegesRoutes: TPrivilegeRoute[] = [
   {
     path: "/private/setup-application",
-    privilege: "SETUP_APPLICATION",
+    privilege: PrivilegeName.SETUP_APPLICATION,
   },
   // Ajoutez d'autres routes UI protégées ici
 ];

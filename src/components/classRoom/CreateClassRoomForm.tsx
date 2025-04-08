@@ -6,11 +6,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import {
   classRoomSchema,
   classRoomUpdateSchema,
-  ClassRoomFormData,
+  TClassRoomFormData,
 } from "@/schemas/ClassRoomSchema";
+
+import { ClassRoom } from "@prisma/client";
 import Input from "@/components/ui/inputs/Input";
 import { Button } from "@/components/ui/button";
-import { ClassRoom } from "@/lib/services/classroom.service";
 import {
   useCreateClassRoom,
   useUpdateClassRoom,
@@ -102,10 +103,10 @@ export default function CreateClassRoomForm({
     setValue,
     watch,
     control,
-  } = useForm<ClassRoomFormData>({
+  } = useForm<TClassRoomFormData>({
     resolver: (isEditing
       ? yupResolver(classRoomUpdateSchema)
-      : yupResolver(classRoomSchema)) as Resolver<ClassRoomFormData>,
+      : yupResolver(classRoomSchema)) as Resolver<TClassRoomFormData>,
     defaultValues:
       isEditing && classRoom
         ? {

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/prisma";
+import { PrivilegeName } from "@/config/privileges.config";
 
 /**
  * Service pour la gestion des privilèges
@@ -32,7 +33,7 @@ export const privilegeService = {
   /**
    * Récupère un privilège par son nom
    */
-  async getPrivilegeByName(name: string) {
+  async getPrivilegeByName(name: PrivilegeName) {
     return prisma.privilege.findUnique({
       where: { name },
       include: {

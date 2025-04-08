@@ -55,13 +55,8 @@ export const ESTABLISHMENT_POST_MIDDLEWARE = async (
     ) {
       return result;
     }
-
-    console.log("---------- ESTABLISHMENT_POST_MIDDLEWARE ----------");
-    console.log("Params action: ", params.action);
-
     // Traitement des résultats selon leur type
     if (Array.isArray(result)) {
-      console.log("ESTABLISHMENT_POST_MIDDLEWARE: Array détecté");
       // Collection d'établissements (findMany)
       return result.map((establishment) => {
         if (!establishment) return establishment;
@@ -80,7 +75,6 @@ export const ESTABLISHMENT_POST_MIDDLEWARE = async (
         return establishment;
       });
     } else if (hasAdmin(result) && result.admin?.name) {
-      console.log("ESTABLISHMENT_POST_MIDDLEWARE: Objet unique détecté");
       // Établissement unique (findFirst/findUnique)
       const decryptedName = safeDecrypt(result.admin.name);
 

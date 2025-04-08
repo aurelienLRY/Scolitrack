@@ -1,14 +1,43 @@
 import { prisma } from "@/lib/prisma/prisma";
-import { ClassRoom, ClassRoomPersonnel, EducationLevel } from "@prisma/client";
+import { ClassRoomPersonnel } from "@prisma/client";
 import {
   classRoomSchema,
   classRoomUpdateSchema,
   classRoomPersonnelSchema,
-  ClassRoomFormData,
-  ClassRoomUpdateFormData,
-  ClassRoomPersonnelFormData,
+  TClassRoomFormData,
+  TClassRoomUpdateFormData,
+  TClassRoomPersonnelFormData,
 } from "@/schemas/ClassRoomSchema";
-import { ClassRoomFullData } from "@/types/classroom.type";
+
+import {
+  ClassRoomComplete,
+  ClassRoomPersonnelWithUser,
+} from "@/types/classroom.type";
+
+/**
+ * Requête standard pour inclure toutes les relations d'une classe
+ * Utilisée pour standardiser les réponses dans tous les services
+ */
+const classRoomInclude = {
+  educationLevels: {
+    include: {
+      educationLevel: true,
+    },
+  },
+  classPersonnel: {
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          roleName: true,
+          image: true,
+        },
+      },
+    },
+  },
+};
 
 export const classRoomService = {
   /**
@@ -16,50 +45,28 @@ export const classRoomService = {
    */
   async getClassRoomsByEstablishment(
     establishmentId: string
-  ): Promise<ClassRoom[] | null> {
+  ): Promise<ClassRoomComplete[]> {
     return prisma.classRoom.findMany({
       where: { establishmentId },
       orderBy: { name: "asc" },
-      include: {
-        educationLevels: {
-          include: {
-            educationLevel: true,
-          },
-        },
-        classPersonnel: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
+      include: classRoomInclude,
+    }) as Promise<ClassRoomComplete[]>;
   },
 
   /**
    * Récupère une classe par son ID
    */
-  async getClassRoomById(id: string): Promise<ClassRoomFullData | null> {
+  async getClassRoomById(id: string): Promise<ClassRoomComplete | null> {
     return prisma.classRoom.findUnique({
       where: { id },
-      include: {
-        educationLevels: {
-          include: {
-            educationLevel: true,
-          },
-        },
-        classPersonnel: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    }) as Promise<ClassRoomFullData | null>;
+      include: classRoomInclude,
+    }) as Promise<ClassRoomComplete | null>;
   },
 
   /**
    * Crée une nouvelle classe avec validation des données
    */
-  async createClassRoom(data: ClassRoomFormData): Promise<ClassRoom> {
+  async createClassRoom(data: TClassRoomFormData): Promise<ClassRoomComplete> {
     const validatedData = await classRoomSchema.validate(data, {
       abortEarly: false,
       stripUnknown: true,
@@ -96,38 +103,14 @@ export const classRoomService = {
     // 3. Récupérer la classe complète avec ses relations
     const classRoomWithRelations = await prisma.classRoom.findUnique({
       where: { id: newClassRoom.id },
-      include: {
-        educationLevels: {
-          include: {
-            educationLevel: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-          },
-        },
-      },
+      include: classRoomInclude,
     });
 
     if (!classRoomWithRelations) {
       throw new Error("Erreur lors de la création de la classe");
     }
 
-    // Convertir le résultat en type ClassRoom
-    return {
-      id: classRoomWithRelations.id,
-      name: classRoomWithRelations.name,
-      capacity: classRoomWithRelations.capacity,
-      establishmentId: classRoomWithRelations.establishmentId,
-      logoUrl: classRoomWithRelations.logoUrl,
-      logoFileId: classRoomWithRelations.logoFileId,
-      colorCode: classRoomWithRelations.colorCode,
-      createdAt: classRoomWithRelations.createdAt,
-      updatedAt: classRoomWithRelations.updatedAt,
-      educationLevels: classRoomWithRelations.educationLevels,
-    } as ClassRoom;
+    return classRoomWithRelations as ClassRoomComplete;
   },
 
   /**
@@ -135,8 +118,8 @@ export const classRoomService = {
    */
   async updateClassRoom(
     id: string,
-    data: ClassRoomUpdateFormData
-  ): Promise<ClassRoom> {
+    data: TClassRoomUpdateFormData
+  ): Promise<ClassRoomComplete> {
     const validatedData = await classRoomUpdateSchema.validate(data, {
       abortEarly: false,
       stripUnknown: true,
@@ -183,60 +166,24 @@ export const classRoomService = {
     // 3. Récupérer la classe mise à jour avec ses relations
     const classRoomWithRelations = await prisma.classRoom.findUnique({
       where: { id },
-      include: {
-        educationLevels: {
-          include: {
-            educationLevel: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-          },
-        },
-      },
+      include: classRoomInclude,
     });
 
     if (!classRoomWithRelations) {
       throw new Error("Erreur lors de la mise à jour de la classe");
     }
 
-    // Convertir le résultat en type ClassRoom
-    return {
-      id: classRoomWithRelations.id,
-      name: classRoomWithRelations.name,
-      capacity: classRoomWithRelations.capacity,
-      establishmentId: classRoomWithRelations.establishmentId,
-      logoUrl: classRoomWithRelations.logoUrl,
-      logoFileId: classRoomWithRelations.logoFileId,
-      colorCode: classRoomWithRelations.colorCode,
-      createdAt: classRoomWithRelations.createdAt,
-      updatedAt: classRoomWithRelations.updatedAt,
-      educationLevels: classRoomWithRelations.educationLevels,
-    } as ClassRoom;
+    return classRoomWithRelations as ClassRoomComplete;
   },
 
   /**
    * Supprime une classe
    */
-  async deleteClassRoom(id: string): Promise<ClassRoom> {
+  async deleteClassRoom(id: string): Promise<ClassRoomComplete> {
     return prisma.classRoom.delete({
       where: { id },
-      include: {
-        educationLevels: {
-          include: {
-            educationLevel: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-          },
-        },
-      },
-    }) as Promise<ClassRoom>;
+      include: classRoomInclude,
+    }) as Promise<ClassRoomComplete>;
   },
 
   /**
@@ -244,7 +191,7 @@ export const classRoomService = {
    */
   async assignPersonnelToClassRoom(
     classRoomId: string,
-    data: ClassRoomPersonnelFormData
+    data: TClassRoomPersonnelFormData
   ): Promise<ClassRoomPersonnel> {
     // Validation des données
     const validatedData = await classRoomPersonnelSchema.validate(data, {
@@ -307,7 +254,9 @@ export const classRoomService = {
   /**
    * Récupère tous les membres du personnel d'une classe
    */
-  async getClassRoomPersonnel(classRoomId: string) {
+  async getClassRoomPersonnel(
+    classRoomId: string
+  ): Promise<ClassRoomPersonnelWithUser[]> {
     return prisma.classRoomPersonnel.findMany({
       where: { classRoomId },
       include: {
@@ -324,7 +273,7 @@ export const classRoomService = {
       orderBy: {
         assignedAt: "asc",
       },
-    });
+    }) as Promise<ClassRoomPersonnelWithUser[]>;
   },
 
   /**
@@ -335,19 +284,7 @@ export const classRoomService = {
       where: { userId },
       include: {
         classRoom: {
-          include: {
-            educationLevels: {
-              include: {
-                educationLevel: {
-                  select: {
-                    id: true,
-                    name: true,
-                    code: true,
-                  },
-                },
-              },
-            },
-          },
+          include: classRoomInclude,
         },
       },
       orderBy: {
