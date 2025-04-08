@@ -6,7 +6,6 @@ import {
   notFoundResponse,
   handleApiError,
 } from "@/lib/services/api.service";
-import { RouteParamsWithId } from "@/lib/services/auth.service";
 
 /**
  * Récupérer un privilège par son ID
@@ -16,7 +15,10 @@ import { RouteParamsWithId } from "@/lib/services/auth.service";
  * @throws Erreur 404 si le privilège n'est pas trouvé
  * @throws Erreur 500 pour les autres erreurs serveur
  */
-export async function GET(req: NextRequest, context: RouteParamsWithId) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     const { id } = await context.params;
 

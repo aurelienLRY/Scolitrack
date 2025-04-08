@@ -55,6 +55,7 @@ export const ESTABLISHMENT_POST_MIDDLEWARE = async (
     ) {
       return result;
     }
+    console.log("---- ESTABLISHMENT PRISMA MIDDLEWARE ----");
     // Traitement des résultats selon leur type
     if (Array.isArray(result)) {
       // Collection d'établissements (findMany)
@@ -91,5 +92,7 @@ export const ESTABLISHMENT_POST_MIDDLEWARE = async (
   } catch (error) {
     console.error("Erreur dans ESTABLISHMENT_POST_MIDDLEWARE:", error);
     return result;
+  } finally {
+    console.log("---- ESTABLISHMENT PRISMA MIDDLEWARE FINISHED ----");
   }
 };

@@ -1,10 +1,6 @@
 "use server";
 import { NextRequest } from "next/server";
-import {
-  withPrivilege,
-  PrivilegeName,
-  RouteParamsWithId,
-} from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { classRoomService } from "@/lib/services/classroom.service";
 import {
   successResponse,
@@ -22,7 +18,10 @@ import {
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  * @throws Erreur 404 si la classe n'est pas trouvée
  */
-export async function GET(req: NextRequest, context: RouteParamsWithId) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     const { id } = await context.params;
 
@@ -48,9 +47,9 @@ export async function GET(req: NextRequest, context: RouteParamsWithId) {
  * @returns Réponse de succès avec la classe mise à jour, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const PUT = withPrivilege<unknown, RouteParamsWithId>(
+export const PUT = withPrivilege(
   PrivilegeName.UPDATE_DATA,
-  async (req: NextRequest, context: RouteParamsWithId) => {
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
       const { id } = await context.params;
 
@@ -108,11 +107,11 @@ export const PUT = withPrivilege<unknown, RouteParamsWithId>(
  * @returns Réponse de succès avec la classe supprimée, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const DELETE = withPrivilege<unknown, RouteParamsWithId>(
+export const DELETE = withPrivilege(
   PrivilegeName.DELETE_DATA,
-  async (req: NextRequest, context: RouteParamsWithId) => {
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
-      const { id } = await context.params;
+      const id = await context.params.id;
 
       // Vérifier si la classe existe
       const existingClassRoom = await classRoomService.getClassRoomById(id);

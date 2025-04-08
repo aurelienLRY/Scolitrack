@@ -288,6 +288,8 @@ export default function PrivilegesManager() {
   // Initialiser les privilèges sélectionnés à partir des rôles chargés
   useEffect(() => {
     if (!roles || roles.length === 0) return;
+    console.log("Initializing privileges from roles:", roles);
+
     const initialPrivileges: Record<string, string[]> = {};
 
     roles.forEach((role) => {
@@ -301,12 +303,20 @@ export default function PrivilegesManager() {
             privilegeIds.push(rp.privilege.id);
           }
         });
+        console.log(
+          `Role ${role.name} privileges (from rolePrivileges):`,
+          privilegeIds
+        );
       }
       // Si nous avons directement un tableau de privileges
       else if (role.privileges && role.privileges.length > 0) {
         role.privileges.forEach((privilege) => {
           privilegeIds.push(privilege.id);
         });
+        console.log(
+          `Role ${role.name} privileges (from privileges):`,
+          privilegeIds
+        );
       }
 
       initialPrivileges[role.id] = privilegeIds;
@@ -314,7 +324,6 @@ export default function PrivilegesManager() {
 
     setSelectedPrivileges(initialPrivileges);
     setSortedRoles(getSortedRoles());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roles]);
 
   /**

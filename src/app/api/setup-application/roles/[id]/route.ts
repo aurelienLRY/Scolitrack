@@ -1,11 +1,7 @@
 "use server";
 import { NextRequest } from "next/server";
 import { roleService } from "@/lib/services/role.service";
-import {
-  withPrivilege,
-  PrivilegeName,
-  RouteParamsWithId,
-} from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import {
   successResponse,
   notFoundResponse,
@@ -22,10 +18,13 @@ import {
  * @throws Erreur 404 si le rôle n'est pas trouvé
  * @throws Erreur 500 pour les autres erreurs serveur
  */
-export async function GET(req: NextRequest, context: RouteParamsWithId) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     // Extraire l'ID des paramètres de l'URL
-    const { id } = await context.params;
+    const id = await context.params.id;
 
     if (!id) {
       return errorResponse({
@@ -58,9 +57,9 @@ export async function GET(req: NextRequest, context: RouteParamsWithId) {
  * @throws Erreur 404 si le rôle n'est pas trouvé
  * @throws Erreur 500 pour les autres erreurs serveur
  */
-export const PUT = withPrivilege<unknown, RouteParamsWithId>(
+export const PUT = withPrivilege(
   PrivilegeName.UPDATE_DATA,
-  async (req: NextRequest, context: RouteParamsWithId) => {
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
       // Extraire l'ID des paramètres de l'URL
       const { id } = await context.params;

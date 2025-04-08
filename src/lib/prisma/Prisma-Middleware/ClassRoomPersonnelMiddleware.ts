@@ -57,7 +57,7 @@ export const CLASSROOM_PERSONNEL_POST_MIDDLEWARE = async (
     ) {
       return result;
     }
-
+    console.log("---- CLASSROOM PERSONNEL PRISMA MIDDLEWARE ----");
     // Traitement des résultats selon leur type
     if (Array.isArray(result)) {
       // Collection de personnel (findMany)
@@ -94,5 +94,7 @@ export const CLASSROOM_PERSONNEL_POST_MIDDLEWARE = async (
   } catch (error) {
     console.error("Erreur dans CLASSROOM_PERSONNEL_POST_MIDDLEWARE:", error);
     return result;
+  } finally {
+    console.log("---- CLASSROOM PERSONNEL PRISMA MIDDLEWARE FINISHED ----");
   }
 };

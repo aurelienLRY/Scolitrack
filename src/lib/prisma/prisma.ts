@@ -27,6 +27,7 @@ export const prisma =
 // Middleware
 prisma.$use(async (params, next) => {
   try {
+    console.log("---- PRISMA MIDDLEWARE ----");
     // Avant l'opération - préparation des données
     if (params.model === "User") {
       USER_PRE_MIDDLEWARE(params);
@@ -74,5 +75,7 @@ prisma.$use(async (params, next) => {
   } catch (error) {
     console.error("Prisma middleware | Error : ", error);
     throw error;
+  } finally {
+    console.log("---- PRISMA MIDDLEWARE FINISHED ----");
   }
 });
