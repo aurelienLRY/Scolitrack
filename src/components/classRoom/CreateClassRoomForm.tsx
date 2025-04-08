@@ -9,7 +9,7 @@ import {
   TClassRoomFormData,
 } from "@/schemas/ClassRoomSchema";
 
-import { ClassRoomComplete } from "@/types/classroom.type";
+import { ClassRoom } from "@prisma/client";
 import Input from "@/components/ui/inputs/Input";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ import {
 import { Checkbox } from "@/components/ui/inputs/checkbox";
 
 interface ClassRoomFormProps {
-  classRoom?: ClassRoomComplete;
+  classRoom?: ClassRoom;
   establishmentId: string;
   isEditing?: boolean;
   isOpen: boolean;
@@ -180,7 +180,7 @@ export default function CreateClassRoomForm({
     }
   }, [isEditing, classRoom, setValue]);
 
-  const onSubmit = async (data: TClassRoomFormData) => {
+  const onSubmit = async (data: ClassRoomFormData) => {
     try {
       // Si une image a été sélectionnée, l'uploader maintenant
       if (selectedFile) {

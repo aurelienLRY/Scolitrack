@@ -1,10 +1,6 @@
 "use server";
 import { NextRequest } from "next/server";
-import {
-  withPrivilege,
-  PrivilegeName,
-  RouteParamsWithId,
-} from "@/lib/services/auth.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { classRoomService } from "@/lib/services/classroom.service";
 import {
   successResponse,
@@ -18,11 +14,14 @@ import {
 /**
  * Récupérer le personnel d'une classe
  * @param req - La requête HTTP entrante
- * @param context - Le contexte contenant les paramètres de route
+ * @param args - Les arguments de la requête
  * @returns Réponse de succès avec le personnel de la classe récupéré, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export async function GET(req: NextRequest, context: RouteParamsWithId) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     const { id } = await context.params;
 
@@ -51,11 +50,14 @@ export async function GET(req: NextRequest, context: RouteParamsWithId) {
 /**
  * Attribuer un membre du personnel à une classe
  * @param req - La requête HTTP entrante
- * @param context - Le contexte contenant les paramètres de route
+ * @param args - Les arguments de la requête
  * @returns Réponse de succès avec le membre du personnel attribué à la classe, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export async function POST(req: NextRequest, context: RouteParamsWithId) {
+export async function POST(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     const { id } = await context.params;
 
@@ -108,13 +110,13 @@ export async function POST(req: NextRequest, context: RouteParamsWithId) {
 /**
  * Supprimer un membre du personnel d'une classe
  * @param req - La requête HTTP entrante
- * @param context - Le contexte contenant les paramètres de route
+ * @param args - Les arguments de la requête
  * @returns Réponse de succès avec le membre du personnel supprimé de la classe, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const DELETE = withPrivilege<unknown, RouteParamsWithId>(
+export const DELETE = withPrivilege(
   PrivilegeName.DELETE_DATA,
-  async (req: NextRequest, context: RouteParamsWithId) => {
+  async (req: NextRequest, context: { params: { id: string } }) => {
     try {
       const { id } = await context.params;
       const { searchParams } = new URL(req.url);
