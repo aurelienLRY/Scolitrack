@@ -4,10 +4,18 @@ import { PrivilegeName } from "@/config/privileges.config";
 
 /**
  * Type générique pour les paramètres de route
+ * Dans Next.js 15, params est une Promise
  */
 export type RouteParams = {
-  params: Record<string, string>;
+  params: Promise<Record<string, string>>;
   searchParams?: Record<string, string | string[]>;
+};
+
+/**
+ * Type pour les paramètres de route spécifique à un ID
+ */
+export type RouteParamsWithId = {
+  params: Promise<{ id: string }>;
 };
 
 /**

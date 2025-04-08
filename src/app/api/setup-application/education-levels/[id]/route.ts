@@ -15,9 +15,7 @@ import {
  * Type sécifique pour les paramètres de cette route
  */
 type EducationLevelParams = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 };
 
 /**

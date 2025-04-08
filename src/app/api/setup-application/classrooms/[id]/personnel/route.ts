@@ -1,6 +1,10 @@
 "use server";
 import { NextRequest } from "next/server";
-import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
+import {
+  withPrivilege,
+  PrivilegeName,
+  RouteParamsWithId,
+} from "@/lib/services/auth.service";
 import { classRoomService } from "@/lib/services/classroom.service";
 import {
   successResponse,
@@ -14,14 +18,11 @@ import {
 /**
  * Récupérer le personnel d'une classe
  * @param req - La requête HTTP entrante
- * @param args - Les arguments de la requête
+ * @param context - Le contexte contenant les paramètres de route
  * @returns Réponse de succès avec le personnel de la classe récupéré, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, context: RouteParamsWithId) {
   try {
     const { id } = await context.params;
 
@@ -50,14 +51,11 @@ export async function GET(
 /**
  * Attribuer un membre du personnel à une classe
  * @param req - La requête HTTP entrante
- * @param args - Les arguments de la requête
+ * @param context - Le contexte contenant les paramètres de route
  * @returns Réponse de succès avec le membre du personnel attribué à la classe, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export async function POST(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, context: RouteParamsWithId) {
   try {
     const { id } = await context.params;
 
@@ -110,13 +108,13 @@ export async function POST(
 /**
  * Supprimer un membre du personnel d'une classe
  * @param req - La requête HTTP entrante
- * @param args - Les arguments de la requête
+ * @param context - Le contexte contenant les paramètres de route
  * @returns Réponse de succès avec le membre du personnel supprimé de la classe, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const DELETE = withPrivilege(
+export const DELETE = withPrivilege<unknown, RouteParamsWithId>(
   PrivilegeName.DELETE_DATA,
-  async (req: NextRequest, context: { params: { id: string } }) => {
+  async (req: NextRequest, context: RouteParamsWithId) => {
     try {
       const { id } = await context.params;
       const { searchParams } = new URL(req.url);
