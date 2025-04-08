@@ -324,6 +324,7 @@ export default function PrivilegesManager() {
 
     setSelectedPrivileges(initialPrivileges);
     setSortedRoles(getSortedRoles());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roles]);
 
   /**
