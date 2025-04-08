@@ -20,11 +20,11 @@ import {
  */
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Extraire l'ID des paramètres de l'URL
-    const id = await context.params.id;
+    const { id } = await context.params;
 
     if (!id) {
       return errorResponse({
@@ -57,9 +57,9 @@ export async function GET(
  * @throws Erreur 404 si le rôle n'est pas trouvé
  * @throws Erreur 500 pour les autres erreurs serveur
  */
-export const PUT = withPrivilege(
+export const PUT = withPrivilege<unknown, { params: Promise<{ id: string }> }>(
   PrivilegeName.UPDATE_DATA,
-  async (req: NextRequest, context: { params: { id: string } }) => {
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
     try {
       // Extraire l'ID des paramètres de l'URL
       const { id } = await context.params;

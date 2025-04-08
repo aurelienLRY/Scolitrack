@@ -6,7 +6,7 @@ import { PrivilegeName } from "@/config/privileges.config";
  * Type générique pour les paramètres de route
  */
 export type RouteParams = {
-  params: Record<string, string>;
+  params: Promise<Record<string, string>>;
   searchParams?: Record<string, string | string[]>;
 };
 
