@@ -47,9 +47,9 @@ export async function GET(
  * @returns Réponse de succès avec la classe mise à jour, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const PUT = withPrivilege(
+export const PUT = withPrivilege<unknown, { params: Promise<{ id: string }> }>(
   PrivilegeName.UPDATE_DATA,
-  async (req: NextRequest, context: { params: { id: string } }) => {
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;
 
@@ -107,11 +107,14 @@ export const PUT = withPrivilege(
  * @returns Réponse de succès avec la classe supprimée, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const DELETE = withPrivilege(
+export const DELETE = withPrivilege<
+  unknown,
+  { params: Promise<{ id: string }> }
+>(
   PrivilegeName.DELETE_DATA,
-  async (req: NextRequest, context: { params: { id: string } }) => {
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
     try {
-      const id = await context.params.id;
+      const { id } = await context.params;
 
       // Vérifier si la classe existe
       const existingClassRoom = await classRoomService.getClassRoomById(id);

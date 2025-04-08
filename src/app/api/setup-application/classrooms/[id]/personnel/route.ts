@@ -114,9 +114,12 @@ export async function POST(
  * @returns Réponse de succès avec le membre du personnel supprimé de la classe, ou une erreur appropriée
  * @throws Erreur 401 si l'utilisateur n'est pas authentifié
  */
-export const DELETE = withPrivilege(
+export const DELETE = withPrivilege<
+  unknown,
+  { params: Promise<{ id: string }> }
+>(
   PrivilegeName.DELETE_DATA,
-  async (req: NextRequest, context: { params: { id: string } }) => {
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
     try {
       const { id } = await context.params;
       const { searchParams } = new URL(req.url);
