@@ -5,6 +5,40 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 
+// Polyfill pour File en environnement serveur (Node.js)
+// Cette classe résout l'erreur "File is not defined" en production
+class NodeFile {
+  name: string;
+  type: string;
+  data: Buffer;
+
+  constructor(data: Buffer, name: string, options?: { type?: string }) {
+    this.data = data;
+    this.name = name;
+    this.type = options?.type || "application/octet-stream";
+  }
+
+  async arrayBuffer() {
+    return this.data.buffer;
+  }
+}
+
+// Interface pour les objets de type fichier
+export interface FileWithType {
+  name: string;
+  type: string;
+  arrayBuffer?: () => Promise<ArrayBuffer>;
+  [key: string]: unknown;
+}
+
+// Type unifié pour les fichiers qui fonctionne à la fois côté client et serveur
+type UniversalFile =
+  | File
+  | NodeFile
+  | Buffer
+  | FormDataEntryValue
+  | FileWithType;
+
 export interface ImageStorageOptions {
   directory?: string;
   quality?: number;
@@ -28,7 +62,7 @@ export const imageService = {
    * Stocke une image téléchargée et renvoie son URL et son ID
    */
   async storeImage(
-    file: File | Buffer,
+    file: UniversalFile,
     options: ImageStorageOptions = {}
   ): Promise<ImageStorageResult> {
     const {
@@ -41,63 +75,121 @@ export const imageService = {
       fileId = `${FILE_ID_PREFIX}${uuidv4()}`,
     } = options;
 
-    // Créer le dossier s'il n'existe pas
-    await fs.mkdir(directory, { recursive: true });
+    try {
+      // Créer tous les dossiers nécessaires
+      // Gérer les chemins avec \ ou / sur Windows
+      const normalizedDir = directory.replace(/\\/g, "/");
+      const fullDirPath = path.join(process.cwd(), normalizedDir);
 
-    // Générer un nom de fichier basé sur l'ID du fichier
-    const filename = `${fileId}.${format}`;
-    const fullPath = path.join(process.cwd(), directory, filename);
+      // Créer tous les dossiers sur le chemin
+      await fs.mkdir(fullDirPath, { recursive: true });
 
-    // Convertir le fichier en buffer
-    let buffer: Buffer;
-    if (file instanceof Buffer) {
-      buffer = file;
-    } else {
-      // Pour un objet File
-      if ("arrayBuffer" in file) {
+      // Vérifier que le dossier a bien été créé
+      await fs.access(fullDirPath);
+
+      // Générer un nom de fichier basé sur l'ID du fichier
+      const filename = `${fileId}.${format}`;
+      const fullPath = path.join(fullDirPath, filename);
+
+      // Convertir le fichier en buffer
+      let buffer: Buffer;
+
+      if (Buffer.isBuffer(file)) {
+        buffer = file;
+      } else if (file instanceof NodeFile) {
+        buffer = file.data;
+      } else if (typeof File !== "undefined" && file instanceof File) {
+        // Pour un objet File (côté navigateur)
         const arrayBuffer = await file.arrayBuffer();
         buffer = Buffer.from(arrayBuffer);
+      } else if (typeof file === "object" && file !== null) {
+        // Gestion d'objets FormDataEntryValue ou FileWithType
+        if ("arrayBuffer" in file && typeof file.arrayBuffer === "function") {
+          const arrayBuffer = await (file as FileWithType).arrayBuffer!();
+          buffer = Buffer.from(arrayBuffer);
+        } else if ("stream" in file && typeof file.stream === "function") {
+          // Pour les objets avec une méthode stream (comme certains FormDataEntryValue)
+          const chunks: Buffer[] = [];
+          const streamMethod = (
+            file as { stream: () => ReadableStream<Uint8Array> }
+          ).stream;
+          const stream = streamMethod();
+
+          // Utiliser le reader au lieu de for await...of
+          const reader = stream.getReader();
+          let done = false;
+
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            if (value) {
+              chunks.push(Buffer.from(value));
+            }
+          }
+
+          buffer = Buffer.concat(chunks);
+        } else if (file instanceof Blob) {
+          // Pour les objets Blob
+          const arrayBuffer = await file.arrayBuffer();
+          buffer = Buffer.from(arrayBuffer);
+        } else {
+          throw new Error(
+            "Format de fichier non pris en charge: impossible d'extraire les données binaires"
+          );
+        }
+      } else if (typeof file === "string") {
+        // Si par hasard nous recevons une chaîne (URL ou chemin)
+        if (file.startsWith("data:")) {
+          // Data URL (base64)
+          const base64Data = file.split(",")[1];
+          buffer = Buffer.from(base64Data, "base64");
+        } else {
+          // Considérer comme chemin de fichier local
+          buffer = await fs.readFile(file);
+        }
       } else {
-        // Si c'est un autre type avec des données binaires
         throw new Error("Format de fichier non pris en charge");
       }
+
+      // Traiter l'image avec Sharp
+      let sharpInstance = sharp(buffer);
+
+      // Redimensionner si nécessaire
+      if (width || height) {
+        sharpInstance = sharpInstance.resize({
+          width,
+          height,
+          fit,
+          withoutEnlargement: true,
+        });
+      }
+
+      // Convertir au format souhaité avec la qualité spécifiée
+      if (format === "webp") {
+        sharpInstance = sharpInstance.webp({ quality });
+      } else if (format === "jpeg") {
+        sharpInstance = sharpInstance.jpeg({ quality });
+      } else if (format === "png") {
+        sharpInstance = sharpInstance.png({ quality });
+      }
+
+      // Sauvegarder l'image traitée
+      await sharpInstance.toFile(fullPath);
+
+      // Calculer l'URL relative pour accéder à l'image
+      const relativePath = normalizedDir.replace(/^public\//, "/");
+      const url = `${relativePath}/${filename}`;
+
+      // Retourner les informations sur l'image stockée
+      return {
+        url,
+        fileId,
+        filePath: fullPath,
+      };
+    } catch (error) {
+      console.error("Erreur lors du stockage de l'image:", error);
+      throw error;
     }
-
-    // Traiter l'image avec Sharp
-    let sharpInstance = sharp(buffer);
-
-    // Redimensionner si nécessaire
-    if (width || height) {
-      sharpInstance = sharpInstance.resize({
-        width,
-        height,
-        fit,
-        withoutEnlargement: true,
-      });
-    }
-
-    // Convertir au format souhaité avec la qualité spécifiée
-    if (format === "webp") {
-      sharpInstance = sharpInstance.webp({ quality });
-    } else if (format === "jpeg") {
-      sharpInstance = sharpInstance.jpeg({ quality });
-    } else if (format === "png") {
-      sharpInstance = sharpInstance.png({ quality });
-    }
-
-    // Sauvegarder l'image traitée
-    await sharpInstance.toFile(fullPath);
-
-    // Calculer l'URL relative pour accéder à l'image
-    const relativePath = directory.replace(/^public\//, "/");
-    const url = `${relativePath}/${filename}`;
-
-    // Retourner les informations sur l'image stockée
-    return {
-      url,
-      fileId,
-      filePath: fullPath,
-    };
   },
 
   /**
@@ -142,13 +234,32 @@ export const imageService = {
     if (!fileId) return false;
 
     try {
-      // Rechercher les fichiers qui commencent par ce fileId dans les répertoires uploads
-      const uploadsDir = path.join(process.cwd(), "public/uploads");
-      const allFilesDeleted = await this.findAndDeleteFilesByPrefix(
-        uploadsDir,
-        fileId
-      );
-      return allFilesDeleted;
+      // Chercher dans tous les répertoires où des images peuvent être stockées
+      const directories = [
+        path.join(process.cwd(), "public/img/uploads"),
+        path.join(process.cwd(), "public/uploads"),
+      ];
+
+      let deleted = false;
+
+      // Parcourir tous les répertoires possibles
+      for (const dir of directories) {
+        try {
+          // Vérifier si le répertoire existe avant de le scanner
+          await fs.access(dir);
+          const dirDeleted = await this.findAndDeleteFilesByPrefix(dir, fileId);
+          deleted = deleted || dirDeleted;
+        } catch (err) {
+          // Ignorer les erreurs si le répertoire n'existe pas
+          console.log(
+            `Le répertoire ${dir} n'existe pas, passage au suivant. Erreur: ${
+              err instanceof Error ? err.message : String(err)
+            }`
+          );
+        }
+      }
+
+      return deleted;
     } catch (error) {
       console.error(
         `Erreur lors de la suppression de l'image avec fileId ${fileId}:`,
