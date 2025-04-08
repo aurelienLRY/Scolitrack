@@ -86,6 +86,7 @@ export const config = {
     // - _next/static (fichiers statiques)
     // - _next/image (images optimisées)
     // - favicon.ico (icône du navigateur)
-    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
+    // - img/uploads (fichiers téléchargés par les utilisateurs)
+    "/((?!_next/static|_next/image|favicon.ico|api/auth|img/uploads).*)",
   ],
 };
