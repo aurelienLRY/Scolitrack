@@ -25,9 +25,34 @@ const nextConfig: NextConfig = {
             key: "Cache-Control",
             value: "public, max-age=86400",
           },
+        ],
+      },
+      // Configuration spécifique pour les fichiers webp
+      {
+        source: "/img/uploads/:path*.webp",
+        headers: [
           {
             key: "Content-Type",
-            value: "image/:type*",
+            value: "image/webp",
+          },
+        ],
+      },
+      // Configuration pour les autres types d'images
+      {
+        source: "/img/uploads/:path*.jpg",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "image/jpeg",
+          },
+        ],
+      },
+      {
+        source: "/img/uploads/:path*.png",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "image/png",
           },
         ],
       },

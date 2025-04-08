@@ -22,7 +22,7 @@ export const prisma =
     log: ["error"], // Activer la journalisation des erreurs uniquement
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+//if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 // Middleware
 prisma.$use(async (params, next) => {
