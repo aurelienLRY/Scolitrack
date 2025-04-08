@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 import { adminNavItems } from "./setup-NavItem.data";
-import { useRoleStore } from "@/context/store/RoleStore";
-import { usePrivilegeStore } from "@/context/store/PrivilegeStore";
 
 export default function AdminTemplate({
   children,
@@ -14,15 +12,6 @@ export default function AdminTemplate({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { fetchRoles } = useRoleStore();
-  const { fetchPrivileges } = usePrivilegeStore();
-
-  React.useEffect(() => {
-    fetchRoles();
-    fetchPrivileges();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -32,12 +21,12 @@ export default function AdminTemplate({
             "text-sm font-medium hover:text-accent transition-all duration-300"
           )}
         >
-          <h2 className="">
+          <h2 className="text-center md:text-left">
             Paramètres{" "}
             <span className="text-xl text-accent">de l&apos;application</span>
           </h2>
         </Link>
-        <nav className="flex gap-4 mb-4">
+        <nav className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
           {adminNavItems.map((item) => (
             <Link
               key={item.href}

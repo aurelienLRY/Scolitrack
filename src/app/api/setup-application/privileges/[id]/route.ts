@@ -4,23 +4,21 @@ import { privilegeService } from "@/lib/services/privilege.service";
 import {
   successResponse,
   notFoundResponse,
-  errorResponse,
   handleApiError,
-  HttpStatus,
 } from "@/lib/services/api.service";
+import { RouteParamsWithId } from "@/lib/services/auth.service";
 
-// Récupérer un privilège par son ID
-export async function GET(req: NextRequest) {
+/**
+ * Récupérer un privilège par son ID
+ * @param req - La requête HTTP entrante
+ * @param args - Les arguments de la requête
+ * @returns Réponse de succès avec les données du privilège, ou une erreur appropriée
+ * @throws Erreur 404 si le privilège n'est pas trouvé
+ * @throws Erreur 500 pour les autres erreurs serveur
+ */
+export async function GET(req: NextRequest, context: RouteParamsWithId) {
   try {
-    // Extraire l'ID du privilège de l'URL
-    const id = req.url.split("/").pop();
-
-    if (!id) {
-      return errorResponse({
-        feedback: "ID du privilège manquant",
-        status: HttpStatus.BAD_REQUEST,
-      });
-    }
+    const { id } = await context.params;
 
     const privilege = await privilegeService.getPrivilegeById(id);
 

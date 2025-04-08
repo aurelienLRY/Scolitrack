@@ -1,5 +1,5 @@
 import { NextAuthConfig } from "next-auth";
-import { prisma } from "@/lib/prisma/prismaForAuth";
+import { prismaForAuth } from "@/lib/prisma/prismaForAuth";
 import { LoginSchema } from "@/schemas/LoginSchema";
 
 import Credentials from "next-auth/providers/credentials";
@@ -21,7 +21,7 @@ export default {
         if (!validatedCredentials) return null;
 
         /* search user */
-        const user = await prisma.user.findUnique({
+        const user = await prismaForAuth.user.findUnique({
           where: { email: validatedCredentials.email },
           include: {
             role: {
@@ -78,7 +78,7 @@ export default {
           token.privileges = user.privileges;
         } else {
           // Fallback pour les autres providers qui n'incluent pas les privilèges
-          const rolePrivileges = await prisma.rolePrivilege.findMany({
+          const rolePrivileges = await prismaForAuth.rolePrivilege.findMany({
             where: {
               role: { name: user.roleName },
             },

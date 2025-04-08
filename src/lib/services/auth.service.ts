@@ -1,13 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
+import { PrivilegeName } from "@/config/privileges.config";
+
+/**
+ * Type générique pour les paramètres de route
+ * Dans Next.js 15, params est une Promise
+ */
+export type RouteParams = {
+  params: Promise<Record<string, string>>;
+  searchParams?: Record<string, string | string[]>;
+};
+
+/**
+ * Type pour les paramètres de route spécifique à un ID
+ */
+export type RouteParamsWithId = {
+  params: Promise<{ id: string }>;
+};
 
 /**
  * Type de gestionnaire pour les routes d'API Next.js
+ * Permet d'utiliser n'importe quel type pour le contexte
  */
-type RouteHandler = (
+export type RouteHandler<T = unknown, C = unknown> = (
   request: NextRequest,
-  ...args: unknown[]
-) => Promise<NextResponse> | NextResponse;
+  context: C
+) => Promise<NextResponse<T>> | NextResponse<T>;
 
 /**
  * Middleware qui vérifie si l'utilisateur est authentifié
@@ -22,15 +40,15 @@ export async function isAuthenticated() {
 
 /**
  * Middleware pour protéger une route d'API par un privilège
- * @param handler - Gestionnaire de la route
  * @param requiredPrivilege - Privilège requis pour accéder à la route
- * @returns NextResponse
+ * @param handler - Gestionnaire de la route
+ * @returns Fonction de gestionnaire de route avec vérification des privilèges
  */
-export function withPrivilege(
-  requiredPrivilege: string,
-  handler: RouteHandler
-) {
-  return async (request: NextRequest, ...args: unknown[]) => {
+export function withPrivilege<T = unknown, C = unknown>(
+  requiredPrivilege: PrivilegeName,
+  handler: RouteHandler<T, C>
+): (request: NextRequest, context: C) => Promise<NextResponse> {
+  return async (request: NextRequest, context: C) => {
     try {
       const session = await auth();
 
@@ -43,7 +61,7 @@ export function withPrivilege(
 
       // Si c'est un SUPER_ADMIN, autoriser automatiquement
       if (session.user.roleName === "SUPER_ADMIN") {
-        return handler(request, ...args);
+        return handler(request, context);
       }
 
       // Vérifier si l'utilisateur a le privilège requis
@@ -56,7 +74,7 @@ export function withPrivilege(
         );
       }
 
-      return handler(request, ...args);
+      return handler(request, context);
     } catch (error) {
       console.error("Erreur d'autorisation:", error);
       return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });
@@ -66,11 +84,12 @@ export function withPrivilege(
 
 /**
  * Middleware pour vérifier si l'utilisateur possède un privilège spécifique
- * @param userId - ID de l'utilisateur
  * @param privilege - Privilège à vérifier
  * @returns true si l'utilisateur possède le privilège, false sinon
  */
-export async function checkPrivilege(privilege: string): Promise<boolean> {
+export async function checkPrivilege(
+  privilege: PrivilegeName
+): Promise<boolean> {
   try {
     // Vérifier si l'utilisateur possède le privilège spécifié
     const session = await auth();
@@ -91,7 +110,9 @@ export async function checkPrivilege(privilege: string): Promise<boolean> {
  * Fonction utilitaire pour vérifier si l'utilisateur actuel possède un privilège donné (côté client)
  * @param privilege - Privilège à vérifier
  */
-export async function useHasPrivilege(privilege: string): Promise<boolean> {
+export async function useHasPrivilege(
+  privilege: PrivilegeName
+): Promise<boolean> {
   try {
     const session = await auth();
 
@@ -120,3 +141,4 @@ const AUTH_SERVICES = {
 };
 
 export default AUTH_SERVICES;
+export * from "@/config/privileges.config";

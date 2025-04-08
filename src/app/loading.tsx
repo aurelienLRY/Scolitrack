@@ -1,12 +1,7 @@
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingPage } from "@/components/ui/Loading";
 
 function Loading() {
-  return (
-    <div className="flex flex-col w-full h-full items-center justify-center">
-      <Spinner />
-      <p className="text-sm text-muted-foreground">Chargement...</p>
-    </div>
-  );
+  return <LoadingPage />;
 }
 
 export default Loading;

@@ -1,6 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { encrypt, decrypt } from "@/lib/services/crypto.service";
-
+import { ESTABLISHMENT_POST_MIDDLEWARE } from "./Prisma-Middleware/EstablishmentMiddleware";
+import {
+  USER_POST_MIDDLEWARE,
+  USER_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/UserMiddleware";
+import { CLASSROOM_PERSONNEL_POST_MIDDLEWARE } from "./Prisma-Middleware/ClassRoomPersonnelMiddleware";
+import { CLASSROOM_POST_MIDDLEWARE } from "./Prisma-Middleware/classRoomMiddleware";
 /**
  * Prisma client
  * @description Prisma client pour la base de données
@@ -11,45 +16,63 @@ const globalForPrisma = global as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ["error"], // Activer la journalisation des erreurs uniquement
+  });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-// Middleware pour chiffrer/déchiffrer
-
+// Middleware
 prisma.$use(async (params, next) => {
-  // Avant l'opération
-  if (params.model === "User") {
-    if (params.action === "create" || params.action === "update") {
-      if (params.args.data?.name) {
-        params.args.data.name = await encrypt(params.args.data.name);
+  try {
+    // Avant l'opération - préparation des données
+    if (params.model === "User") {
+      USER_PRE_MIDDLEWARE(params);
+    }
+
+    // Exécution de la requête Prisma
+    let result = await next(params);
+
+    // Après l'opération - transformation des résultats
+    if (params.model === "User" && result) {
+      const processedResult = USER_POST_MIDDLEWARE(params, result);
+      if (processedResult) {
+        result = processedResult;
       }
     }
-  }
 
-  // Exécution de la requête
-  const result = await next(params);
-
-  // Après l'opération - déchiffrement
-  if (params.model === "User") {
-    if (
-      ["findMany", "findFirst", "findUnique", "count"].includes(params.action)
-    ) {
-      if (Array.isArray(result)) {
-        // Pour findMany
-        return result.map((user) => ({
-          ...user,
-          name: decrypt(user.name),
-        }));
-      } else if (result) {
-        // Pour findFirst/findUnique
-        return {
-          ...result,
-          name: decrypt(result.name),
-        };
+    if (params.model === "Establishment" && result) {
+      const processedResult = await ESTABLISHMENT_POST_MIDDLEWARE(
+        params,
+        result
+      );
+      if (processedResult) {
+        result = processedResult;
       }
     }
-  }
 
-  return result;
+    if (params.model === "ClassRoomPersonnel" && result) {
+      const processedResult = await CLASSROOM_PERSONNEL_POST_MIDDLEWARE(
+        params,
+        result
+      );
+      if (processedResult) {
+        result = processedResult;
+      }
+    }
+
+    if (params.model === "ClassRoom" && result) {
+      const processedResult = await CLASSROOM_POST_MIDDLEWARE(params, result);
+      if (processedResult) {
+        result = processedResult;
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Prisma middleware | Error : ", error);
+    throw error;
+  }
 });

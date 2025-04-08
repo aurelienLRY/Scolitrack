@@ -132,3 +132,18 @@ export async function getUsers(page = 1, limit = 10) {
     },
   };
 }
+
+/**
+ * Récupère les utilisateurs par leur rôle
+ * @param role - Rôle à rechercher
+ * @returns Liste des utilisateurs avec le rôle spécifié
+ */
+export async function getUserByRole(role: string) {
+  const users = await prisma.user.findMany({
+    where: {
+      roleName: role,
+    },
+  });
+
+  return users;
+}

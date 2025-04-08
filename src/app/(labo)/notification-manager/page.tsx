@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent, useEffect } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import Input from "@/components/ui/inputs/Input";
 import {
@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/inputs/select";
 import { useNotification } from "@/hooks/useNotification";
 import { NotificationContent } from "@/types/notification.type";
-import { useRoleStore } from "@/context/store/RoleStore";
+import { useRoles } from "@/hooks/query/useRoles";
 import Textarea from "@/components/ui/inputs/textarea";
+import { LoadingPage } from "@/components/ui/Loading";
 
 export default function NotificationManager() {
   const { isSubscribed, subscribe, unsubscribe, pushMessage } =
@@ -23,11 +24,7 @@ export default function NotificationManager() {
   const [targetType, setTargetType] = useState<"user" | "role">("user");
   const [targetId, setTargetId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { roles, fetchRoles } = useRoleStore();
-
-  useEffect(() => {
-    fetchRoles();
-  }, [fetchRoles]);
+  const { data: roles, isLoading: isRolesLoading } = useRoles();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,6 +48,10 @@ export default function NotificationManager() {
     await pushMessage(notification);
     setIsLoading(false);
   };
+
+  if (isRolesLoading || !roles) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="flex flex-col gap-4 items-center justify-center   w-full min-h-[calc(100vh-170px)]">
@@ -121,7 +122,7 @@ export default function NotificationManager() {
                 <SelectValue placeholder="Sélectionner le rôle" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
+                {roles.data?.map((role) => (
                   <SelectItem key={role.id} value={role.name}>
                     {role.name}
                   </SelectItem>
