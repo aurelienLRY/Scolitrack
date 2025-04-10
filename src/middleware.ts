@@ -53,6 +53,20 @@ export default authMiddleware(async function middleware(req) {
   const { nextUrl } = req;
   console.log("MIDDLEWARE -> Next URL: ", nextUrl.pathname);
 
+  // Gérer les en-têtes de cache pour les images uploadées
+  if (nextUrl.pathname.includes("/img/uploads/")) {
+    const response = NextResponse.next();
+    // Désactiver la mise en cache pour les images uploadées
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+    response.headers.set("Surrogate-Control", "no-store");
+    return response;
+  }
+
   // Traiter les routes protégées génériques d'abord
   const isProtectedRoute = nextUrl.pathname.startsWith("/private");
   if (isProtectedRoute && !isLoggedIn) {
@@ -84,8 +98,9 @@ export const config = {
     // Vérifie toutes les routes sauf celles qui commencent par:
     // - api/auth (routes d'authentification)
     // - _next/static (fichiers statiques)
-    // - _next/image (images optimisées)
     // - favicon.ico (icône du navigateur)
-    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
+    "/((?!_next/static|favicon.ico|api/auth).*)",
+    // Inclure explicitement les images pour pouvoir gérer leur cache
+    "/_next/image/:path*",
   ],
 };
