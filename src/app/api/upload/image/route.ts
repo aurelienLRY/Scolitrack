@@ -110,14 +110,40 @@ export const POST = withPrivilege(
       const basePath = storagePath || `uploads/${entityType}`;
       const directory = `public/img/uploads/${basePath}`;
 
+      console.log(`Chemin de stockage: ${directory}`);
+      console.log(`Répertoire courant: ${process.cwd()}`);
+
       // Assurer que tous les dossiers existent
       try {
         const tempDir = path.join(process.cwd(), "tmp");
         await fs.mkdir(tempDir, { recursive: true });
 
+        const publicDir = path.join(process.cwd(), "public");
+        await fs.mkdir(publicDir, { recursive: true });
+        console.log(`Répertoire public: ${publicDir}`);
+
+        const publicImgDir = path.join(publicDir, "img");
+        await fs.mkdir(publicImgDir, { recursive: true });
+        console.log(`Répertoire img: ${publicImgDir}`);
+
+        const uploadsDir = path.join(publicImgDir, "uploads");
+        await fs.mkdir(uploadsDir, { recursive: true });
+        console.log(`Répertoire uploads: ${uploadsDir}`);
+
         const fullDirPath = path.join(process.cwd(), directory);
         await fs.mkdir(fullDirPath, { recursive: true });
         console.log(`Répertoire créé: ${fullDirPath}`);
+
+        // Vérifier les permissions du dossier
+        try {
+          await fs.access(fullDirPath, fs.constants.W_OK);
+          console.log(`Permissions d'écriture OK pour: ${fullDirPath}`);
+        } catch (accessError) {
+          console.error(
+            `Pas de permission d'écriture pour: ${fullDirPath}`,
+            accessError
+          );
+        }
       } catch (dirError) {
         console.error("Erreur lors de la création des répertoires:", dirError);
       }
@@ -163,10 +189,19 @@ export const POST = withPrivilege(
       }
 
       // Créer des variantes
-      const variants = await imageService.createVariants(result.url, {
-        thumbnail: { width: 100, height: 100 },
-        medium: { width: 300, height: 300 },
-      });
+      let variants = {};
+      try {
+        variants = await imageService.createVariants(result.url, {
+          thumbnail: { width: 100, height: 100 },
+          medium: { width: 300, height: 300 },
+        });
+      } catch (variantError) {
+        console.error(
+          "Erreur lors de la création des variantes:",
+          variantError
+        );
+        // Continuer même en cas d'erreur avec les variantes
+      }
 
       return createdResponse({
         data: {
