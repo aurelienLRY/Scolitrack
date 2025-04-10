@@ -14,49 +14,49 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
   },
-  // Configuration pour servir correctement les fichiers statiques
+  // Configuration des en-têtes HTTP
   async headers() {
     return [
       {
-        // Pour tous les fichiers dans /img/uploads
+        // Appliquer ces en-têtes aux images uploadées
         source: "/img/uploads/:path*",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=86400",
+            value: "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
-        ],
-      },
-      // Configuration spécifique pour les fichiers webp
-      {
-        source: "/img/uploads/:path*.webp",
-        headers: [
           {
-            key: "Content-Type",
-            value: "image/webp",
+            key: "Pragma",
+            value: "no-cache",
           },
-        ],
-      },
-      // Configuration pour les autres types d'images
-      {
-        source: "/img/uploads/:path*.jpg",
-        headers: [
           {
-            key: "Content-Type",
-            value: "image/jpeg",
+            key: "Expires",
+            value: "0",
           },
-        ],
-      },
-      {
-        source: "/img/uploads/:path*.png",
-        headers: [
           {
-            key: "Content-Type",
-            value: "image/png",
+            key: "Surrogate-Control",
+            value: "no-store",
           },
         ],
       },
     ];
+  },
+  // Configuration de l'optimisation des images
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+    // Empêcher la mise en cache des images
+    minimumCacheTTL: 0,
+    // Augmenter la taille max des images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2560, 3840],
   },
 };
 
