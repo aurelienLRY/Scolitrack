@@ -15,6 +15,7 @@ import {
 import { promises as fs } from "fs";
 import path from "path";
 import { Buffer } from "buffer";
+import { v4 as uuidv4 } from "uuid";
 
 // Type pour les objets File-like qu'on peut recevoir du client
 interface FileLike {
@@ -149,22 +150,20 @@ export const POST = withPrivilege(
       }
 
       // S'il s'agit d'une mise à jour, supprimer l'ancienne image
+      let oldFileId = null;
       if (isUpdate && fileId) {
-        try {
-          await imageService.deleteImageByFileId(fileId);
-          console.log(`Image précédente supprimée (fileId: ${fileId})`);
-        } catch (error) {
-          console.warn(`Impossible de supprimer l'image précédente:`, error);
-          // Continuer le processus même si la suppression échoue
-        }
+        oldFileId = fileId; // Sauvegarder l'ancien ID pour suppression ultérieure
       }
+
+      // Générer un nouveau fileId unique pour chaque upload
+      const newFileId = `img_${uuidv4()}`;
 
       // Options de stockage
       const options: ImageStorageOptions = {
         directory,
         format: "webp" as const,
         quality: 80,
-        fileId: fileId || undefined,
+        fileId: newFileId, // Toujours utiliser un nouvel ID
       };
 
       // Stocker l'image avec gestion des erreurs
@@ -173,6 +172,22 @@ export const POST = withPrivilege(
         console.log(`Tentative de stockage de l'image dans ${directory}`);
         result = await imageService.storeImage(file, options);
         console.log(`Image stockée avec succès: ${result.url}`);
+
+        // Une fois l'upload réussi, tenter de supprimer l'ancienne image de façon asynchrone
+        if (oldFileId) {
+          // Ne pas attendre la suppression (évite les erreurs de fichier occupé)
+          imageService
+            .deleteImageByFileId(oldFileId)
+            .then(() =>
+              console.log(`Image précédente supprimée (fileId: ${oldFileId})`)
+            )
+            .catch((err) =>
+              console.warn(
+                `Nettoyage ultérieur programmé pour le fichier ${oldFileId}:`,
+                err
+              )
+            );
+        }
       } catch (error) {
         console.error("Erreur critique lors du stockage de l'image:", error);
         const errorMessage =
