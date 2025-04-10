@@ -182,14 +182,23 @@ export default function CreateClassRoomForm({
 
   const onSubmit = async (data: TClassRoomFormData) => {
     try {
-      // Si une image a été sélectionnée, l'uploader maintenant
+      let updatedData = { ...data };
+
+      // Si une image a été sélectionnée, l'uploader et récupérer les données mises à jour
       if (selectedFile) {
-        await uploadImage(selectedFile);
+        const uploadResult = await uploadImage(selectedFile);
+
+        // Mettre à jour manuellement les données à soumettre
+        updatedData = {
+          ...updatedData,
+          logoUrl: uploadResult.url,
+          logoFileId: uploadResult.fileId || "",
+        };
       }
 
       const submitData = {
-        ...data,
-        educationLevelIds: data.educationLevelIds || [],
+        ...updatedData,
+        educationLevelIds: updatedData.educationLevelIds || [],
       };
 
       if (isEditing && classRoom) {
