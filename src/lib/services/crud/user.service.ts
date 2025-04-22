@@ -3,7 +3,7 @@ import { User } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcryptjs";
 import { CreateUserSchemaType } from "@/schemas/UserSchema";
-import { sendAccountActivationEmail } from "../nodemailer/account-activation.email";
+import { sendAccountActivationEmail } from "@/lib/nodemailer/account-activation.email";
 
 /**
  * Crée un nouvel utilisateur non activé et envoie un email d'activation
@@ -106,15 +106,7 @@ export async function getUsers(page = 1, limit = 10) {
 
   const [users, total] = await Promise.all([
     prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleName: true,
-        emailVerified: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },

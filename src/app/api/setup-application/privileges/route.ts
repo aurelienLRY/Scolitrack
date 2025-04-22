@@ -1,5 +1,5 @@
 "use server";
-import { privilegeService } from "@/lib/services/privilege.service";
+import { privilegeService } from "@/lib/services/crud/privilege.service";
 import { successResponse, handleApiError } from "@/lib/services/api.service";
 
 /**

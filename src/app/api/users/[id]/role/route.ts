@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
-import { roleService } from "@/lib/services/role.service";
+import { roleService } from "@/lib/services/crud/role.service";
 import {
   successResponse,
   errorResponse,

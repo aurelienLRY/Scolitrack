@@ -159,6 +159,21 @@ class FetchService {
   }
 
   /**
+   * Effectue une requête PATCH
+   * @param url URL de la requête
+   * @param body Corps de la requête
+   * @param options Options additionnelles
+   * @returns Données de la réponse
+   */
+  static async patch<T = unknown>(
+    url: string,
+    body: unknown,
+    options?: Omit<FetchOptions, "method" | "body">
+  ): Promise<ApiResponse<T>> {
+    return this.fetchApi<T>(url, { method: "PATCH", body, ...options });
+  }
+
+  /**
    * Effectue une requête DELETE
    * @param url URL de la requête
    * @param options Options additionnelles

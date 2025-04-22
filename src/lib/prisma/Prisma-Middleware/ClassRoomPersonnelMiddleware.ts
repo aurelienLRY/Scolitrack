@@ -1,6 +1,6 @@
-import { decrypt } from "@/lib/services/crypto.service";
 import { Prisma, ClassRoomPersonnel } from "@prisma/client";
 import { ClassRoomPersonnelWithUser } from "@/types/classroom.type";
+import { safeDecrypt } from "@/lib/services/crypto.service";
 
 /**
  * Type pour les résultats des requêtes du personnel de classe
@@ -12,22 +12,6 @@ type ClassRoomPersonnelResult =
   | ClassRoomPersonnel[]
   | null
   | undefined;
-
-/**
- * Tente de déchiffrer une valeur potentiellement chiffrée
- * Inclut des mécanismes de gestion des erreurs et de fallback
- */
-const safeDecrypt = (value: string | null | undefined): string | null => {
-  if (!value) return null;
-
-  try {
-    const decrypted = decrypt(value);
-    return typeof decrypted === "string" ? decrypted : null;
-  } catch (error) {
-    console.error("Erreur dans safeDecrypt:", error);
-    return value; // En cas d'échec, retourner la valeur originale
-  }
-};
 
 /**
  * Vérifie si un personnel de classe possède une relation user

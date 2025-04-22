@@ -1,7 +1,7 @@
 "use server";
 
 import { NextRequest } from "next/server";
-import { educationLevelService } from "@/lib/services/educationLevel.service";
+import { educationLevelService } from "@/lib/services/crud/educationLevel.service";
 import {
   successResponse,
   errorResponse,

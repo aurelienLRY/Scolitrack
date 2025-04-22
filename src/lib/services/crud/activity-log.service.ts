@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma/prisma";
+import { auth } from "@/lib/auth/auth";
 
 export interface ActivityLogData {
-  userId: string;
+  userId?: string;
   action: string;
   details?: string;
 }
@@ -25,8 +26,14 @@ export const activityLogService = {
    */
   async logActivity(data: ActivityLogData) {
     try {
+      const session = await auth();
+      const userId = session?.user?.id;
+    
       return prisma.activityLog.create({
-        data,
+        data: {
+          ...data,
+          userId: userId || data.userId || "Non identifié",
+        },
       });
     } catch (error) {
       console.error("Erreur lors de l'enregistrement de l'activité:", error);

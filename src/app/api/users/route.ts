@@ -5,7 +5,7 @@ import {
   createUser,
   getUsers,
   getUserByRole,
-} from "@/lib/services/user.service";
+} from "@/lib/services/crud/user.service";
 import {
   successResponse,
   handleApiError,

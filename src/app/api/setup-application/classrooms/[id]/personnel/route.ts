@@ -1,7 +1,7 @@
 "use server";
 import { NextRequest } from "next/server";
 import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
-import { classRoomService } from "@/lib/services/classroom.service";
+import { classRoomService } from "@/lib/services/crud/classroom.service";
 import {
   successResponse,
   errorResponse,
