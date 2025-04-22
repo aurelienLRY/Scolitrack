@@ -1,7 +1,7 @@
 "use server";
 import { NextRequest } from "next/server";
 import { ActivateAccountSchema } from "@/schemas/UserSchema";
-import { activateAccount } from "@/lib/services/user.service";
+import { activateAccount } from "@/lib/services/crud/user.service";
 import {
   successResponse,
   errorResponse,

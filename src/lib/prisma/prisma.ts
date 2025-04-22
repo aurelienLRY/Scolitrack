@@ -6,6 +6,7 @@ import {
 } from "./Prisma-Middleware/UserMiddleware";
 import { CLASSROOM_PERSONNEL_POST_MIDDLEWARE } from "./Prisma-Middleware/ClassRoomPersonnelMiddleware";
 import { CLASSROOM_POST_MIDDLEWARE } from "./Prisma-Middleware/classRoomMiddleware";
+import { COMMISSION_POST_MIDDLEWARE } from "./Prisma-Middleware/CommissionMiddleware";
 /**
  * Prisma client
  * @description Prisma client pour la base de données
@@ -66,6 +67,13 @@ prisma.$use(async (params, next) => {
 
     if (params.model === "ClassRoom" && result) {
       const processedResult = await CLASSROOM_POST_MIDDLEWARE(params, result);
+      if (processedResult) {
+        result = processedResult;
+      }
+    }
+
+    if (params.model === "Commission" && result) {
+      const processedResult = await COMMISSION_POST_MIDDLEWARE(params, result);
       if (processedResult) {
         result = processedResult;
       }

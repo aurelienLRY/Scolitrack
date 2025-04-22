@@ -87,4 +87,22 @@ function decrypt(text: string | null | undefined) {
   }
 }
 
-export { encrypt, decrypt };
+/**
+ * Version sécurisée de decrypt, avec gestion des erreurs et vérification du type
+ * Utilisée par les middlewares pour éviter la duplication de code
+ * @param value Valeur à déchiffrer
+ * @returns Valeur déchiffrée ou null si non déchiffrable
+ */
+function safeDecrypt(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    const decrypted = decrypt(value);
+    return typeof decrypted === "string" ? decrypted : null;
+  } catch (error) {
+    console.error("Erreur dans safeDecrypt:", error);
+    return value; // En cas d'échec, retourner la valeur originale
+  }
+}
+
+export { encrypt, decrypt, safeDecrypt };

@@ -1,6 +1,6 @@
 "use server";
 import { NextRequest } from "next/server";
-import { privilegeService } from "@/lib/services/privilege.service";
+import { privilegeService } from "@/lib/services/crud/privilege.service";
 import {
   successResponse,
   notFoundResponse,

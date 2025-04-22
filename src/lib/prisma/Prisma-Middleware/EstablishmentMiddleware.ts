@@ -1,5 +1,5 @@
-import { decrypt } from "@/lib/services/crypto.service";
 import { Prisma, Establishment, User } from "@prisma/client";
+import { safeDecrypt } from "@/lib/services/crypto.service";
 
 /**
  * Type pour les résultats des requêtes d'établissement
@@ -15,22 +15,6 @@ type EstablishmentResult =
   | Establishment[]
   | null
   | undefined;
-
-/**
- * Tente de déchiffrer une valeur potentiellement chiffrée
- * Inclut des mécanismes de gestion des erreurs et de fallback
- */
-const safeDecrypt = (value: string | null | undefined): string | null => {
-  if (!value) return null;
-
-  try {
-    const decrypted = decrypt(value);
-    return typeof decrypted === "string" ? decrypted : null;
-  } catch (error) {
-    console.error("Erreur dans safeDecrypt:", error);
-    return value; // En cas d'échec, retourner la valeur originale
-  }
-};
 
 /**
  * Vérifie si un établissement possède une relation admin

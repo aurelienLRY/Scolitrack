@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings } from "lucide-react";
+import { LayoutDashboard, Settings, UserPlus } from "lucide-react";
 
 export type TSideBarItem = {
   label: string;
@@ -18,7 +18,12 @@ export const sidebarItem: TSideBarItem[] = [
     href: "/private/dashboard",
     icon: <LayoutDashboard />,
   },
-
+  {
+    label: "Inscription",
+    href: "/private/manage-inscription",
+    icon: <UserPlus />,
+    privilege: "INSCRIPTION",
+  },
   {
     label: "Paramètres",
     href: "/private/setup-application",

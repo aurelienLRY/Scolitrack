@@ -4,7 +4,7 @@ import {
   getAllEstablishments,
   getEstablishmentById,
   updateEstablishment,
-} from "@/lib/services/establishment.service";
+} from "@/lib/services/crud/establishment.service";
 import * as yup from "yup";
 import {
   establishmentSchema,

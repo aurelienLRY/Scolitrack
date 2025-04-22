@@ -2,7 +2,7 @@
 
 import { NextRequest } from "next/server";
 import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
-import { educationLevelService } from "@/lib/services/educationLevel.service";
+import { educationLevelService } from "@/lib/services/crud/educationLevel.service";
 import {
   successResponse,
   errorResponse,

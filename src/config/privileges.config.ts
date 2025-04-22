@@ -9,6 +9,8 @@ export enum PrivilegeName {
   DELETE_DATA = "DELETE_DATA",
   UPDATE_DATA = "UPDATE_DATA",
   UPLOAD_FILES = "UPLOAD_FILES",
+  MANAGE_COMMISSIONS = "MANAGE_COMMISSIONS",
+  INSCRIPTION = "INSCRIPTION",
 }
 
 /**
@@ -36,6 +38,8 @@ export const PRIVILEGES: PrivilegeDefinition[] = [
   { name: PrivilegeName.DELETE_DATA, description: "Supprimer des données" },
   { name: PrivilegeName.UPDATE_DATA, description: "Modifier des données" },
   { name: PrivilegeName.UPLOAD_FILES, description: "Télécharger des fichiers" },
+  { name: PrivilegeName.MANAGE_COMMISSIONS, description: "Gérer les commissions" },
+  { name: PrivilegeName.INSCRIPTION, description: "Gérer les inscriptions" },
 ];
 
 /**
@@ -62,6 +66,7 @@ export const ADMIN_EXCLUDED_PRIVILEGES: PrivilegeName[] = [
   PrivilegeName.MANAGE_MEDICAL_INFORMATIONS,
   PrivilegeName.DELETE_DATA,
   PrivilegeName.UPDATE_DATA,
+  PrivilegeName.INSCRIPTION,
 ];
 
 /**
