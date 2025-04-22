@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { CreateUserSchema } from "@/schemas/UserSchema";
-import { withPrivilege } from "@/lib/services/auth.service";
-import { createUser, getUsers } from "@/lib/services/user.service";
+import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
+import {
+  createUser,
+  getUsers,
+  getUserByRole,
+} from "@/lib/services/crud/user.service";
 import {
   successResponse,
   handleApiError,
@@ -16,8 +20,16 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "10");
+  const role = searchParams.get("roleName");
 
   try {
+    if (role) {
+      const result = await getUserByRole(role);
+      return successResponse({
+        data: result,
+        feedback: "Liste des utilisateurs récupérée avec succès",
+      });
+    }
     // Récupérer les utilisateurs
     const result = await getUsers(page, limit);
     return successResponse({
@@ -38,15 +50,13 @@ export async function GET(request: NextRequest) {
  * POST /api/users - Créer un nouvel utilisateur
  */
 export const POST = withPrivilege(
-  "MANAGE_USERS",
+  PrivilegeName.MANAGE_USERS,
   async (request: NextRequest) => {
     try {
       // Récupérer les données du corps de la requête
-      const body = await request.json();
-      console.log(body);
-
+      const data = await request.json();
       // Valider les données
-      const validatedData = await CreateUserSchema.validate(body);
+      const validatedData = await CreateUserSchema.validate(data);
 
       // Créer l'utilisateur
       const user = await createUser(validatedData);

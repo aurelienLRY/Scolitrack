@@ -1,6 +1,8 @@
 import { AuroraText } from "@/components/ui/aurora-text";
-import { Dots } from "@/components/ui/spinner";
-export function Loading() {
+import { Dots, RoundSpinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+
+export function LoadingPage() {
   return (
     <div className="h-screen w-screen flex flex-col gap-4 justify-center items-center">
       <div className="flex gap-4">
@@ -27,6 +29,20 @@ export function Loading() {
           je vous prépare l&apos;affichage aux petit ognions 🧅
         </h2>
       </div>
+    </div>
+  );
+}
+
+export function Loading({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-2 w-full h-full items-center justify-center",
+        className
+      )}
+    >
+      <RoundSpinner size="lg" />
+      <p className="text-sm text-muted-foreground">Chargement...</p>
     </div>
   );
 }

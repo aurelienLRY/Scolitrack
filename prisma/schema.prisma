@@ -9,6 +9,10 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+//=============================================================================
+// MODÈLES D'AUTHENTIFICATION ET PERMISSIONS
+//=============================================================================
+
 model Role {
   id             String          @id @default(cuid())
   name           String          @unique
@@ -41,22 +45,54 @@ model RolePrivilege {
   @@index([privilegeId])
 }
 
+//=============================================================================
+// UTILISATEURS ET AUTHENTIFICATION
+//=============================================================================
+
 model User {
-  id                String             @id @default(cuid())
+  id                String               @id @default(cuid())
   name              String?
-  email             String             @unique
+  email             String               @unique
   emailVerified     DateTime?
   image             String?
   password          String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  resetToken        String?            @unique
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  resetToken        String?              @unique
   resetTokenExpiry  DateTime?
-  roleName          String             @default("USER")
+  roleName          String               @default("USER")
+  
+  // Informations de parent
+  parentType        String?              // "MERE", "PERE", "TUTEUR", "AUTRE"
+  firstName         String?              // prénom
+  gender            String?              // "M", "F", "N" (non genré)
+  socialSecurityNum String?              // numéro de sécurité sociale
+  phoneNumber       String?              // numéro de téléphone portable
+  address           String?              // adresse complète
+  postalCode        String?              // code postal
+  city              String?              // ville
+  profession        String?              // profession
+  maritalStatus     String?              // situation matrimoniale
+  bio               String?              // punchline/biographie
+  skills            String?              // compétences
+  
+  // Groupes d'appartenance
+  isHousekeeping    Boolean              @default(false) // ménage
+  isDaycare         Boolean              @default(false) // garderie
+  isCanteen         Boolean              @default(false) // cantine
+  
+  // Relations existantes
   accounts          Account[]
   pushSubscriptions PushSubscription[]
   sessions          Session[]
-  role              Role               @relation(fields: [roleName], references: [name])
+  role              Role                 @relation(fields: [roleName], references: [name])
+  establishment     Establishment?
+  classPersonnel    ClassRoomPersonnel[]
+  activityLogs      ActivityLog[]
+  commissions       CommissionMember[]
+  
+  // Nouvelle relation
+  families          FamilyMember[]
 
   @@index([roleName], map: "User_roleName_fkey")
 }
@@ -113,4 +149,308 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+//=============================================================================
+// ÉTABLISSEMENTS ET ORGANISATION
+//=============================================================================
+
+model Establishment {
+  id             String           @id @default(cuid())
+  name           String
+  address        String
+  postalCode     String
+  city           String
+  email          String?
+  phone          String?
+  website        String?
+  adminId        String           @unique
+  logoUrl        String?
+  logoFileId     String?
+  description    String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  admin          User             @relation(fields: [adminId], references: [id])
+  classRooms     ClassRoom[]
+  EducationLevel EducationLevel[]
+  commissions    Commission[]
+
+  @@index([adminId])
+}
+
+model ClassRoom {
+  id              String                    @id @default(uuid())
+  name            String
+  capacity        Int
+  logoUrl         String?
+  logoFileId      String?
+  colorCode       String?
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
+  establishmentId String
+  classPersonnel  ClassRoomPersonnel[]
+  educationLevels ClassRoomEducationLevel[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  
+  // Nouvelle relation
+  students        Student[]
+
+  @@index([establishmentId])
+}
+
+model EducationLevel {
+  id              String                    @id @default(uuid())
+  name            String
+  code            String
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
+  establishmentId String
+  classRooms      ClassRoomEducationLevel[]
+  establishedAt   DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  
+  // Nouvelle relation
+  students        Student[]
+
+  @@unique([name, establishmentId])
+  @@index([establishmentId])
+}
+
+model ClassRoomEducationLevel {
+  classRoomId      String
+  educationLevelId String
+  assignedAt       DateTime       @default(now())
+  classRoom        ClassRoom      @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id], onDelete: Cascade)
+
+  @@id([classRoomId, educationLevelId])
+  @@index([classRoomId])
+  @@index([educationLevelId])
+}
+
+model ClassRoomPersonnel {
+  classRoomId String
+  userId      String
+  roleInClass String?
+  assignedAt  DateTime  @default(now())
+  classRoom   ClassRoom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([classRoomId, userId])
+  @@index([classRoomId])
+  @@index([userId])
+}
+
+//=============================================================================
+// COMMISSIONS
+//=============================================================================
+
+model Commission {
+  id              String             @id @default(uuid())
+  name            String
+  description     String?            @db.Text
+  speciality      String?
+  establishmentId String
+  logoUrl         String?
+  logoFileId      String?
+  colorCode       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  establishment   Establishment      @relation(fields: [establishmentId], references: [id])
+  members         CommissionMember[]
+
+  @@index([establishmentId])
+}
+
+model CommissionMember {
+  userId       String
+  commissionId String
+  role         String // Par exemple: "Président", "Secrétaire", "Membre"
+  joinedAt     DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commissionId])
+  @@index([userId])
+  @@index([commissionId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+//=============================================================================
+// FAMILLES ET ÉLÈVES
+//=============================================================================
+
+model Family {
+  id                String               @id @default(cuid())
+  name              String               // Nom de la famille (ex: "Famille Dupont-Martin")
+  notes             String?              // Notes administratives sur la famille
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  // Relations
+  members           FamilyMember[]       // Parents/tuteurs de la famille
+  students          Student[]            // Enfants de la famille
+}
+
+model FamilyMember {
+  familyId          String
+  userId            String
+  relationship      String               // Relation avec la famille (principal, secondaire, etc.)
+  isMainAddress     Boolean              @default(false) // Indique si l'adresse de ce membre est l'adresse principale de l'élève
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  family            Family               @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([familyId, userId])
+  @@index([familyId])
+  @@index([userId])
+}
+
+model Student {
+  id                  String              @id @default(cuid())
+  firstName           String              // prénom (obligatoire)
+  lastName            String              // nom (obligatoire)
+  birthDate           DateTime            // date de naissance (obligatoire)
+  birthPlace          String              // lieu de naissance (obligatoire)
+  
+  // Informations d'inscription et scolarité
+  desiredEnrollmentDate DateTime?         // Date souhaitée d'inscription
+  previousSchool      String?             // Ancienne école fréquentée
+  currentClass        String?             // classe de l'étudiant (facultatif)
+  
+  // Garde et résidence
+  hasSplitResidence   Boolean             @default(false) // Indique si l'enfant a une résidence alternée
+  custodyArrangement  String?             // Si garde alternée, préciser le rythme (ex: "semaine paire/impaire")
+  legalGuardians      String              // Description des responsables légaux (ex: "Père et mère", "Mère uniquement")
+  primaryAddressUserId String?            // ID de l'utilisateur dont l'adresse est l'adresse principale
+  secondaryAddressUserId String?          // ID de l'utilisateur dont l'adresse est l'adresse secondaire (en cas de garde alternée)
+  
+  // Assurance
+  insuranceProvider   String?             // Nom de la société d'assurance
+  insuranceNumber     String?             // Numéro de contrat
+  insuranceCertificate String?            // Lien vers l'attestation d'assurance
+  
+  // Relations
+  familyId            String
+  family              Family              @relation(fields: [familyId], references: [id])
+  
+  // Relations avec les modèles existants
+  educationLevelId    String?
+  educationLevel      EducationLevel?     @relation(fields: [educationLevelId], references: [id])
+  classRoomId         String?
+  classRoom           ClassRoom?          @relation(fields: [classRoomId], references: [id])
+  
+  // Informations médicales
+  medicalInfo         MedicalInformation?
+  
+  // Personnes autorisées à récupérer l'enfant
+  authorizedPickups   AuthorizedPickup[]
+  
+  // Contacts d'urgence
+  emergencyContacts   EmergencyContact[]
+  
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([familyId])
+  @@index([educationLevelId])
+  @@index([classRoomId])
+  @@index([primaryAddressUserId])
+  @@index([secondaryAddressUserId])
+}
+
+//=============================================================================
+// SANTÉ ET SÉCURITÉ DES ÉLÈVES
+//=============================================================================
+
+model MedicalInformation {
+  id                  String    @id @default(cuid())
+  studentId           String    @unique
+  fileNumber          String    // Numéro unique de dossier (token)
+  
+  // Documents médicaux
+  healthBooklet       String?   // Carnet de santé (photocopies des pages de vaccinations)
+  medicalCertificate  String?   // Certificat médical de contre-indication si vaccination non complète
+  
+  // Maladies contractées (historique)
+  hasRubella          Boolean   @default(false) // Rubéole
+  hasChickenpox       Boolean   @default(false) // Varicelle
+  hasTonsillitis      Boolean   @default(false) // Angines
+  hasOtitis           Boolean   @default(false) // Otites
+  hasScarletFever     Boolean   @default(false) // Scarlatine
+  hasWhoopingCough    Boolean   @default(false) // Coqueluche
+  hasMumps            Boolean   @default(false) // Oreillons
+  hasMeasles          Boolean   @default(false) // Rougeole
+  
+  // Conditions médicales
+  hasAsthma           Boolean   @default(false) // Asthme
+  hasRheumatism       Boolean   @default(false) // Rhumatisme
+  
+  // Détails et médecin
+  healthDetails       String?   @db.Text // Difficultés de santé, allergies, régimes spéciaux, traitements
+  doctorName          String?   // Médecin traitant de l'enfant
+  
+  // Autorisations
+  medicalConsent      Boolean   @default(false) // Autorisation d'intervention médicale en cas d'urgence
+  
+  // Relation avec l'étudiant
+  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([studentId])
+}
+
+model AuthorizedPickup {
+  id                  String    @id @default(cuid())
+  studentId           String
+  firstName           String
+  lastName            String
+  relationship        String    // Relation avec l'enfant (grand-parent, oncle, ami, etc.)
+  phoneNumber         String
+  identityDocument    String?   // Référence à une pièce d'identité
+  
+  // Période d'autorisation (optionnel - pour autorisations temporaires)
+  startDate           DateTime?
+  endDate             DateTime?
+  
+  // Relation avec l'étudiant
+  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([studentId])
+}
+
+model EmergencyContact {
+  id                  String    @id @default(cuid())
+  studentId           String
+  firstName           String
+  lastName            String
+  relationship        String    // Relation avec l'enfant
+  phoneNumber         String
+  alternatePhone      String?   // Téléphone secondaire
+  priority            Int       // Ordre de priorité (1 = premier à contacter)
+  
+  // Relation avec l'étudiant
+  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([studentId])
+  @@index([priority]) // Pour faciliter le tri par priorité
 }

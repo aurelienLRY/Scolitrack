@@ -4,14 +4,14 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { CreateUserSchema, CreateUserSchemaType } from "@/schemas/UserSchema";
 import { toast } from "sonner";
-import { useRoleStore } from "@/context/store/RoleStore";
+import { useRoles } from "@/hooks/query/useRoles";
 import Input, { SelectInput } from "@/components/ui/inputs/Input";
 
 /**
  * Formulaire de création d'utilisateur pour les administrateurs
  */
 export default function CreateUserForm() {
-  const { roles } = useRoleStore();
+  const { data: roles } = useRoles();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -82,7 +82,7 @@ export default function CreateUserForm() {
         label="Rôle"
         error={errors.role}
         className="mt-1 block w-full rounded-md"
-        options={roles}
+        options={roles?.data || []}
         {...register("role")}
       />
 

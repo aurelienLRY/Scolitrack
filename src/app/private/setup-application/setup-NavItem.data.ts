@@ -1,4 +1,4 @@
-import { UserPlus, School, KeyRound, GraduationCap } from "lucide-react";
+import { UserPlus, School, KeyRound, GraduationCap, ScanHeart } from "lucide-react";
 
 import { LucideIcon } from "lucide-react";
 
@@ -29,6 +29,15 @@ export const adminNavItems: AdminNavItem[] = [
     ],
     icon: KeyRound,
   },
+  {
+    label: "Commission",
+    href: "/private/setup-application/commission",
+    description: [
+      "Enregistrer les commissions de l'établissement.",
+      "Les commissions enregistrer permettront d’être affectées aux Parents d'élèves.",
+    ],
+    icon: ScanHeart,
+  },
 
   {
     label: "Utilisateurs",
@@ -41,7 +50,7 @@ export const adminNavItems: AdminNavItem[] = [
   },
   {
     label: "Classes",
-    href: "/private/setup-application/classes",
+    href: "/private/setup-application/classrooms",
     description: [
       "Gestion des classes.",
       "Créer, modifier, supprimer des classes.",

@@ -26,6 +26,8 @@ const CustomSidebar = ({ navItem }: { navItem: TSideBarItem }) => {
 
 export default function MainSidebar() {
   const [open, setOpen] = React.useState(false);
+
+
   return (
     <Sidebar open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10 ">

@@ -1,13 +1,13 @@
 import NextAuth from "next-auth";
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "../prisma/prismaForAuth";
+import { prismaForAuth } from "../prisma/prismaForAuth";
 
 import authConfig from "./auth.config";
 import { Adapter } from "next-auth/adapters";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma) as Adapter,
+  adapter: PrismaAdapter(prismaForAuth) as Adapter,
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7 days

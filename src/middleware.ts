@@ -12,10 +12,6 @@ import NextAuth from "next-auth";
 const { auth: authMiddleware } = NextAuth(authConfig);
 
 export default authMiddleware(async function middleware(req) {
-  const session = req.auth;
-  const isLoggedIn = !!session;
-  const { nextUrl } = req;
-
   /**
    * Vérifie si la route est soumise à des privilèges
    * @param routes - Les routes à vérifier
@@ -51,6 +47,26 @@ export default authMiddleware(async function middleware(req) {
     return undefined;
   };
 
+  console.log("---- MIDDLEWARE ----");
+  const session = req.auth;
+  const isLoggedIn = !!session;
+  const { nextUrl } = req;
+  console.log("MIDDLEWARE -> Next URL: ", nextUrl.pathname);
+
+  // Gérer les en-têtes de cache pour les images uploadées
+  if (nextUrl.pathname.includes("/img/uploads/")) {
+    const response = NextResponse.next();
+    // Désactiver la mise en cache pour les images uploadées
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+    response.headers.set("Surrogate-Control", "no-store");
+    return response;
+  }
+
   // Traiter les routes protégées génériques d'abord
   const isProtectedRoute = nextUrl.pathname.startsWith("/private");
   if (isProtectedRoute && !isLoggedIn) {
@@ -59,11 +75,16 @@ export default authMiddleware(async function middleware(req) {
 
   // Vérifier les routes API avec privilèges
   if (nextUrl.pathname.startsWith("/api/")) {
+    console.log("MIDDLEWARE -> API route détectée ");
+    if (!isLoggedIn) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
     const apiResult = checkRoutePrivileges(privilegesApiRoutes);
     if (apiResult) return apiResult;
   }
   // Vérifier les routes UI avec privilèges
   else {
+    console.log("MIDDLEWARE -> Route UI détectée ");
     const routeResult = checkRoutePrivileges(privilegesRoutes);
     if (routeResult) return routeResult;
   }
@@ -75,10 +96,11 @@ export default authMiddleware(async function middleware(req) {
 export const config = {
   matcher: [
     // Vérifie toutes les routes sauf celles qui commencent par:
+    // - api/auth (routes d'authentification)
     // - _next/static (fichiers statiques)
-    // - _next/image (images optimisées)
     // - favicon.ico (icône du navigateur)
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-    "/api/auth/:path*",
+    "/((?!_next/static|favicon.ico|api/auth).*)",
+    // Inclure explicitement les images pour pouvoir gérer leur cache
+    "/_next/image/:path*",
   ],
 };

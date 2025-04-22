@@ -121,7 +121,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     return (
       <div className="w-full">
-        {label && !props.placeholder && (
+        {label && (
           <label className="mb-1 block text-sm font-medium">{label}</label>
         )}
         <input

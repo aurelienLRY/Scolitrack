@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 interface SpinnerProps {
   size?: string;
   color?: string;
+  fillClasses?: string;
 }
 
 interface SizeProps {
@@ -15,22 +16,6 @@ interface SizeProps {
   xl: string;
 }
 
-interface FillProps {
-  slate: string;
-  blue: string;
-  red: string;
-  green: string;
-  white: string;
-}
-
-interface StrokeProps {
-  slate: string;
-  blue: string;
-  red: string;
-  green: string;
-  white: string;
-}
-
 const sizesClasses: SizeProps = {
   xs: "w-4 h-4",
   sm: "w-5 h-5",
@@ -39,22 +24,6 @@ const sizesClasses: SizeProps = {
   xl: "w-10 h-10",
 };
 
-const fillClasses = {
-  slate: "fill-foreground",
-  blue: "fill-blue-500",
-  red: "fill-red-500",
-  green: "fill-emerald-500",
-  white: "fill-background",
-} as FillProps;
-
-const strokeClasses = {
-  slate: "stroke-foreground",
-  blue: "stroke-blue-500",
-  red: "stroke-red-500",
-  green: "stroke-emerald-500",
-  white: "stroke-background",
-} as StrokeProps;
-
 export const Spinner = ({ size = "md", color = "slate" }: SpinnerProps) => {
   return (
     <div aria-label="Loading..." role="status">
@@ -62,7 +31,7 @@ export const Spinner = ({ size = "md", color = "slate" }: SpinnerProps) => {
         className={cn(
           "animate-spin",
           sizesClasses[size as keyof SizeProps],
-          strokeClasses[color as keyof StrokeProps]
+          color
         )}
       />
     </div>
@@ -71,7 +40,7 @@ export const Spinner = ({ size = "md", color = "slate" }: SpinnerProps) => {
 
 export const RoundSpinner = ({
   size = "md",
-  color = "slate",
+  color = "text-text",
 }: SpinnerProps) => {
   return (
     <div aria-label="Loading..." role="status">
@@ -79,8 +48,9 @@ export const RoundSpinner = ({
         className={cn(
           "animate-spin",
           sizesClasses[size as keyof SizeProps],
-          fillClasses[color as keyof FillProps]
+          color
         )}
+        fill="currentColor"
         viewBox="3 3 18 18"
       >
         <path
@@ -120,7 +90,7 @@ export const Dots_v1 = ({ size = "md", color = "slate" }: SpinnerProps) => (
       className={cn(
         "relative flex items-center justify-start",
         sizesClasses[size as keyof SizeProps],
-        fillClasses[color as keyof FillProps]
+        color
       )}
     >
       <motion.span
@@ -156,7 +126,7 @@ export const Dots_v2 = ({ size = "md", color = "slate" }: SpinnerProps) => (
     className={cn(
       "flex items-center justify-center",
       sizesClasses[size as keyof SizeProps],
-      fillClasses[color as keyof FillProps]
+      color
     )}
   >
     <div className="flex space-x-2">
@@ -207,7 +177,7 @@ export const Dots_v3 = ({ size = "md", color = "slate" }: SpinnerProps) => (
     className={cn(
       "flex items-center justify-center space-x-2",
       sizesClasses[size as keyof SizeProps],
-      fillClasses[color as keyof FillProps]
+      color
     )}
   >
     <div className="size-3.5 animate-bounce rounded-full bg-current [animation-delay:-0.3s]"></div>
@@ -221,7 +191,7 @@ export const Dots_v4 = ({ size = "md", color = "slate" }: SpinnerProps) => (
     className={cn(
       "flex items-center justify-center space-x-2",
       sizesClasses[size as keyof SizeProps],
-      fillClasses[color as keyof FillProps]
+      color
     )}
   >
     {[...Array(3)].map((_, index) => (
@@ -249,7 +219,7 @@ export const Dots_v5 = ({ size = "md", color = "slate" }: SpinnerProps) => {
       className={cn(
         "relative size-20",
         sizesClasses[size as keyof SizeProps],
-        fillClasses[color as keyof FillProps]
+        color
       )}
     >
       {[...Array(dots)].map((_, i) => {
