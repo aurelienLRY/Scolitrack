@@ -10,7 +10,9 @@ export enum PrivilegeName {
   UPDATE_DATA = "UPDATE_DATA",
   UPLOAD_FILES = "UPLOAD_FILES",
   MANAGE_COMMISSIONS = "MANAGE_COMMISSIONS",
-  INSCRIPTION = "INSCRIPTION",
+  MANAGE_ENROLLMENTS = "MANAGE_ENROLLMENTS", // Gérer toutes les inscriptions
+  MANAGE_CAMPAIGNS = "MANAGE_CAMPAIGNS", // Gérer les campagnes d'inscription
+  REVIEW_ENROLLMENT_FILES = "REVIEW_ENROLLMENT_FILES", // Examiner et valider les dossiers",
 }
 
 /**
@@ -39,7 +41,9 @@ export const PRIVILEGES: PrivilegeDefinition[] = [
   { name: PrivilegeName.UPDATE_DATA, description: "Modifier des données" },
   { name: PrivilegeName.UPLOAD_FILES, description: "Télécharger des fichiers" },
   { name: PrivilegeName.MANAGE_COMMISSIONS, description: "Gérer les commissions" },
-  { name: PrivilegeName.INSCRIPTION, description: "Gérer les inscriptions" },
+  { name: PrivilegeName.MANAGE_ENROLLMENTS, description: "Gérer les inscriptions" },
+  { name: PrivilegeName.MANAGE_CAMPAIGNS, description: "Gérer les campagnes d'inscription" },
+  { name: PrivilegeName.REVIEW_ENROLLMENT_FILES, description: "Examiner et valider les dossiers" },
 ];
 
 /**
@@ -66,7 +70,7 @@ export const ADMIN_EXCLUDED_PRIVILEGES: PrivilegeName[] = [
   PrivilegeName.MANAGE_MEDICAL_INFORMATIONS,
   PrivilegeName.DELETE_DATA,
   PrivilegeName.UPDATE_DATA,
-  PrivilegeName.INSCRIPTION,
+  PrivilegeName.ENROLLMENT_CAMPAIGN,
 ];
 
 /**

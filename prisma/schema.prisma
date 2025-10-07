@@ -93,6 +93,11 @@ model User {
   
   // Nouvelle relation
   families          FamilyMember[]
+  
+  // Relations pour le module d'inscription
+  createdCampaigns    EnrollmentCampaign[]
+  reviewedEnrollments EnrollmentFile[]     @relation("reviewer")
+  enrollmentActions   EnrollmentHistory[]  @relation("actor")
 
   @@index([roleName], map: "User_roleName_fkey")
 }
@@ -299,6 +304,9 @@ model Family {
   // Relations
   members           FamilyMember[]       // Parents/tuteurs de la famille
   students          Student[]            // Enfants de la famille
+  
+  // Relation avec inscriptions
+  enrollmentFiles   EnrollmentFile[]
 }
 
 model FamilyMember {
@@ -359,6 +367,9 @@ model Student {
   
   // Contacts d'urgence
   emergencyContacts   EmergencyContact[]
+  
+  // Relation avec inscriptions
+  enrollments         EnrollmentStudent[]
   
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
@@ -453,4 +464,95 @@ model EmergencyContact {
 
   @@index([studentId])
   @@index([priority]) // Pour faciliter le tri par priorité
+}
+
+//=============================================================================
+// MODULE D'INSCRIPTION SCOLAIRE
+//=============================================================================
+
+// Campagne – période d'inscription
+model EnrollmentCampaign {
+  id          String    @id @default(cuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Campagne créée par un administrateur
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id])
+
+  enrollmentFiles EnrollmentFile[]
+  
+  @@index([creatorId])
+}
+
+// Dossier d'inscription d'une famille pour une campagne
+model EnrollmentFile {
+  id             String           @id @default(cuid())
+  campaignId     String
+  familyId       String?          // null si famille encore inconnue
+  email          String           // e‑mail de contact (utile si famille inconnue)
+  status         EnrollmentStatus @default(DRAFT)
+  token          String           @unique @default(uuid()) // lien sécurisé
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  reviewerId     String?          // administrateur qui a pris la décision
+  decisionNote   String?          // commentaire refus / complément
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  campaign       EnrollmentCampaign @relation(fields: [campaignId], references: [id])
+  family         Family?            @relation(fields: [familyId], references: [id])
+  reviewer       User?              @relation("reviewer", fields: [reviewerId], references: [id])
+
+  students       EnrollmentStudent[]  // enfants concernés
+  history        EnrollmentHistory[]
+  
+  @@index([campaignId])
+  @@index([familyId])
+  @@index([reviewerId])
+  @@index([email])
+  @@index([status])
+}
+
+// Enfants rattachés au dossier
+model EnrollmentStudent {
+  fileId        String
+  studentId     String   // le même élève peut apparaître sur plusieurs campagnes
+  createdAt     DateTime @default(now())
+
+  enrollmentFile EnrollmentFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
+  @@index([fileId])
+  @@index([studentId])
+}
+
+// Historique des changements de statut
+model EnrollmentHistory {
+  id             String          @id @default(cuid())
+  fileId         String
+  oldStatus      EnrollmentStatus
+  newStatus      EnrollmentStatus
+  actorId        String?         // admin ou parent
+  note           String?
+  timestamp      DateTime        @default(now())
+
+  enrollmentFile EnrollmentFile  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  actor          User?           @relation("actor", fields: [actorId], references: [id])
+
+  @@index([fileId])
+  @@index([actorId])
+}
+
+// Enum des statuts
+enum EnrollmentStatus {
+  DRAFT        // lien envoyé – pas encore soumis
+  SUBMITTED    // parent a cliqué "envoyer"
+  NEED_INFO    // admin demande un complément
+  APPROVED     // dossier accepté
+  REJECTED     // dossier refusé
 }
