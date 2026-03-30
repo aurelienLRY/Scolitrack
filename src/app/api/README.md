@@ -36,6 +36,17 @@ Ce dossier contient les routes API de l'application.
   - `subscribe/` - Route pour s'abonner aux notifications push
   - `unsubscribe/` - Route pour se désabonner des notifications push
 
+- `enrollment/` - Routes pour la gestion des inscriptions scolaires
+  - `campaigns/` - Routes pour gérer les campagnes d'inscription
+    - `route.ts` - Route pour lister (GET) et créer (POST) des campagnes
+    - `[id]/route.ts` - Route pour récupérer (GET), mettre à jour (PUT) et supprimer (DELETE) une campagne
+    - `[id]/generate/` - Route pour générer des dossiers d'inscription en masse (POST)
+  - `files/` - Routes pour gérer les dossiers d'inscription
+    - `route.ts` - Route pour lister (GET) et créer (POST) des dossiers
+    - `[id]/route.ts` - Route pour récupérer (GET), mettre à jour (PUT) et supprimer (DELETE) un dossier
+    - `[id]/status/` - Route pour changer le statut d'un dossier (PUT)
+    - `token/[token]/` - Route pour accès public par token (GET, PUT)
+
 ### Format de réponse API standardisé
 
 Toutes les API de l'application utilisent désormais un format de réponse standardisé défini dans `src/lib/services/api.service.ts`.
@@ -111,6 +122,13 @@ export const GET = withPrivilege("VIEW_USER", async (request) => {
   - `POST /api/notification/push` - Admin/Super Admin uniquement
   - `POST /api/notification/subscribe` - Utilisateur authentifié
   - `POST /api/notification/unsubscribe` - Utilisateur authentifié
+  - `GET|POST|PUT|DELETE /api/enrollment/campaigns/*` - Privilège requis: `MANAGE_CAMPAIGNS`
+  - `GET|POST|PUT|DELETE /api/enrollment/files/*` - Privilège requis: `MANAGE_ENROLLMENTS`
+  - `PUT /api/enrollment/files/[id]/status` - Privilège requis: `REVIEW_ENROLLMENT_FILES`
+  - `POST /api/enrollment/campaigns/[id]/generate` - Privilège requis: `MANAGE_CAMPAIGNS`
+
+- Routes publiques (accès par token) :
+  - `GET|PUT /api/enrollment/files/token/[token]` - Accès public via token d'inscription
 
 ### Fonctionnalités d'inscription et de gestion des utilisateurs
 
@@ -178,10 +196,83 @@ export const GET = withPrivilege("VIEW_USER", async (request) => {
    - Description: Attribue un rôle à un utilisateur existant
    - Corps de la requête: `{ roleName }`
 
+### Gestion des inscriptions scolaires
+
+1. **Campagnes d'inscription**
+
+   - Route: `GET /api/enrollment/campaigns`
+   - Privilège requis: Aucun (lecture publique)
+   - Description: Récupère la liste des campagnes d'inscription
+   - Paramètres: `status` (active, upcoming, past, all)
+
+   - Route: `POST /api/enrollment/campaigns`
+   - Privilège requis: `MANAGE_CAMPAIGNS`
+   - Description: Crée une nouvelle campagne d'inscription
+   - Corps de la requête: `{ name, startDate, endDate }`
+
+   - Route: `GET /api/enrollment/campaigns/[id]`
+   - Privilège requis: Aucun (lecture publique)
+   - Description: Récupère les détails d'une campagne spécifique
+
+   - Route: `PUT /api/enrollment/campaigns/[id]`
+   - Privilège requis: `MANAGE_CAMPAIGNS`
+   - Description: Met à jour une campagne d'inscription
+
+   - Route: `DELETE /api/enrollment/campaigns/[id]`
+   - Privilège requis: `MANAGE_CAMPAIGNS`
+   - Description: Supprime une campagne d'inscription
+
+   - Route: `POST /api/enrollment/campaigns/[id]/generate`
+   - Privilège requis: `MANAGE_CAMPAIGNS`
+   - Description: Génère des dossiers d'inscription pour une liste d'emails
+   - Corps de la requête: `{ emails: string[] }`
+
+2. **Dossiers d'inscription**
+
+   - Route: `GET /api/enrollment/files`
+   - Privilège requis: Aucun (lecture publique)
+   - Description: Récupère la liste des dossiers d'inscription
+   - Paramètres: `status`, `campaignId`, `familyId`, `email`
+
+   - Route: `POST /api/enrollment/files`
+   - Privilège requis: `MANAGE_ENROLLMENTS`
+   - Description: Crée un nouveau dossier d'inscription
+   - Corps de la requête: `{ campaignId, familyId?, email }`
+
+   - Route: `GET /api/enrollment/files/[id]`
+   - Privilège requis: Aucun (lecture publique)
+   - Description: Récupère les détails d'un dossier spécifique
+
+   - Route: `PUT /api/enrollment/files/[id]`
+   - Privilège requis: `MANAGE_ENROLLMENTS`
+   - Description: Met à jour un dossier d'inscription
+
+   - Route: `DELETE /api/enrollment/files/[id]`
+   - Privilège requis: `MANAGE_ENROLLMENTS`
+   - Description: Supprime un dossier d'inscription
+
+   - Route: `PUT /api/enrollment/files/[id]/status`
+   - Privilège requis: `REVIEW_ENROLLMENT_FILES`
+   - Description: Change le statut d'un dossier d'inscription
+   - Corps de la requête: `{ status, note? }`
+
+3. **Accès public par token**
+
+   - Route: `GET /api/enrollment/files/token/[token]`
+   - Privilège requis: Aucun (accès public)
+   - Description: Récupère un dossier d'inscription par son token (pour les familles)
+
+   - Route: `PUT /api/enrollment/files/token/[token]`
+   - Privilège requis: Aucun (accès public)
+   - Description: Met à jour un dossier d'inscription par son token (pour les familles)
+   - Restrictions: Seuls les dossiers avec statut DRAFT ou NEED_INFO peuvent être modifiés
+
 ## Structure
 
 - `users/route.ts` : Gestion des utilisateurs
 - `auth/route.ts` : Authentification
+- `enrollment/campaigns/route.ts` : Gestion des campagnes d'inscription
+- `enrollment/files/route.ts` : Gestion des dossiers d'inscription
 - `[id]/route.ts` : Gestion des endpoints dynamiques
 - `[...params]/route.ts` : Gestion des endpoints dynamiques avec plusieurs paramètres
 - `.../route.ts` : Autres endpoints
@@ -206,6 +297,19 @@ app/api/
 │   └── route.ts   // GET, POST, etc. sur /api/users
 ├── auth/
 │   └── route.ts   // POST /api/auth (login, logout, etc.)
+├── enrollment/
+│   ├── campaigns/
+│   │   ├── route.ts           // GET, POST /api/enrollment/campaigns
+│   │   ├── [id]/route.ts      // GET, PUT, DELETE /api/enrollment/campaigns/[id]
+│   │   └── [id]/generate/
+│   │       └── route.ts       // POST /api/enrollment/campaigns/[id]/generate
+│   └── files/
+│       ├── route.ts           // GET, POST /api/enrollment/files
+│       ├── [id]/route.ts      // GET, PUT, DELETE /api/enrollment/files/[id]
+│       ├── [id]/status/
+│       │   └── route.ts       // PUT /api/enrollment/files/[id]/status
+│       └── token/[token]/
+│           └── route.ts       // GET, PUT /api/enrollment/files/token/[token]
 └── ...
 ```
 

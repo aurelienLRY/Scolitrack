@@ -1,16 +1,18 @@
 import { encrypt, safeDecrypt } from "@/lib/services/crypto.service";
-import { Prisma, User } from "@prisma/client";
+import { User } from "@prisma/client";
+import type { PrismaMiddlewareParams } from "@/lib/prisma/prisma-middleware.types";
 
 /**
  * Middleware avant opération - chiffre les données sensibles de l'utilisateur
  */
-export const USER_PRE_MIDDLEWARE = (params: Prisma.MiddlewareParams) => {
+export const USER_PRE_MIDDLEWARE = (params: PrismaMiddlewareParams) => {
+  const data = params.args?.data;
   if (
     params.model === "User" &&
     (params.action === "create" || params.action === "update") &&
-    params.args.data?.name
+    data?.name
   ) {
-    params.args.data.name = encrypt(params.args.data.name);
+    data.name = encrypt(String(data.name));
   }
 };
 
@@ -36,7 +38,7 @@ const isUser = (obj: any): obj is User => {
  * Middleware après opération - déchiffre les données sensibles de l'utilisateur
  */
 export const USER_POST_MIDDLEWARE = (
-  params: Prisma.MiddlewareParams,
+  params: PrismaMiddlewareParams,
   result: UserResult
 ): UserResult => {
   try {

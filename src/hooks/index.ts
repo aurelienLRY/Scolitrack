@@ -32,6 +32,48 @@ export {
 export { usePrivileges } from "./query/usePrivileges";
 export { useRoles } from "./query/useRoles";
 
+// Hooks pour les inscriptions scolaires
+export {
+  useEnrollmentCampaigns,
+  useEnrollmentCampaign,
+  useCreateEnrollmentCampaign,
+  useUpdateEnrollmentCampaign,
+  useDeleteEnrollmentCampaign,
+  useGenerateEnrollmentFiles,
+  useEnrollmentFiles,
+  useEnrollmentFile,
+  useEnrollmentFileByToken,
+  useCreateEnrollmentFile,
+  useUpdateEnrollmentFile,
+  useUpdateEnrollmentFileStatus,
+  useUpdateEnrollmentFileByToken,
+  useDeleteEnrollmentFile,
+  useAddStudentToEnrollment,
+  useRemoveStudentFromEnrollment,
+  useEnrollmentStats,
+  ENROLLMENT_CAMPAIGN_QUERY_KEY,
+  ENROLLMENT_FILE_QUERY_KEY,
+  ENROLLMENT_STATS_QUERY_KEY,
+} from "./query/useEnrollment";
+
+// Types pour les inscriptions
+export type {
+  EnrollmentCampaignComplete,
+  EnrollmentCampaignWithStats,
+  EnrollmentFileWithDetails,
+  EnrollmentFileWithStats,
+  EnrollmentStats,
+  CreateEnrollmentCampaignData,
+  UpdateEnrollmentCampaignData,
+  CreateEnrollmentFileData,
+  UpdateEnrollmentFileData,
+  UpdateEnrollmentStatusData,
+  AddStudentToEnrollmentData,
+  GenerateEnrollmentFilesData,
+  EnrollmentCampaignFilters,
+  EnrollmentFileFilters,
+} from "../types/enrollment.type";
+
 // Autres hooks existants
 export { useNotification } from "./useNotification";
 export { usePWA } from "./usePWA";

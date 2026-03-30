@@ -5,11 +5,11 @@ import {
   TPrivilegeRoute,
 } from "@/config/routes.config";
 
-//* Edge compatibility *//
-import authConfig from "@/lib/auth/auth.config";
+//* Edge : config sans Prisma (voir auth.edge.config.ts) *//
+import authEdgeConfig from "@/lib/auth/auth.edge.config";
 import NextAuth from "next-auth";
 
-const { auth: authMiddleware } = NextAuth(authConfig);
+const { auth: authMiddleware } = NextAuth(authEdgeConfig);
 
 export default authMiddleware(async function middleware(req) {
   /**

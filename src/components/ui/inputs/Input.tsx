@@ -103,7 +103,7 @@ const HelperText = ({ helperText }: { helperText: string }) => {
   );
 };
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       className,

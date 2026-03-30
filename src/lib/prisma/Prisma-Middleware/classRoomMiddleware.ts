@@ -1,4 +1,5 @@
-import { Prisma, ClassRoom } from "@prisma/client";
+import { ClassRoom } from "@prisma/client";
+import type { PrismaMiddlewareParams } from "@/lib/prisma/prisma-middleware.types";
 import { ClassRoomComplete } from "@/types/classroom.type";
 import { safeDecrypt } from "@/lib/services/crypto.service";
 
@@ -30,7 +31,7 @@ const hasClassPersonnel = (classroom: any): classroom is ClassRoomComplete => {
  * Middleware après opération - déchiffre les noms des utilisateurs dans le personnel des classes
  */
 export const CLASSROOM_POST_MIDDLEWARE = async (
-  params: Prisma.MiddlewareParams,
+  params: PrismaMiddlewareParams,
   result: ClassRoomResult
 ): Promise<ClassRoomResult> => {
   try {

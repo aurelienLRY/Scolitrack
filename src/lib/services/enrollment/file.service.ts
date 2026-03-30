@@ -200,7 +200,7 @@ export const enrollmentFileService = {
 
     const oldStatus = file.status;
 
-    const updatedFile = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const updatedFile = await prisma.$transaction(async (tx) => {
       const updatedFile = await tx.enrollmentFile.update({
         where: { id: fileId },
         data: {

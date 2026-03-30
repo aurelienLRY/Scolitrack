@@ -100,7 +100,7 @@ const HelperText = ({ helperText }: { helperText: string }) => {
   );
 };
 
-const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
     {
       className,
@@ -152,4 +152,5 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 );
 
 Textarea.displayName = "Textarea";
+
 export default Textarea;

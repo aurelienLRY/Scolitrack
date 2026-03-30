@@ -21,10 +21,10 @@ import { auth } from "@/lib/auth/auth";
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     
     const campaign = await enrollmentCampaignService.getCampaignById(id);
     
@@ -52,10 +52,10 @@ export async function GET(
  * @returns La campagne d'inscription mise à jour
  */
 export const PUT = withPrivilege(
-  PrivilegeName.MANAGE_CAMPAIGNS,
+  PrivilegeName.UPDATE_DATA,
   async (
     request: NextRequest,
-    context: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
@@ -67,7 +67,7 @@ export const PUT = withPrivilege(
         });
       }
       
-      const { id } = context.params;
+      const { id } = await context.params;
       const body = await request.json();
       
       // Valider les données
@@ -119,10 +119,10 @@ export const PUT = withPrivilege(
  * @returns Confirmation de suppression
  */
 export const DELETE = withPrivilege(
-  PrivilegeName.MANAGE_CAMPAIGNS,
+   PrivilegeName.DELETE_DATA,
   async (
     request: NextRequest,
-    context: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
@@ -134,7 +134,7 @@ export const DELETE = withPrivilege(
         });
       }
       
-      const { id } = context.params;
+      const { id } = await context.params;
       
       // Vérifier si la campagne existe
       const existingCampaign = await enrollmentCampaignService.getCampaignById(id);

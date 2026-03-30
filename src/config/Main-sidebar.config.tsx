@@ -20,9 +20,9 @@ export const sidebarItem: TSideBarItem[] = [
   },
   {
     label: "Inscription",
-    href: "/private/enrollment-campaign",
+    href: "/private/enrollment",
     icon: <UserPlus />,
-    privilege: "ENROLLMENT_CAMPAIGN",
+    privilege: "MANAGE_CAMPAIGNS",
   },
   {
     label: "Paramètres",

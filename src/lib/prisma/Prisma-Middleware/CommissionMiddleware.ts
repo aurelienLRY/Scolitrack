@@ -1,4 +1,5 @@
-import { Prisma, Commission } from "@prisma/client";
+import { Commission } from "@prisma/client";
+import type { PrismaMiddlewareParams } from "@/lib/prisma/prisma-middleware.types";
 import { TCommissionWithAllRelations } from "@/types/commission.type";
 import { safeDecrypt } from "@/lib/services/crypto.service";
 
@@ -30,7 +31,7 @@ const hasCommissionMembers = (commission: any): commission is TCommissionWithAll
  * Middleware après opération - déchiffre les noms des utilisateurs dans les membres des commissions
  */
 export const COMMISSION_POST_MIDDLEWARE = async (
-  params: Prisma.MiddlewareParams,
+  params: PrismaMiddlewareParams,
   result: CommissionResult
 ): Promise<CommissionResult> => {
   try {

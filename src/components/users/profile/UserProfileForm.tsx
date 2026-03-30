@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import Input, { SelectInput } from "@/components/ui/inputs/Input";
 import Card from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/inputs/checkbox";
-import Textarea from "@/components/ui/inputs/textarea";
+import { Textarea } from "@/components/ui/inputs/textarea";
 import { Edit, Save, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";

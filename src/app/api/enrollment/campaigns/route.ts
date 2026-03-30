@@ -56,19 +56,18 @@ export const POST = withPrivilege(
   async (request: NextRequest) => {
     try {
       const session = await auth();
-      
-      if (!session || !session.user) {
-        return errorResponse({
-          feedback: "Non authentifié",
-          status: HttpStatus.UNAUTHORIZED,
-        });
-      }
-      
       const body = await request.json();
       
       // Valider les données
       try {
         await createEnrollmentCampaignSchema.validate(body);
+        /* TODO: une fois le campagne ouvert , recuperer tous les student    */
+
+
+
+
+
+
       } catch (validationError: unknown) {
         const errorMessage = validationError instanceof Error 
           ? validationError.message 
@@ -83,7 +82,7 @@ export const POST = withPrivilege(
       // Créer la campagne
       const campaign = await enrollmentCampaignService.createCampaign(
         body,
-        session.user.id
+        session?.user?.id ?? "NO_USER_ID"
       );
       
       return createdResponse({

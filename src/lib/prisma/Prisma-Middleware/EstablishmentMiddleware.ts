@@ -1,4 +1,5 @@
-import { Prisma, Establishment, User } from "@prisma/client";
+import { Establishment, User } from "@prisma/client";
+import type { PrismaMiddlewareParams } from "@/lib/prisma/prisma-middleware.types";
 import { safeDecrypt } from "@/lib/services/crypto.service";
 
 /**
@@ -28,7 +29,7 @@ const hasAdmin = (est: any): est is EstablishmentWithAdmin => {
  * Middleware après opération - déchiffre les noms des administrateurs dans les établissements
  */
 export const ESTABLISHMENT_POST_MIDDLEWARE = async (
-  params: Prisma.MiddlewareParams,
+  params: PrismaMiddlewareParams,
   result: EstablishmentResult
 ): Promise<EstablishmentResult> => {
   try {

@@ -161,16 +161,30 @@ export const enrollmentCampaignService = {
 
   /**
    * Supprime une campagne d'inscription
+   * Supprime également tous les dossiers d'inscription associés
    */
   async deleteCampaign(id: string, userId: string) {
     const campaign = await prisma.enrollmentCampaign.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: {
+            enrollmentFiles: true,
+          },
+        },
+      },
     });
 
     if (!campaign) {
       throw new Error("Campagne d'inscription non trouvée");
     }
 
+    // Supprimer d'abord tous les dossiers d'inscription associés
+    await prisma.enrollmentFile.deleteMany({
+      where: { campaignId: id },
+    });
+
+    // Puis supprimer la campagne
     await prisma.enrollmentCampaign.delete({
       where: { id },
     });
@@ -179,7 +193,7 @@ export const enrollmentCampaignService = {
     await activityLogService.logActivity({
       userId,
       action: "DELETE_ENROLLMENT_CAMPAIGN",
-      details: `Suppression de la campagne d'inscription "${campaign.name}"`,
+      details: `Suppression de la campagne d'inscription "${campaign.name}" et de ${campaign._count.enrollmentFiles} dossier(s) associé(s)`,
     });
 
     return campaign;

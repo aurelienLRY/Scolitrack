@@ -37,7 +37,7 @@ export async function isAuthenticated() {
  * @returns Fonction de gestionnaire de route avec vérification des privilèges
  */
 export function withPrivilege<T = unknown, C = unknown>(
-  requiredPrivilege: PrivilegeName,
+  requiredPrivilege: PrivilegeName | PrivilegeName[],
   handler: RouteHandler<T, C>
 ): (request: NextRequest, context: C) => Promise<NextResponse> {
   return async (request: NextRequest, context: C) => {
@@ -55,9 +55,17 @@ export function withPrivilege<T = unknown, C = unknown>(
       if (session.user.roleName === "SUPER_ADMIN") {
         return handler(request, context);
       }
-
+  
       // Vérifier si l'utilisateur a le privilège requis
-      const hasPrivilege = session.user.privileges.includes(requiredPrivilege);
+      let hasPrivilege = false;
+      if (Array.isArray(requiredPrivilege)) {
+        hasPrivilege = requiredPrivilege.some((privilege) =>
+          session.user.privileges.includes(privilege)
+        );
+      }
+      else {
+        hasPrivilege = session.user.privileges.includes(requiredPrivilege);
+      }
 
       if (!hasPrivilege) {
         return NextResponse.json(

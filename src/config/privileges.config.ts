@@ -12,7 +12,6 @@ export enum PrivilegeName {
   MANAGE_COMMISSIONS = "MANAGE_COMMISSIONS",
   MANAGE_ENROLLMENTS = "MANAGE_ENROLLMENTS", // Gérer toutes les inscriptions
   MANAGE_CAMPAIGNS = "MANAGE_CAMPAIGNS", // Gérer les campagnes d'inscription
-  REVIEW_ENROLLMENT_FILES = "REVIEW_ENROLLMENT_FILES", // Examiner et valider les dossiers",
 }
 
 /**
@@ -43,7 +42,6 @@ export const PRIVILEGES: PrivilegeDefinition[] = [
   { name: PrivilegeName.MANAGE_COMMISSIONS, description: "Gérer les commissions" },
   { name: PrivilegeName.MANAGE_ENROLLMENTS, description: "Gérer les inscriptions" },
   { name: PrivilegeName.MANAGE_CAMPAIGNS, description: "Gérer les campagnes d'inscription" },
-  { name: PrivilegeName.REVIEW_ENROLLMENT_FILES, description: "Examiner et valider les dossiers" },
 ];
 
 /**
@@ -64,13 +62,7 @@ export interface RoleDefinition {
  * Privilèges exclus pour le rôle ADMIN
  */
 export const ADMIN_EXCLUDED_PRIVILEGES: PrivilegeName[] = [
-  PrivilegeName.SETUP_APPLICATION,
-  PrivilegeName.MANAGE_USERS,
-  PrivilegeName.MANAGE_STUDENTS,
-  PrivilegeName.MANAGE_MEDICAL_INFORMATIONS,
-  PrivilegeName.DELETE_DATA,
-  PrivilegeName.UPDATE_DATA,
-  PrivilegeName.ENROLLMENT_CAMPAIGN,
+
 ];
 
 /**

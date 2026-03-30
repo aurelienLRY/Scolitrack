@@ -17,6 +17,8 @@ interface SelectContextType {
   onValueChange: (value: string) => void;
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
+  selectedLabel: string;
+  setSelectedLabel: (label: string) => void;
 }
 
 const SelectContext = React.createContext<SelectContextType | undefined>(
@@ -33,6 +35,7 @@ export const Select = ({
   helperText,
 }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState("");
 
   return (
     <div className="w-full">
@@ -42,7 +45,7 @@ export const Select = ({
         </label>
       )}
       <SelectContext.Provider
-        value={{ value, onValueChange, isOpen, setIsOpen }}
+        value={{ value, onValueChange, isOpen, setIsOpen, selectedLabel, setSelectedLabel }}
       >
         <div className={cn("relative", className)}>{children}</div>
       </SelectContext.Provider>
@@ -154,6 +157,7 @@ export const SelectItem = ({ value, children, className }: SelectItemProps) => {
       type="button"
       onClick={() => {
         context.onValueChange(value);
+        context.setSelectedLabel(children?.toString() || "");
         context.setIsOpen(false);
       }}
       className={cn(
@@ -178,5 +182,5 @@ export const SelectValue = ({
   const context = React.useContext(SelectContext);
   if (!context) throw new Error("SelectValue must be used within Select");
 
-  return <span className="truncate">{context.value || placeholder}</span>;
+  return <span className="truncate">{context.selectedLabel || placeholder}</span>;
 };

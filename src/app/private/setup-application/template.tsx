@@ -41,7 +41,9 @@ export default function AdminTemplate({
           ))}
         </nav>
       </div>
+      <div className=" container mx-auto md:mt-24 mt-10">
       {children}
+      </div>
     </>
   );
 }

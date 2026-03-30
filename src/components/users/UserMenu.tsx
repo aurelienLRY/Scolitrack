@@ -36,7 +36,7 @@ export function UserMenu() {
 
   return (
     <Tooltip content="Mon espace" position="right">
-      <div className="relative text-black" ref={menuRef}>
+      <div className="relative text-black max-w-[90vw]" ref={menuRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="rounded-full outline-none ring-offset-2 transition-opacity hover:opacity-80 focus:ring-2 focus:ring-slate-950"

@@ -15,10 +15,10 @@ import { auth } from "@/lib/auth/auth";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const file = await enrollmentFileService.getFileById(id);
 
     if (!file) {
@@ -44,7 +44,7 @@ export const PUT = withPrivilege(
   PrivilegeName.MANAGE_ENROLLMENTS,
   async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
@@ -56,7 +56,7 @@ export const PUT = withPrivilege(
         });
       }
       
-      const { id } = params;
+      const { id } = await params;
       const body = await request.json();
       
       // Vérifier si le dossier existe
@@ -107,7 +107,7 @@ export const DELETE = withPrivilege(
   PrivilegeName.MANAGE_ENROLLMENTS,
   async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
@@ -119,7 +119,7 @@ export const DELETE = withPrivilege(
         });
       }
       
-      const { id } = params;
+      const { id } = await params;
       
       // Vérifier si le dossier existe
       const existingFile = await enrollmentFileService.getFileById(id);

@@ -31,7 +31,7 @@ export default function MainSidebar() {
   return (
     <Sidebar open={open} setOpen={setOpen}>
       <SidebarBody className="justify-between gap-10 ">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 ">
           <div className="flex items-center gap-2 overflow-x-hidden">
             <Image
               src="/img/Logo_Scolitrack.svg"
@@ -44,7 +44,7 @@ export default function MainSidebar() {
             </p>
           </div>
           <div className="w-full h-1 bg-primary/30  rounded-full"></div>
-          <div>
+          <div className="overflow-x-hidden">
             <SidebarLink
               link={{
                 label: "Home",

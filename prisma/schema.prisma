@@ -9,10 +9,6 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-//=============================================================================
-// MODÈLES D'AUTHENTIFICATION ET PERMISSIONS
-//=============================================================================
-
 model Role {
   id             String          @id @default(cuid())
   name           String          @unique
@@ -45,59 +41,45 @@ model RolePrivilege {
   @@index([privilegeId])
 }
 
-//=============================================================================
-// UTILISATEURS ET AUTHENTIFICATION
-//=============================================================================
-
 model User {
-  id                String               @id @default(cuid())
-  name              String?
-  email             String               @unique
-  emailVerified     DateTime?
-  image             String?
-  password          String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  resetToken        String?              @unique
-  resetTokenExpiry  DateTime?
-  roleName          String               @default("USER")
-  
-  // Informations de parent
-  parentType        String?              // "MERE", "PERE", "TUTEUR", "AUTRE"
-  firstName         String?              // prénom
-  gender            String?              // "M", "F", "N" (non genré)
-  socialSecurityNum String?              // numéro de sécurité sociale
-  phoneNumber       String?              // numéro de téléphone portable
-  address           String?              // adresse complète
-  postalCode        String?              // code postal
-  city              String?              // ville
-  profession        String?              // profession
-  maritalStatus     String?              // situation matrimoniale
-  bio               String?              // punchline/biographie
-  skills            String?              // compétences
-  
-  // Groupes d'appartenance
-  isHousekeeping    Boolean              @default(false) // ménage
-  isDaycare         Boolean              @default(false) // garderie
-  isCanteen         Boolean              @default(false) // cantine
-  
-  // Relations existantes
-  accounts          Account[]
-  pushSubscriptions PushSubscription[]
-  sessions          Session[]
-  role              Role                 @relation(fields: [roleName], references: [name])
-  establishment     Establishment?
-  classPersonnel    ClassRoomPersonnel[]
-  activityLogs      ActivityLog[]
-  commissions       CommissionMember[]
-  
-  // Nouvelle relation
-  families          FamilyMember[]
-  
-  // Relations pour le module d'inscription
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  resetToken          String?              @unique
+  resetTokenExpiry    DateTime?
+  roleName            String               @default("USER")
+  address             String?
+  bio                 String?
+  city                String?
+  firstName           String?
+  gender              String?
+  isCanteen           Boolean              @default(false)
+  isDaycare           Boolean              @default(false)
+  isHousekeeping      Boolean              @default(false)
+  maritalStatus       String?
+  parentType          String?
+  phoneNumber         String?
+  postalCode          String?
+  profession          String?
+  skills              String?
+  socialSecurityNum   String?
+  accounts            Account[]
+  activityLogs        ActivityLog[]
+  classPersonnel      ClassRoomPersonnel[]
+  commissions         CommissionMember[]
   createdCampaigns    EnrollmentCampaign[]
   reviewedEnrollments EnrollmentFile[]     @relation("reviewer")
   enrollmentActions   EnrollmentHistory[]  @relation("actor")
+  establishment       Establishment?
+  families            FamilyMember[]
+  pushSubscriptions   PushSubscription[]
+  sessions            Session[]
+  role                Role                 @relation(fields: [roleName], references: [name])
 
   @@index([roleName], map: "User_roleName_fkey")
 }
@@ -156,10 +138,6 @@ model PushSubscription {
   @@index([userId])
 }
 
-//=============================================================================
-// ÉTABLISSEMENTS ET ORGANISATION
-//=============================================================================
-
 model Establishment {
   id             String           @id @default(cuid())
   name           String
@@ -171,14 +149,14 @@ model Establishment {
   website        String?
   adminId        String           @unique
   logoUrl        String?
-  logoFileId     String?
   description    String?          @db.Text
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  admin          User             @relation(fields: [adminId], references: [id])
+  logoFileId     String?
   classRooms     ClassRoom[]
-  EducationLevel EducationLevel[]
   commissions    Commission[]
+  EducationLevel EducationLevel[]
+  admin          User             @relation(fields: [adminId], references: [id])
 
   @@index([adminId])
 }
@@ -187,17 +165,15 @@ model ClassRoom {
   id              String                    @id @default(uuid())
   name            String
   capacity        Int
+  establishmentId String
   logoUrl         String?
   logoFileId      String?
   colorCode       String?
-  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
-  establishmentId String
-  classPersonnel  ClassRoomPersonnel[]
-  educationLevels ClassRoomEducationLevel[]
   createdAt       DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
-  
-  // Nouvelle relation
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
+  educationLevels ClassRoomEducationLevel[]
+  classPersonnel  ClassRoomPersonnel[]
   students        Student[]
 
   @@index([establishmentId])
@@ -207,13 +183,11 @@ model EducationLevel {
   id              String                    @id @default(uuid())
   name            String
   code            String
-  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
   establishmentId String
-  classRooms      ClassRoomEducationLevel[]
   establishedAt   DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
-  
-  // Nouvelle relation
+  classRooms      ClassRoomEducationLevel[]
+  establishment   Establishment             @relation(fields: [establishmentId], references: [id])
   students        Student[]
 
   @@unique([name, establishmentId])
@@ -245,10 +219,6 @@ model ClassRoomPersonnel {
   @@index([userId])
 }
 
-//=============================================================================
-// COMMISSIONS
-//=============================================================================
-
 model Commission {
   id              String             @id @default(uuid())
   name            String
@@ -269,10 +239,10 @@ model Commission {
 model CommissionMember {
   userId       String
   commissionId String
-  role         String // Par exemple: "Président", "Secrétaire", "Membre"
+  role         String
   joinedAt     DateTime   @default(now())
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, commissionId])
   @@index([userId])
@@ -290,35 +260,26 @@ model ActivityLog {
   @@index([userId])
 }
 
-//=============================================================================
-// FAMILLES ET ÉLÈVES
-//=============================================================================
-
 model Family {
-  id                String               @id @default(cuid())
-  name              String               // Nom de la famille (ex: "Famille Dupont-Martin")
-  notes             String?              // Notes administratives sur la famille
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  
-  // Relations
-  members           FamilyMember[]       // Parents/tuteurs de la famille
-  students          Student[]            // Enfants de la famille
-  
-  // Relation avec inscriptions
-  enrollmentFiles   EnrollmentFile[]
+  id              String           @id @default(cuid())
+  name            String
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  enrollmentFiles EnrollmentFile[]
+  members         FamilyMember[]
+  students        Student[]
 }
 
 model FamilyMember {
-  familyId          String
-  userId            String
-  relationship      String               // Relation avec la famille (principal, secondaire, etc.)
-  isMainAddress     Boolean              @default(false) // Indique si l'adresse de ce membre est l'adresse principale de l'élève
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  
-  family            Family               @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId      String
+  userId        String
+  relationship  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isMainAddress Boolean  @default(false)
+  family        Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([familyId, userId])
   @@index([familyId])
@@ -326,53 +287,34 @@ model FamilyMember {
 }
 
 model Student {
-  id                  String              @id @default(cuid())
-  firstName           String              // prénom (obligatoire)
-  lastName            String              // nom (obligatoire)
-  birthDate           DateTime            // date de naissance (obligatoire)
-  birthPlace          String              // lieu de naissance (obligatoire)
-  
-  // Informations d'inscription et scolarité
-  desiredEnrollmentDate DateTime?         // Date souhaitée d'inscription
-  previousSchool      String?             // Ancienne école fréquentée
-  currentClass        String?             // classe de l'étudiant (facultatif)
-  
-  // Garde et résidence
-  hasSplitResidence   Boolean             @default(false) // Indique si l'enfant a une résidence alternée
-  custodyArrangement  String?             // Si garde alternée, préciser le rythme (ex: "semaine paire/impaire")
-  legalGuardians      String              // Description des responsables légaux (ex: "Père et mère", "Mère uniquement")
-  primaryAddressUserId String?            // ID de l'utilisateur dont l'adresse est l'adresse principale
-  secondaryAddressUserId String?          // ID de l'utilisateur dont l'adresse est l'adresse secondaire (en cas de garde alternée)
-  
-  // Assurance
-  insuranceProvider   String?             // Nom de la société d'assurance
-  insuranceNumber     String?             // Numéro de contrat
-  insuranceCertificate String?            // Lien vers l'attestation d'assurance
-  
-  // Relations
-  familyId            String
-  family              Family              @relation(fields: [familyId], references: [id])
-  
-  // Relations avec les modèles existants
-  educationLevelId    String?
-  educationLevel      EducationLevel?     @relation(fields: [educationLevelId], references: [id])
-  classRoomId         String?
-  classRoom           ClassRoom?          @relation(fields: [classRoomId], references: [id])
-  
-  // Informations médicales
-  medicalInfo         MedicalInformation?
-  
-  // Personnes autorisées à récupérer l'enfant
-  authorizedPickups   AuthorizedPickup[]
-  
-  // Contacts d'urgence
-  emergencyContacts   EmergencyContact[]
-  
-  // Relation avec inscriptions
-  enrollments         EnrollmentStudent[]
-  
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  id                     String              @id @default(cuid())
+  firstName              String
+  lastName               String
+  birthDate              DateTime
+  birthPlace             String
+  desiredEnrollmentDate  DateTime?
+  previousSchool         String?
+  currentClass           String?
+  custodyArrangement     String?
+  insuranceProvider      String?
+  insuranceNumber        String?
+  insuranceCertificate   String?
+  familyId               String
+  educationLevelId       String?
+  classRoomId            String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  hasSplitResidence      Boolean             @default(false)
+  legalGuardians         String
+  primaryAddressUserId   String?
+  secondaryAddressUserId String?
+  authorizedPickups      AuthorizedPickup[]
+  emergencyContacts      EmergencyContact[]
+  enrollments            EnrollmentStudent[]
+  medicalInfo            MedicalInformation?
+  classRoom              ClassRoom?          @relation(fields: [classRoomId], references: [id])
+  educationLevel         EducationLevel?     @relation(fields: [educationLevelId], references: [id])
+  family                 Family              @relation(fields: [familyId], references: [id])
 
   @@index([familyId])
   @@index([educationLevelId])
@@ -381,135 +323,99 @@ model Student {
   @@index([secondaryAddressUserId])
 }
 
-//=============================================================================
-// SANTÉ ET SÉCURITÉ DES ÉLÈVES
-//=============================================================================
-
 model MedicalInformation {
-  id                  String    @id @default(cuid())
-  studentId           String    @unique
-  fileNumber          String    // Numéro unique de dossier (token)
-  
-  // Documents médicaux
-  healthBooklet       String?   // Carnet de santé (photocopies des pages de vaccinations)
-  medicalCertificate  String?   // Certificat médical de contre-indication si vaccination non complète
-  
-  // Maladies contractées (historique)
-  hasRubella          Boolean   @default(false) // Rubéole
-  hasChickenpox       Boolean   @default(false) // Varicelle
-  hasTonsillitis      Boolean   @default(false) // Angines
-  hasOtitis           Boolean   @default(false) // Otites
-  hasScarletFever     Boolean   @default(false) // Scarlatine
-  hasWhoopingCough    Boolean   @default(false) // Coqueluche
-  hasMumps            Boolean   @default(false) // Oreillons
-  hasMeasles          Boolean   @default(false) // Rougeole
-  
-  // Conditions médicales
-  hasAsthma           Boolean   @default(false) // Asthme
-  hasRheumatism       Boolean   @default(false) // Rhumatisme
-  
-  // Détails et médecin
-  healthDetails       String?   @db.Text // Difficultés de santé, allergies, régimes spéciaux, traitements
-  doctorName          String?   // Médecin traitant de l'enfant
-  
-  // Autorisations
-  medicalConsent      Boolean   @default(false) // Autorisation d'intervention médicale en cas d'urgence
-  
-  // Relation avec l'étudiant
-  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id                 String   @id @default(cuid())
+  studentId          String   @unique
+  fileNumber         String
+  healthBooklet      String?
+  medicalCertificate String?
+  hasRubella         Boolean  @default(false)
+  hasChickenpox      Boolean  @default(false)
+  hasTonsillitis     Boolean  @default(false)
+  hasOtitis          Boolean  @default(false)
+  hasScarletFever    Boolean  @default(false)
+  hasWhoopingCough   Boolean  @default(false)
+  hasMumps           Boolean  @default(false)
+  hasMeasles         Boolean  @default(false)
+  hasAsthma          Boolean  @default(false)
+  hasRheumatism      Boolean  @default(false)
+  healthDetails      String?  @db.Text
+  doctorName         String?
+  medicalConsent     Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
 }
 
 model AuthorizedPickup {
-  id                  String    @id @default(cuid())
-  studentId           String
-  firstName           String
-  lastName            String
-  relationship        String    // Relation avec l'enfant (grand-parent, oncle, ami, etc.)
-  phoneNumber         String
-  identityDocument    String?   // Référence à une pièce d'identité
-  
-  // Période d'autorisation (optionnel - pour autorisations temporaires)
-  startDate           DateTime?
-  endDate             DateTime?
-  
-  // Relation avec l'étudiant
-  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  studentId        String
+  firstName        String
+  lastName         String
+  relationship     String
+  phoneNumber      String
+  identityDocument String?
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  student          Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
 }
 
 model EmergencyContact {
-  id                  String    @id @default(cuid())
-  studentId           String
-  firstName           String
-  lastName            String
-  relationship        String    // Relation avec l'enfant
-  phoneNumber         String
-  alternatePhone      String?   // Téléphone secondaire
-  priority            Int       // Ordre de priorité (1 = premier à contacter)
-  
-  // Relation avec l'étudiant
-  student             Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id             String   @id @default(cuid())
+  studentId      String
+  firstName      String
+  lastName       String
+  relationship   String
+  phoneNumber    String
+  alternatePhone String?
+  priority       Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
-  @@index([priority]) // Pour faciliter le tri par priorité
+  @@index([priority])
 }
 
-//=============================================================================
-// MODULE D'INSCRIPTION SCOLAIRE
-//=============================================================================
-
-// Campagne – période d'inscription
 model EnrollmentCampaign {
-  id          String    @id @default(cuid())
-  name        String
-  startDate   DateTime
-  endDate     DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Campagne créée par un administrateur
-  creatorId   String
-  creator     User      @relation(fields: [creatorId], references: [id])
-
+  id              String           @id @default(cuid())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  creatorId       String
+  creator         User             @relation(fields: [creatorId], references: [id])
   enrollmentFiles EnrollmentFile[]
-  
+
   @@index([creatorId])
 }
 
-// Dossier d'inscription d'une famille pour une campagne
 model EnrollmentFile {
-  id             String           @id @default(cuid())
-  campaignId     String
-  familyId       String?          // null si famille encore inconnue
-  email          String           // e‑mail de contact (utile si famille inconnue)
-  status         EnrollmentStatus @default(DRAFT)
-  token          String           @unique @default(uuid()) // lien sécurisé
-  submittedAt    DateTime?
-  reviewedAt     DateTime?
-  reviewerId     String?          // administrateur qui a pris la décision
-  decisionNote   String?          // commentaire refus / complément
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id           String              @id @default(cuid())
+  campaignId   String
+  familyId     String?
+  email        String
+  status       EnrollmentStatus    @default(DRAFT)
+  token        String              @unique @default(uuid())
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  reviewerId   String?
+  decisionNote String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  campaign     EnrollmentCampaign  @relation(fields: [campaignId], references: [id])
+  family       Family?             @relation(fields: [familyId], references: [id])
+  reviewer     User?               @relation("reviewer", fields: [reviewerId], references: [id])
+  history      EnrollmentHistory[]
+  students     EnrollmentStudent[]
 
-  campaign       EnrollmentCampaign @relation(fields: [campaignId], references: [id])
-  family         Family?            @relation(fields: [familyId], references: [id])
-  reviewer       User?              @relation("reviewer", fields: [reviewerId], references: [id])
-
-  students       EnrollmentStudent[]  // enfants concernés
-  history        EnrollmentHistory[]
-  
   @@index([campaignId])
   @@index([familyId])
   @@index([reviewerId])
@@ -517,12 +423,10 @@ model EnrollmentFile {
   @@index([status])
 }
 
-// Enfants rattachés au dossier
 model EnrollmentStudent {
-  fileId        String
-  studentId     String   // le même élève peut apparaître sur plusieurs campagnes
-  createdAt     DateTime @default(now())
-
+  fileId         String
+  studentId      String
+  createdAt      DateTime       @default(now())
   enrollmentFile EnrollmentFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
   student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -531,28 +435,25 @@ model EnrollmentStudent {
   @@index([studentId])
 }
 
-// Historique des changements de statut
 model EnrollmentHistory {
-  id             String          @id @default(cuid())
+  id             String           @id @default(cuid())
   fileId         String
   oldStatus      EnrollmentStatus
   newStatus      EnrollmentStatus
-  actorId        String?         // admin ou parent
+  actorId        String?
   note           String?
-  timestamp      DateTime        @default(now())
-
-  enrollmentFile EnrollmentFile  @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  actor          User?           @relation("actor", fields: [actorId], references: [id])
+  timestamp      DateTime         @default(now())
+  actor          User?            @relation("actor", fields: [actorId], references: [id])
+  enrollmentFile EnrollmentFile   @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@index([fileId])
   @@index([actorId])
 }
 
-// Enum des statuts
 enum EnrollmentStatus {
-  DRAFT        // lien envoyé – pas encore soumis
-  SUBMITTED    // parent a cliqué "envoyer"
-  NEED_INFO    // admin demande un complément
-  APPROVED     // dossier accepté
-  REJECTED     // dossier refusé
+  DRAFT
+  SUBMITTED
+  NEED_INFO
+  APPROVED
+  REJECTED
 }

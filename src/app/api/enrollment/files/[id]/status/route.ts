@@ -15,10 +15,10 @@ import { auth } from "@/lib/auth/auth";
  * PUT /api/enrollment/files/[id]/status - Mettre à jour le statut d'un dossier d'inscription
  */
 export const PUT = withPrivilege(
-  PrivilegeName.REVIEW_ENROLLMENT_FILES,
+  PrivilegeName.MANAGE_ENROLLMENTS,
   async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
@@ -30,7 +30,7 @@ export const PUT = withPrivilege(
         });
       }
       
-      const { id } = params;
+      const { id } = await params;
       const body = await request.json();
       
       // Vérifier si le dossier existe

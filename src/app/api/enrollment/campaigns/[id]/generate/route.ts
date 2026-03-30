@@ -19,19 +19,19 @@ export const POST = withPrivilege(
   PrivilegeName.MANAGE_CAMPAIGNS,
   async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
       const session = await auth();
-      
-      if (!session || !session.user) {
+
+      if (!session?.user) {
         return errorResponse({
           feedback: "Non authentifié",
           status: HttpStatus.UNAUTHORIZED,
         });
       }
-      
-      const { id } = params;
+
+      const { id } = await params;
       const body = await request.json();
       
       // Vérifier si la campagne existe

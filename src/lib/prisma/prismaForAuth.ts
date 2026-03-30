@@ -1,7 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-
 /**
- * Prisma client
- * @description Prisma client pour l'authentification
+ * Prisma client pour l'authentification.
+ *
+ * On réutilise le client étendu (déjà chargé avec la logique crypto côté Prisma)
+ * afin que les champs chiffrés soient bien déchiffrés au moment de la lecture.
  */
-export const prismaForAuth = new PrismaClient();
+import { prisma } from "./prisma";
+
+export const prismaForAuth = prisma;
