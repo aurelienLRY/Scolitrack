@@ -50,9 +50,7 @@ export default function MyAccount() {
           <UserProfileForm 
             user={user} 
             isLoading={isUpdating} 
-            onSubmit={(data) => {
-              console.log(data);
-              updateUser(data)}}
+            onSubmit={(data) => updateUser(data)}
           />
         </TabsContent>
         

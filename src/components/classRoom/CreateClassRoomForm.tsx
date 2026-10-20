@@ -23,6 +23,7 @@ import { useImageUpload } from "@/hooks/useImageUpload";
 import { Resolver } from "react-hook-form";
 import { useEducationLevels } from "@/hooks/query/useEducationLevel";
 import { toast } from "sonner";
+import { withImageVariant } from "@/lib/utils/image-url";
 
 import { SketchPicker } from "react-color";
 
@@ -362,6 +363,7 @@ export default function CreateClassRoomForm({
                 <Image
                   src={
                     preview ||
+                    withImageVariant(classRoom?.logoUrl, "thumbnail") ||
                     classRoom?.logoUrl ||
                     "/img/classroom-default.png"
                   }

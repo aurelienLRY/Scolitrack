@@ -48,6 +48,7 @@ export {
   useUpdateEnrollmentFileStatus,
   useUpdateEnrollmentFileByToken,
   useDeleteEnrollmentFile,
+  useResendEnrollmentInvitation,
   useAddStudentToEnrollment,
   useRemoveStudentFromEnrollment,
   useEnrollmentStats,
@@ -73,6 +74,9 @@ export type {
   EnrollmentCampaignFilters,
   EnrollmentFileFilters,
 } from "../types/enrollment.type";
+
+// Hooks commissions (formulaire public inscription)
+export { useCommissions } from "./query/useCommission";
 
 // Autres hooks existants
 export { useNotification } from "./useNotification";

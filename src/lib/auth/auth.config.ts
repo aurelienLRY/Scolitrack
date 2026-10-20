@@ -68,10 +68,13 @@ export default {
   },
   trustHost: true,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.roleName = user.roleName;
         token.id = user.id;
+        if (user.image) {
+          token.picture = user.image;
+        }
 
         // Utiliser les privilèges déjà récupérés lors de l'authentification
         if ("privileges" in user && Array.isArray(user.privileges)) {
@@ -92,6 +95,12 @@ export default {
           token.privileges = privileges;
         }
       }
+
+      // Mise à jour session (ex: nouvelle photo de profil)
+      if (trigger === "update" && session?.image !== undefined) {
+        token.picture = session.image;
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -99,6 +108,9 @@ export default {
         session.user.roleName = token.roleName;
         session.user.id = token.id;
         session.user.privileges = token.privileges || [];
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
       return session;
     },

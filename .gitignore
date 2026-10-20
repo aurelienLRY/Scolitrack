@@ -48,3 +48,11 @@ next-env.d.ts
 **/public/worker-*.js
 **/public/img/uploads/* 
 !/public/img/uploads/.gitkeep
+
+# documents d'inscription (hors public/)
+/storage/enrollment-documents/*
+!/storage/enrollment-documents/.gitkeep
+
+# images uploadées (hors public/ — servies via /api/storage/images)
+/storage/images/*
+!/storage/images/.gitkeep

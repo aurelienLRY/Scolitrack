@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Tooltip } from "@/components/ui/tooltip";
 import { NotificationToggle } from "@/components/notification/NotificationToggle";
 import { ThemeSwitch } from "../layout/theme-switch/ThemeSwitch";
+import { getUserAvatarSrc } from "@/lib/utils/image-url";
 
 /**
  * User menu component
@@ -44,7 +45,7 @@ export function UserMenu() {
           <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-slate-100">
             {user.image ? (
               <Image
-                src={user.image ?? "/img/default_avatar.svg"}
+                src={getUserAvatarSrc(user.image, "thumbnail")}
                 alt={user.name ?? "Avatar"}
                 width={32}
                 height={32}

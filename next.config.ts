@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Appliquer ces en-têtes aux images uploadées
+        // Legacy public uploads
         source: "/img/uploads/:path*",
         headers: [
           {
@@ -36,6 +36,16 @@ const nextConfig: NextConfig = {
           {
             key: "Surrogate-Control",
             value: "no-store",
+          },
+        ],
+      },
+      {
+        // Images servies depuis storage/ via API
+        source: "/api/storage/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
       },

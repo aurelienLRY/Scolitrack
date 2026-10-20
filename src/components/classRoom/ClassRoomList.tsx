@@ -13,6 +13,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useDeleteClassRoom } from "@/hooks/query/useClassRoom";
 import { ClassRoomWithPersonnel } from "@/types/classroom.type";
+import { withImageVariant } from "@/lib/utils/image-url";
 
 interface ClassRoomListProps {
   establishmentId: string;
@@ -163,7 +164,10 @@ function ClassRoomCard({
         <div className="flex items-center gap-4 mb-4 h-fit">
           {classRoom.logoUrl ? (
             <Image
-              src={`/img/uploads/classrooms/${classRoom.logoFileId}_thumbnail.webp`}
+              src={
+                withImageVariant(classRoom.logoUrl, "thumbnail") ||
+                classRoom.logoUrl
+              }
               alt={`Logo de ${classRoom.name}`}
               width={80}
               height={80}

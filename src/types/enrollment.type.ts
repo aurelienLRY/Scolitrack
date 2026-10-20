@@ -36,6 +36,7 @@ export interface EnrollmentFileWithDetails extends EnrollmentFile {
   reviewer?: User;
   students: EnrollmentStudentWithStudent[];
   history: EnrollmentHistoryWithActor[];
+  parsedFormPayload?: import("@/types/enrollment-form.type").EnrollmentFormPayload;
 }
 
 export interface EnrollmentFileWithStats extends EnrollmentFile {
@@ -98,9 +99,18 @@ export interface CreateEnrollmentFileData {
 }
 
 export interface UpdateEnrollmentFileData {
-  familyId?: string;
+  email?: string;
+  familyId?: string | null;
   status?: EnrollmentStatus;
   decisionNote?: string;
+  formPayload?: import("@/types/enrollment-form.type").EnrollmentFormPayload;
+  authorizeOutings?: boolean;
+  authorizeLeaveAlone?: boolean;
+  acceptRegulations?: boolean;
+  authorizeImageRights?: boolean;
+  acceptAssociation?: boolean;
+  acceptCanteenRules?: boolean;
+  saquetasQuantity?: number;
 }
 
 export interface UpdateEnrollmentStatusData {

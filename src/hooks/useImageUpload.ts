@@ -13,6 +13,7 @@ import FetchService from "@/lib/services/fetch.service";
 interface ImageUploadResponse {
   url: string;
   fileId?: string;
+  storagePath?: string;
   variants?: Record<string, string>;
 }
 

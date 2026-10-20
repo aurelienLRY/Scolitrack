@@ -4,6 +4,7 @@ import { School, MapPin, Mail, Phone, Link } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { getUserAvatarSrc, withImageVariant } from "@/lib/utils/image-url";
 
 type EstablishmentWithAdmin = Establishment & {
   admin: User;
@@ -60,11 +61,15 @@ export default function EstablishmentCard({
       >
         <div className={cn("my-auto", !establishment.logoUrl && "opacity-50")}>
           <Image
-            src={establishment.logoUrl || "/img/Logo_Scolitrack.png"}
+            src={
+              withImageVariant(establishment.logoUrl, "medium") ||
+              establishment.logoUrl ||
+              "/img/Logo_Scolitrack.png"
+            }
             alt={`Logo de ${establishment.name}`}
             width={150}
             height={150}
-            className="object-cover  aspect-square"
+            className="object-cover aspect-square"
           />
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:gap-12 justify-center items-center">
@@ -116,11 +121,11 @@ export default function EstablishmentCard({
                 <h3 className="text-xl text-center">Directeur | Directrice</h3>
                 <div className="flex  gap-4">
                   <Image
-                    src={establishment.admin.image || "/icons/my-account.png"}
-                    alt={`Logo de ${establishment.admin.name}`}
+                    src={getUserAvatarSrc(establishment.admin.image, "thumbnail")}
+                    alt={`Photo de ${establishment.admin.name}`}
                     width={75}
                     height={75}
-                    className="object-cover  aspect-square rounded-full bg-secondary/10"
+                    className="object-cover aspect-square rounded-full bg-secondary/10"
                   />
 
                   <div>

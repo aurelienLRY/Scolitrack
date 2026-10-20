@@ -88,6 +88,8 @@ export default function Card({
 export interface CardFluoProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
+  /** Affiche le curseur pointer (cliquable). Activé auto si onClick est fourni. */
+  clickable?: boolean;
   variant?:
     | "default"
     | "primary"
@@ -163,10 +165,13 @@ export const CardFluo = ({
   children,
   className,
   variant = "primary",
+  clickable,
+  onClick,
   ...props
 }: CardFluoProps) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const isClickable = clickable ?? !!onClick;
 
   function onMouseMove({
     currentTarget,
@@ -187,8 +192,22 @@ export const CardFluo = ({
         variantClasses.border,
         variantClasses.shadow,
         "rounded-xl",
-        "transition-all duration-300 ease-in-out"
+        "transition-all duration-300 ease-in-out",
+        isClickable && "cursor-pointer"
       )}
+      onClick={onClick}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={
+        isClickable && onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+              }
+            }
+          : undefined
+      }
       {...props}
     >
       <div

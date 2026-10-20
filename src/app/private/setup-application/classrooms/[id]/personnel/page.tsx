@@ -17,6 +17,7 @@ import { TClassRoomPersonnelFormData } from "@/schemas/ClassRoomSchema";
 import { useUsers } from "@/hooks/query/useUsers";
 import { motion } from "framer-motion";
 import ClassRoomHeader from "@/components/classRoom/ClassRoomHeader";
+import { getUserAvatarSrc } from "@/lib/utils/image-url";
 
 export default function PersonnelPage() {
   const params = useParams();
@@ -194,11 +195,11 @@ export default function PersonnelPage() {
                   >
                     <div className="flex-shrink-0 mr-4">
                       <Image
-                        src={person.user.image || "/icons/my-account.png"}
+                        src={getUserAvatarSrc(person.user.image, "thumbnail")}
                         alt={person.user.name || "Personnel"}
                         width={50}
                         height={50}
-                        className="rounded-full"
+                        className="rounded-full object-cover"
                       />
                     </div>
                     <div className="flex-grow">
@@ -207,7 +208,7 @@ export default function PersonnelPage() {
                         {person.user.email}
                       </p>
                       {isResponsible && (
-                        <p className="text-xs bg-secondary/20 text-secondary px-2 py-1 rounded mt-1 inline-flex items-center">
+                        <p className="text-xs bg-secondary/20 text-secondary-strong px-2 py-1 rounded mt-1 inline-flex items-center">
                           <Shield className="h-3 w-3 mr-1" /> Responsable
                         </p>
                       )}
@@ -274,11 +275,11 @@ export default function PersonnelPage() {
                     >
                       <div className="flex-shrink-0 mr-4">
                         <Image
-                          src={user.image || "/icons/my-account.png"}
+                          src={getUserAvatarSrc(user.image, "thumbnail")}
                           alt={user.name || "Personnel"}
                           width={40}
                           height={40}
-                          className="rounded-full"
+                          className="rounded-full object-cover"
                         />
                       </div>
                       <div className="flex-grow">

@@ -45,7 +45,7 @@ const badgeVariants = cva(
       {
         variant: "secondary",
         styleVariant: "outline",
-        className: "text-secondary",
+        className: "text-secondary-strong",
       },
       {
         variant: "destructive",
@@ -65,7 +65,7 @@ const badgeVariants = cva(
       {
         variant: "warning",
         styleVariant: "outline",
-        className: "text-warning",
+        className: "text-warning-strong",
       },
       {
         variant: "info",
@@ -86,7 +86,7 @@ const badgeVariants = cva(
       {
         variant: "secondary",
         styleVariant: "soft",
-        className: "text-secondary border-secondary/20 bg-secondary/10",
+        className: "text-secondary-strong border-secondary/20 bg-secondary/10",
       },
       {
         variant: "accent",
@@ -101,7 +101,7 @@ const badgeVariants = cva(
       {
         variant: "warning",
         styleVariant: "soft",
-        className: "text-warning border-warning/20 bg-warning/10",
+        className: "text-warning-strong border-warning/20 bg-warning/10",
       },
       {
         variant: "info",

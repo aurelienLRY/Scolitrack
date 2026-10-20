@@ -18,6 +18,8 @@ import { FileUpload } from "../ui/inputs/upload-file";
 import Image from "next/image";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { Resolver } from "react-hook-form";
+import { withImageVariant } from "@/lib/utils/image-url";
+import { toast } from "sonner";
 
 // Extension du type Establishment pour inclure logoFileId
 interface EstablishmentWithAdmin extends Omit<Establishment, "logoFileId"> {
@@ -105,18 +107,23 @@ export default function EstablishmentForm({
     // Créer une prévisualisation
     const newPreview = URL.createObjectURL(file);
     setPreview(newPreview);
-
-    console.log("Image préparée:", file.name);
   };
 
   const onSubmit = async (data: EstablishmentFormData) => {
     try {
-      // Si une image a été sélectionnée, l'uploader maintenant
+      let updatedData = { ...data };
+
+      // Si une image a été sélectionnée, l'uploader et récupérer les URLs storage
       if (selectedFile) {
-        await uploadImage(selectedFile);
+        const uploadResult = await uploadImage(selectedFile);
+        updatedData = {
+          ...updatedData,
+          logoUrl: uploadResult.url,
+          logoFileId: uploadResult.fileId || "",
+        };
       }
-      // Soumettre les données du formulaire
-      mutate(data as Record<string, unknown>, {
+
+      mutate(updatedData as Record<string, unknown>, {
         onSuccess: () => {
           if (!isEditing) {
             reset();
@@ -128,11 +135,17 @@ export default function EstablishmentForm({
       });
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);
+      toast.error("Une erreur est survenue lors de l'enregistrement");
     }
   };
 
   // Gérer la fermeture du modal
   const handleClose = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+    setPreview(null);
+    setSelectedFile(null);
     reset();
     setIsOpen(false);
   };
@@ -219,13 +232,20 @@ export default function EstablishmentForm({
 
           <div className="flex flex-col gap-2 mt-4">
             <h4 className="text-center">
-              {preview ? "Modifier le logo" : "Télécharger votre logo"}
+              {preview || establishment?.logoUrl
+                ? "Modifier le logo"
+                : "Télécharger votre logo"}
             </h4>
             <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
-              {preview && (
+              {(preview || establishment?.logoUrl) && (
                 <div className="relative">
                   <Image
-                    src={preview}
+                    src={
+                      preview ||
+                      withImageVariant(establishment?.logoUrl, "medium") ||
+                      establishment?.logoUrl ||
+                      "/img/Logo_Scolitrack.png"
+                    }
                     alt="Logo de l'établissement"
                     width={150}
                     height={150}

@@ -103,7 +103,7 @@ export default function CreateCampaignPage() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal border-white bg-background text-white",
+                      "w-full justify-start text-left font-normal border-input bg-background text-foreground",
                       !formData.startDate && "text-muted-foreground"
                     )}
                   >
@@ -141,8 +141,8 @@ export default function CreateCampaignPage() {
                     variant="outline" 
             
                     className={cn(
-                      "w-full justify-start text-left font-normal border-white bg-background text-white",
-                      !formData.endDate && "text-muted-foreground "
+                      "w-full justify-start text-left font-normal border-input bg-background text-foreground",
+                      !formData.endDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />

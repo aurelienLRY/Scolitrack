@@ -23,6 +23,9 @@ const authEdgeConfig = {
         session.user.roleName = token.roleName;
         session.user.id = token.id;
         session.user.privileges = token.privileges || [];
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
       return session;
     },

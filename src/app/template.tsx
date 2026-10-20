@@ -16,7 +16,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange={false}
         >
-          <main>
+          <main className="flex h-dvh flex-col overflow-hidden">
             <HeaderSwitch>{children}</HeaderSwitch>
             <Footer />
           </main>

@@ -4,9 +4,15 @@ import fs from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
+import {
+  IMAGE_API_PREFIX,
+  buildImageApiUrl,
+} from "@/lib/utils/image-url";
+
+/** Racine des images uploadées (hors public/ pour éviter les soucis Next.js) */
+export const IMAGE_STORAGE_ROOT = path.join(process.cwd(), "storage", "images");
 
 // Polyfill pour File en environnement serveur (Node.js)
-// Cette classe résout l'erreur "File is not defined" en production
 class NodeFile {
   name: string;
   type: string;
@@ -23,7 +29,6 @@ class NodeFile {
   }
 }
 
-// Interface pour les objets de type fichier
 export interface FileWithType {
   name: string;
   type: string;
@@ -31,7 +36,6 @@ export interface FileWithType {
   [key: string]: unknown;
 }
 
-// Type unifié pour les fichiers qui fonctionne à la fois côté client et serveur
 type UniversalFile =
   | File
   | NodeFile
@@ -40,33 +44,74 @@ type UniversalFile =
   | FileWithType;
 
 export interface ImageStorageOptions {
+  /** Sous-dossier relatif à storage/images (ex: "classrooms") */
   directory?: string;
   quality?: number;
   format?: "jpeg" | "png" | "webp";
   width?: number;
   height?: number;
   fit?: "cover" | "contain" | "fill";
-  fileId?: string; // ID du fichier pour les mises à jour
+  fileId?: string;
 }
 
 interface ImageStorageResult {
   url: string;
   fileId: string;
   filePath: string;
+  storagePath: string;
 }
 
 const FILE_ID_PREFIX = "img_";
 
+/**
+ * Résout un chemin relatif storage en chemin absolu, avec garde anti path-traversal.
+ */
+function absoluteStoragePath(relativePath: string): string {
+  const normalized = relativePath.replace(/^[/\\]+/, "").replace(/\\/g, "/");
+  const full = path.join(IMAGE_STORAGE_ROOT, normalized);
+  const resolved = path.resolve(full);
+  if (!resolved.startsWith(path.resolve(IMAGE_STORAGE_ROOT))) {
+    throw new Error("Chemin de fichier invalide");
+  }
+  return resolved;
+}
+
+/**
+ * Convertit une URL API ou legacy en chemin fichier absolu.
+ */
+function resolveFilePathFromUrl(url: string): string {
+  if (url.startsWith(IMAGE_API_PREFIX + "/")) {
+    const relative = url.slice(IMAGE_API_PREFIX.length + 1);
+    return absoluteStoragePath(relative);
+  }
+
+  // Legacy : /img/uploads/... → public/img/uploads/...
+  if (url.startsWith("/img/uploads/") || url.startsWith("img/uploads/")) {
+    const cleaned = url.replace(/^\//, "");
+    return path.join(process.cwd(), "public", cleaned);
+  }
+
+  // Ancien format public/uploads
+  if (url.startsWith("/uploads/") || url.startsWith("uploads/")) {
+    const cleaned = url.replace(/^\//, "");
+    return path.join(process.cwd(), "public", cleaned);
+  }
+
+  return path.join(process.cwd(), "public", url.replace(/^\//, ""));
+}
+
 export const imageService = {
+  storageRoot: IMAGE_STORAGE_ROOT,
+
   /**
-   * Stocke une image téléchargée et renvoie son URL et son ID
+   * Stocke une image téléchargée et renvoie son URL API et son ID
    */
   async storeImage(
     file: UniversalFile,
     options: ImageStorageOptions = {}
   ): Promise<ImageStorageResult> {
     const {
-      directory = "public/uploads",
+      directory = "general",
       quality = 80,
       format = "webp",
       width,
@@ -76,22 +121,22 @@ export const imageService = {
     } = options;
 
     try {
-      // Créer tous les dossiers nécessaires
-      // Gérer les chemins avec \ ou / sur Windows
-      const normalizedDir = directory.replace(/\\/g, "/");
-      const fullDirPath = path.join(process.cwd(), normalizedDir);
+      // Nettoyer le sous-dossier (pas de "public/", pas de traversal)
+      const relativeDir = directory
+        .replace(/\\/g, "/")
+        .replace(/^public\//, "")
+        .replace(/^img\/uploads\//, "")
+        .replace(/^storage\/images\//, "")
+        .replace(/^[/\\]+/, "");
 
-      // Créer tous les dossiers sur le chemin
+      const fullDirPath = absoluteStoragePath(relativeDir);
       await fs.mkdir(fullDirPath, { recursive: true });
-
-      // Vérifier que le dossier a bien été créé
       await fs.access(fullDirPath);
 
-      // Générer un nom de fichier basé sur l'ID du fichier
       const filename = `${fileId}.${format}`;
-      const fullPath = path.join(fullDirPath, filename);
+      const relativePath = path.join(relativeDir, filename).replace(/\\/g, "/");
+      const fullPath = absoluteStoragePath(relativePath);
 
-      // Convertir le fichier en buffer
       let buffer: Buffer;
 
       if (Buffer.isBuffer(file)) {
@@ -99,23 +144,18 @@ export const imageService = {
       } else if (file instanceof NodeFile) {
         buffer = file.data;
       } else if (typeof File !== "undefined" && file instanceof File) {
-        // Pour un objet File (côté navigateur)
         const arrayBuffer = await file.arrayBuffer();
         buffer = Buffer.from(arrayBuffer);
       } else if (typeof file === "object" && file !== null) {
-        // Gestion d'objets FormDataEntryValue ou FileWithType
         if ("arrayBuffer" in file && typeof file.arrayBuffer === "function") {
           const arrayBuffer = await (file as FileWithType).arrayBuffer!();
           buffer = Buffer.from(arrayBuffer);
         } else if ("stream" in file && typeof file.stream === "function") {
-          // Pour les objets avec une méthode stream (comme certains FormDataEntryValue)
           const chunks: Buffer[] = [];
           const streamMethod = (
             file as { stream: () => ReadableStream<Uint8Array> }
           ).stream;
           const stream = streamMethod();
-
-          // Utiliser le reader au lieu de for await...of
           const reader = stream.getReader();
           let done = false;
 
@@ -129,7 +169,6 @@ export const imageService = {
 
           buffer = Buffer.concat(chunks);
         } else if (file instanceof Blob) {
-          // Pour les objets Blob
           const arrayBuffer = await file.arrayBuffer();
           buffer = Buffer.from(arrayBuffer);
         } else {
@@ -138,23 +177,18 @@ export const imageService = {
           );
         }
       } else if (typeof file === "string") {
-        // Si par hasard nous recevons une chaîne (URL ou chemin)
         if (file.startsWith("data:")) {
-          // Data URL (base64)
           const base64Data = file.split(",")[1];
           buffer = Buffer.from(base64Data, "base64");
         } else {
-          // Considérer comme chemin de fichier local
           buffer = await fs.readFile(file);
         }
       } else {
         throw new Error("Format de fichier non pris en charge");
       }
 
-      // Traiter l'image avec Sharp
       let sharpInstance = sharp(buffer);
 
-      // Redimensionner si nécessaire
       if (width || height) {
         sharpInstance = sharpInstance.resize({
           width,
@@ -164,7 +198,6 @@ export const imageService = {
         });
       }
 
-      // Convertir au format souhaité avec la qualité spécifiée
       if (format === "webp") {
         sharpInstance = sharpInstance.webp({ quality });
       } else if (format === "jpeg") {
@@ -173,18 +206,13 @@ export const imageService = {
         sharpInstance = sharpInstance.png({ quality });
       }
 
-      // Sauvegarder l'image traitée
       await sharpInstance.toFile(fullPath);
 
-      // Calculer l'URL relative pour accéder à l'image
-      const relativePath = normalizedDir.replace(/^public\//, "/");
-      const url = `${relativePath}/${filename}`;
-
-      // Retourner les informations sur l'image stockée
       return {
-        url,
+        url: buildImageApiUrl(relativePath),
         fileId,
         filePath: fullPath,
+        storagePath: relativePath,
       };
     } catch (error) {
       console.error("Erreur lors du stockage de l'image:", error);
@@ -193,25 +221,28 @@ export const imageService = {
   },
 
   /**
-   * Supprime une image en fonction de son URL
+   * Lit le buffer d'une image via son chemin relatif sous storage/images
+   */
+  async readImageBuffer(relativePath: string): Promise<Buffer> {
+    return fs.readFile(absoluteStoragePath(relativePath));
+  },
+
+  /**
+   * Supprime une image en fonction de son URL (API ou legacy)
    */
   async deleteImage(url: string): Promise<boolean> {
     if (!url) return false;
 
     try {
-      const filePath = path.join(process.cwd(), "public", url);
+      const filePath = resolveFilePathFromUrl(url);
       await fs.unlink(filePath);
 
-      // Vérifier si des variantes existent et les supprimer aussi
       const dir = path.dirname(filePath);
       const filename = path.basename(filePath);
       const baseFilename = path.parse(filename).name;
       const extension = path.parse(filename).ext;
 
-      // Lister les fichiers du répertoire
       const files = await fs.readdir(dir);
-
-      // Supprimer toutes les variantes associées
       const variantPromises = files
         .filter(
           (file) =>
@@ -234,28 +265,21 @@ export const imageService = {
     if (!fileId) return false;
 
     try {
-      // Chercher dans tous les répertoires où des images peuvent être stockées
       const directories = [
+        IMAGE_STORAGE_ROOT,
         path.join(process.cwd(), "public/img/uploads"),
         path.join(process.cwd(), "public/uploads"),
       ];
 
       let deleted = false;
 
-      // Parcourir tous les répertoires possibles
       for (const dir of directories) {
         try {
-          // Vérifier si le répertoire existe avant de le scanner
           await fs.access(dir);
           const dirDeleted = await this.findAndDeleteFilesByPrefix(dir, fileId);
           deleted = deleted || dirDeleted;
-        } catch (err) {
-          // Ignorer les erreurs si le répertoire n'existe pas
-          console.log(
-            `Le répertoire ${dir} n'existe pas, passage au suivant. Erreur: ${
-              err instanceof Error ? err.message : String(err)
-            }`
-          );
+        } catch {
+          // Répertoire inexistant : ignorer
         }
       }
 
@@ -269,9 +293,6 @@ export const imageService = {
     }
   },
 
-  /**
-   * Cherche et supprime les fichiers commençant par un préfixe spécifique
-   */
   async findAndDeleteFilesByPrefix(
     directory: string,
     prefix: string
@@ -284,7 +305,6 @@ export const imageService = {
         const fullPath = path.join(directory, entry.name);
 
         if (entry.isDirectory()) {
-          // Si c'est un dossier, chercher récursivement à l'intérieur
           const result = await this.findAndDeleteFilesByPrefix(
             fullPath,
             prefix
@@ -294,7 +314,6 @@ export const imageService = {
           entry.isFile() &&
           path.parse(entry.name).name.startsWith(prefix)
         ) {
-          // Si c'est un fichier qui commence par le préfixe, le supprimer
           await fs.unlink(fullPath);
           deleted = true;
         }
@@ -324,16 +343,14 @@ export const imageService = {
     }
   ): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
-    const sourceFilePath = path.join(process.cwd(), "public", imageUrl);
+    const sourceFilePath = resolveFilePathFromUrl(imageUrl);
 
     try {
-      // Vérifier que le fichier source existe
       await fs.access(sourceFilePath);
 
       for (const [name, config] of Object.entries(variants)) {
         const { width, height, fit = "cover" } = config;
 
-        // Créer un nouveau nom de fichier pour la variante
         const extension = path.extname(imageUrl);
         const basename = path.basename(imageUrl, extension);
         const variantFilename = `${basename}_${name}${extension}`;
@@ -342,7 +359,6 @@ export const imageService = {
           variantFilename
         );
 
-        // Créer la variante
         await sharp(sourceFilePath)
           .resize({
             width,
@@ -352,9 +368,11 @@ export const imageService = {
           })
           .toFile(variantPath);
 
-        // Ajouter l'URL de la variante au résultat
         const relativePath = path.dirname(imageUrl);
-        result[name] = `${relativePath}/${variantFilename}`;
+        result[name] = `${relativePath}/${variantFilename}`.replace(
+          /\\/g,
+          "/"
+        );
       }
 
       return result;

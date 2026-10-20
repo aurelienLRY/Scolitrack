@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ClassRoomWithPersonnel } from "@/types/classroom.type";
+import { withImageVariant } from "@/lib/utils/image-url";
 
 interface ClassRoomHeaderProps {
   classRoom: ClassRoomWithPersonnel;
@@ -36,7 +37,10 @@ export default function ClassRoomHeader({
           >
             {classRoom.logoUrl ? (
               <Image
-                src={classRoom.logoUrl}
+                src={
+                  withImageVariant(classRoom.logoUrl, "thumbnail") ||
+                  classRoom.logoUrl
+                }
                 alt={classRoom.name}
                 width={60}
                 height={60}
@@ -66,7 +70,7 @@ export default function ClassRoomHeader({
                     }) => (
                       <span
                         key={level.educationLevel.id}
-                        className="inline-block px-3 py-1 bg-secondary text-sm rounded-full font-medium"
+                        className="inline-block px-3 py-1 bg-secondary text-secondary-foreground text-sm rounded-full font-medium"
                       >
                         {level.educationLevel.code}
                       </span>

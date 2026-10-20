@@ -10,6 +10,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "vitest run tests/e2e",
+    "test:enrollment": "vitest run tests/unit/lib/enrollment tests/e2e/enrollment-flow.logic.test.ts tests/unit/config/enrollment-documents.config.test.ts",
     "studio": " npx prisma studio",
     "seed": "npx prisma db seed"
   },
@@ -48,6 +53,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+    "react-easy-crop": "^6.2.4",
     "react-hook-form": "^7.54.2",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
@@ -59,18 +65,25 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^5.0.2",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
+    "jsdom": "^26.1.0",
     "prisma": "6.19.2",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

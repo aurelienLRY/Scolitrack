@@ -59,7 +59,7 @@ const checkboxVariants = cva(
       {
         variant: "secondary",
         styleVariant: "outline",
-        className: "data-[state=checked]:text-secondary",
+        className: "data-[state=checked]:text-secondary-strong",
       },
       {
         variant: "accent",
@@ -74,7 +74,7 @@ const checkboxVariants = cva(
       {
         variant: "warning",
         styleVariant: "outline",
-        className: "data-[state=checked]:text-warning",
+        className: "data-[state=checked]:text-warning-strong",
       },
       {
         variant: "info",

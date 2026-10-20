@@ -160,8 +160,8 @@ export const enrollmentCampaignService = {
   },
 
   /**
-   * Supprime une campagne d'inscription
-   * Supprime également tous les dossiers d'inscription associés
+   * Supprime une campagne d'inscription.
+   * Ordre : signatures (FK campaignId) → dossiers (docs en cascade) → campagne.
    */
   async deleteCampaign(id: string, userId: string) {
     const campaign = await prisma.enrollmentCampaign.findUnique({
@@ -170,6 +170,7 @@ export const enrollmentCampaignService = {
         _count: {
           select: {
             enrollmentFiles: true,
+            signatures: true,
           },
         },
       },
@@ -179,24 +180,104 @@ export const enrollmentCampaignService = {
       throw new Error("Campagne d'inscription non trouvée");
     }
 
-    // Supprimer d'abord tous les dossiers d'inscription associés
-    await prisma.enrollmentFile.deleteMany({
-      where: { campaignId: id },
+    await prisma.$transaction(async (tx) => {
+      // Les signatures référencent la campagne sans onDelete Cascade
+      await tx.enrollmentSignature.deleteMany({
+        where: { campaignId: id },
+      });
+
+      await tx.enrollmentFile.deleteMany({
+        where: { campaignId: id },
+      });
+
+      await tx.enrollmentCampaign.delete({
+        where: { id },
+      });
     });
 
-    // Puis supprimer la campagne
-    await prisma.enrollmentCampaign.delete({
-      where: { id },
-    });
-
-    // Journaliser l'action
     await activityLogService.logActivity({
       userId,
       action: "DELETE_ENROLLMENT_CAMPAIGN",
-      details: `Suppression de la campagne d'inscription "${campaign.name}" et de ${campaign._count.enrollmentFiles} dossier(s) associé(s)`,
+      details: `Suppression de la campagne "${campaign.name}" (${campaign._count.enrollmentFiles} dossier(s), ${campaign._count.signatures} signature(s))`,
     });
 
     return campaign;
+  },
+
+  /**
+   * À l'ouverture d'une campagne : crée un dossier DRAFT par famille
+   * ayant déjà des élèves, s'il n'existe pas encore pour cette campagne.
+   * Email = membre principal de la famille, sinon premier membre.
+   */
+  async generateFilesForExistingStudents(campaignId: string, userId: string) {
+    const campaign = await prisma.enrollmentCampaign.findUnique({
+      where: { id: campaignId },
+      select: { id: true, name: true },
+    });
+    if (!campaign) {
+      throw new Error("Campagne d'inscription non trouvée");
+    }
+
+    const families = await prisma.family.findMany({
+      where: { students: { some: {} } },
+      include: {
+        students: { select: { id: true } },
+        members: {
+          include: {
+            user: { select: { email: true } },
+          },
+          orderBy: { isMainAddress: "desc" },
+        },
+        enrollmentFiles: {
+          where: { campaignId },
+          select: { id: true },
+        },
+      },
+    });
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const family of families) {
+      if (family.enrollmentFiles.length > 0) {
+        skipped += 1;
+        continue;
+      }
+
+      const email =
+        family.members.find((m) => m.isMainAddress)?.user?.email ||
+        family.members[0]?.user?.email;
+
+      if (!email?.includes("@")) {
+        skipped += 1;
+        continue;
+      }
+
+      const file = await prisma.enrollmentFile.create({
+        data: {
+          campaignId,
+          familyId: family.id,
+          email,
+          status: "DRAFT",
+        },
+      });
+
+      for (const student of family.students) {
+        await prisma.enrollmentStudent.create({
+          data: { fileId: file.id, studentId: student.id },
+        });
+      }
+
+      created += 1;
+    }
+
+    await activityLogService.logActivity({
+      userId,
+      action: "SYNC_CAMPAIGN_STUDENTS",
+      details: `Campagne "${campaign.name}" : ${created} dossier(s) créé(s) pour élèves existants (${skipped} ignoré(s))`,
+    });
+
+    return { campaignId, created, skipped };
   },
 
   /**

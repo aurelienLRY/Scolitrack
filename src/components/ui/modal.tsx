@@ -14,6 +14,8 @@ interface ModalProps {
   size?: "sm" | "md" | "lg" | "xl" | "full";
   showCloseButton?: boolean;
   className?: string;
+  /** Classes sur le corps scrollable de la modal */
+  contentClassName?: string;
 }
 
 export default function Modal({
@@ -25,6 +27,7 @@ export default function Modal({
   size = "md",
   showCloseButton = true,
   className,
+  contentClassName,
 }: ModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -70,8 +73,8 @@ export default function Modal({
     sm: "min-w-[300px] w-full max-w-sm",
     md: "min-w-[300px] w-full max-w-md",
     lg: "min-w-[300px] w-full max-w-lg",
-    xl: "min-w-[300px] w-fit max-w-[1200px]",
-    full: "max-w-full",
+    xl: "min-w-[300px] w-full max-w-[1200px]",
+    full: "w-[min(96vw,1200px)] max-w-[96vw] max-h-[90vh]",
   };
 
   // Si non monté, ne rien afficher (SSR)
@@ -129,7 +132,12 @@ export default function Modal({
             )}
 
             {/* Corps de la modal */}
-            <div className="p-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+            <div
+              className={cn(
+                "p-4 overflow-y-auto max-h-[calc(100vh-180px)]",
+                contentClassName
+              )}
+            >
               {children}
             </div>
           </motion.div>

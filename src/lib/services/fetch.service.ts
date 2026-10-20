@@ -2,6 +2,19 @@ import { ApiResponse } from "@/types/api.type";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
+async function readHttpError(response: Response): Promise<Error> {
+  try {
+    const errorData = await response.json();
+    if (errorData?.feedback) {
+      return new Error(errorData.feedback);
+    }
+  } catch {
+    // Corps absent ou non JSON : on retombe sur le statut HTTP.
+  }
+
+  return new Error(`Erreur HTTP: ${response.status}`);
+}
+
 interface FetchOptions {
   method?: HttpMethod;
   body?: unknown;
@@ -45,15 +58,7 @@ class FetchService {
       const response = await fetch(url, requestOptions);
 
       if (!response.ok) {
-        // Essayer d'extraire le message d'erreur
-        try {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.feedback || `Erreur HTTP: ${response.status}`
-          );
-        } catch {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
+        throw await readHttpError(response);
       }
 
       const data = (await response.json()) as ApiResponse<T>;
@@ -122,14 +127,7 @@ class FetchService {
       });
 
       if (!response.ok) {
-        try {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.feedback || `Erreur HTTP: ${response.status}`
-          );
-        } catch {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
+        throw await readHttpError(response);
       }
 
       return (await response.json()) as ApiResponse<T>;
@@ -190,4 +188,5 @@ class FetchService {
   }
 }
 
+export { FetchService };
 export default FetchService;

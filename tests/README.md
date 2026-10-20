@@ -1,45 +1,91 @@
 # Dossier `tests/`
 
-## Utilisation
+Les tests vivent ici, en miroir de `src/`. L'outil est Vitest, avec Testing Library pour les composants et jsdom comme navigateur.
 
-Ce dossier contient tous les tests de l'application, organisés par type de test.
+## Lancer les tests
 
-## Conventions de nommage
+```bash
+npm test
+npm run test:watch
+npm run test:coverage
+```
 
-- Fichiers de test : `*.test.ts` ou `*.spec.ts`
-- Noms des tests : Descriptifs et en français
-- Groupes de tests : Utiliser `describe` et `it`/`test`
+`npm test` exécute la suite une fois et s'arrête. C'est la commande à brancher plus tard sur la CI.
 
 ## Structure
 
 ```plaintext
 tests/
-├── unit/           # Tests unitaires
-├── integration/    # Tests d'intégration
-└── e2e/           # Tests end-to-end
+├── setup.ts                 # jest-dom, observers, mocks Next globaux
+├── mocks/
+│   ├── next-navigation.ts   # useRouter, usePathname, useParams
+│   ├── next-auth.ts         # useSession, signIn, signOut
+│   └── prisma.ts            # prismaMock
+├── utils/
+│   └── render.tsx           # rendu avec QueryClient
+├── unit/                    # même découpage que src/
+│   ├── components/
+│   │   ├── enrollment-form/
+│   │   └── ui/
+│   ├── config/              # privilèges, routes, catalogues inscription
+│   ├── lib/
+│   │   ├── prisma/
+│   │   ├── services/
+│   │   │   ├── crud/
+│   │   │   └── enrollment/
+│   │   └── utils/
+│   ├── schemas/
+│   └── types/
+├── integration/
+└── e2e/
 ```
 
-## Exemple
+Un test de `src/lib/services/crypto.service.ts` se place dans `tests/unit/lib/services/crypto.service.test.ts`. Les noms de tests sont en français.
 
-```typescript
-// tests/unit/components/Button.test.tsx
-import { render, fireEvent } from "@testing-library/react";
-import { Button } from "@/components/ui/Button";
+## Écrire un test
 
-describe("Button Component", () => {
-  it("devrait rendre le bouton avec le texte correct", () => {
-    const { getByText } = render(<Button>Cliquez-moi</Button>);
-    expect(getByText("Cliquez-moi")).toBeInTheDocument();
-  });
+Les globales Vitest (`describe`, `it`, `expect`, `vi`) sont disponibles. L'alias `@/` pointe vers `src/`, l'alias `@tests/` vers ce dossier.
 
-  it("devrait appeler onClick quand cliqué", () => {
-    const handleClick = jest.fn();
-    const { getByRole } = render(
-      <Button onClick={handleClick}>Cliquez-moi</Button>
-    );
+```tsx
+import { render, screen } from "@testing-library/react";
+import { Button } from "@/components/ui/button";
 
-    fireEvent.click(getByRole("button"));
-    expect(handleClick).toHaveBeenCalledTimes(1);
+describe("Button", () => {
+  it("affiche le libellé", () => {
+    render(<Button>Enregistrer</Button>);
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeInTheDocument();
   });
 });
 ```
+
+## Mocks
+
+`next/navigation`, `next/image` et `next-auth/react` sont mockés pour toute la suite. Pour changer la route ou la session d'un test :
+
+```ts
+import { navigationState } from "@tests/mocks/next-navigation";
+import { authState } from "@tests/mocks/next-auth";
+
+navigationState.pathname = "/private/enrollment";
+authState.status = "authenticated";
+authState.session = { user: { privileges: ["MANAGE_ENROLLMENTS"] } };
+```
+
+Pour un service qui importe Prisma, mocker le module et réutiliser `prismaMock` :
+
+```ts
+import { prismaMock, resetPrismaMock } from "@tests/mocks/prisma";
+
+vi.mock("@/lib/prisma/prisma", async () => {
+  const { prismaMock: mockedPrisma } = await import("@tests/mocks/prisma");
+  return { prisma: mockedPrisma };
+});
+
+beforeEach(() => {
+  resetPrismaMock();
+});
+```
+
+Les composants branchés sur TanStack Query se rendent avec `renderWithProviders` depuis `@tests/utils/render`.
+
+`ENCRYPTION_KEY` est fixé dans `vitest.config.ts` pour que le chiffrement soit déterministe.

@@ -7,6 +7,33 @@ import {
 import { CLASSROOM_PERSONNEL_POST_MIDDLEWARE } from "./Prisma-Middleware/ClassRoomPersonnelMiddleware";
 import { CLASSROOM_POST_MIDDLEWARE } from "./Prisma-Middleware/classRoomMiddleware";
 import { COMMISSION_POST_MIDDLEWARE } from "./Prisma-Middleware/CommissionMiddleware";
+import { ENROLLMENT_CAMPAIGN_POST_MIDDLEWARE } from "./Prisma-Middleware/EnrollmentCampaignMiddleware";
+import {
+  ENROLLMENT_FILE_POST_MIDDLEWARE,
+  ENROLLMENT_FILE_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/EnrollmentFileMiddleware";
+import {
+  STUDENT_POST_MIDDLEWARE,
+  STUDENT_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/StudentMiddleware";
+import {
+  MEDICAL_POST_MIDDLEWARE,
+  MEDICAL_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/MedicalInformationMiddleware";
+import {
+  FAMILY_POST_MIDDLEWARE,
+  FAMILY_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/FamilyMiddleware";
+import {
+  AUTHORIZED_PICKUP_POST_MIDDLEWARE,
+  AUTHORIZED_PICKUP_PRE_MIDDLEWARE,
+  EMERGENCY_CONTACT_POST_MIDDLEWARE,
+  EMERGENCY_CONTACT_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/ContactMiddleware";
+import {
+  ENROLLMENT_SIGNATURE_POST_MIDDLEWARE,
+  ENROLLMENT_SIGNATURE_PRE_MIDDLEWARE,
+} from "./Prisma-Middleware/EnrollmentSignatureMiddleware";
 import type { PrismaMiddlewareParams } from "@/lib/prisma/prisma-middleware.types";
 
 function toMiddlewareParams(
@@ -31,9 +58,17 @@ const encryptionExtension = Prisma.defineExtension({
       async $allOperations({ model, operation, args, query }) {
         const params = toMiddlewareParams(model, operation, args);
 
-        if (model === "User") {
-          USER_PRE_MIDDLEWARE(params);
-        }
+        if (model === "User") USER_PRE_MIDDLEWARE(params);
+        else if (model === "Student") STUDENT_PRE_MIDDLEWARE(params);
+        else if (model === "MedicalInformation") MEDICAL_PRE_MIDDLEWARE(params);
+        else if (model === "Family") FAMILY_PRE_MIDDLEWARE(params);
+        else if (model === "EnrollmentFile") ENROLLMENT_FILE_PRE_MIDDLEWARE(params);
+        else if (model === "EmergencyContact")
+          EMERGENCY_CONTACT_PRE_MIDDLEWARE(params);
+        else if (model === "AuthorizedPickup")
+          AUTHORIZED_PICKUP_PRE_MIDDLEWARE(params);
+        else if (model === "EnrollmentSignature")
+          ENROLLMENT_SIGNATURE_PRE_MIDDLEWARE(params);
 
         let result = await query(args);
 
@@ -42,10 +77,27 @@ const encryptionExtension = Prisma.defineExtension({
         }
 
         try {
-          // Les middlewares typent le résultat finement ; ici `result` est le résultat générique de l’opération.
           const r = result as never;
           if (model === "User") {
             const processed = USER_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "Student") {
+            const processed = STUDENT_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "MedicalInformation") {
+            const processed = MEDICAL_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "Family") {
+            const processed = FAMILY_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "EnrollmentFile") {
+            const processed = ENROLLMENT_FILE_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "EmergencyContact") {
+            const processed = EMERGENCY_CONTACT_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "AuthorizedPickup") {
+            const processed = AUTHORIZED_PICKUP_POST_MIDDLEWARE(params, r);
             if (processed !== undefined) result = processed;
           } else if (model === "Establishment") {
             const processed = await ESTABLISHMENT_POST_MIDDLEWARE(params, r);
@@ -61,6 +113,12 @@ const encryptionExtension = Prisma.defineExtension({
             if (processed !== undefined) result = processed;
           } else if (model === "Commission") {
             const processed = await COMMISSION_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "EnrollmentCampaign") {
+            const processed = ENROLLMENT_CAMPAIGN_POST_MIDDLEWARE(params, r);
+            if (processed !== undefined) result = processed;
+          } else if (model === "EnrollmentSignature") {
+            const processed = ENROLLMENT_SIGNATURE_POST_MIDDLEWARE(params, r);
             if (processed !== undefined) result = processed;
           }
         } catch (error) {
@@ -85,5 +143,3 @@ const globalForPrisma = global as unknown as {
 };
 
 export const prisma = globalForPrisma.prisma ?? createExtendedClient();
-
-// if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

@@ -161,6 +161,9 @@ export const updateUserProfileSchema = yup.object({
   isHousekeeping: yup.boolean().optional(),
   isDaycare: yup.boolean().optional(),
   isCanteen: yup.boolean().optional(),
+
+  // Photo de profil (URL API storage ou legacy)
+  image: yup.string().nullable().optional(),
 });
 
 export type UpdateUserProfileSchemaType = yup.InferType<typeof updateUserProfileSchema>;

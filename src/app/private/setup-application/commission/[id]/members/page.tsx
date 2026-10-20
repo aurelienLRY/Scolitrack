@@ -13,6 +13,7 @@ import { CommissionMemberFormData } from "@/schemas/commissionSchema";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { getUserAvatarSrc } from "@/lib/utils/image-url";
 
 // Liste des rôles possibles dans une commission
 const COMMISSION_ROLES = [
@@ -211,7 +212,7 @@ export default function CommissionIdMembersPage() {
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center justify-center w-10 h-10 rounded-full ">
                                                 <Image
-                                                    src={member.user?.image || "/icons/my-account.png"}
+                                                    src={getUserAvatarSrc(member.user?.image, "thumbnail")}
                                                     alt={member.user?.name || ""}
                                                     width={40}
                                                     height={40}
@@ -236,7 +237,7 @@ export default function CommissionIdMembersPage() {
                                                         size="sm"
                                                         className={cn(
                                                             "text-xs",
-                                                            member.role === role.value && "bg-secondary text-white"
+                                                            member.role === role.value && "bg-secondary text-secondary-foreground"
                                                         )}
                                                         onClick={() => handleUpdateRole(member.userId, role.value)}
                                                     >

@@ -10,19 +10,19 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-background/20 relative min-h-20 border-t border-primary/10">
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 dark:text-gray-400">
+    <footer className="relative shrink-0 border-t border-primary/10 bg-background/20">
+      <div className="container mx-auto px-4 py-2.5">
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
           &copy; {new Date().getFullYear()} Scolitrack. Tous droits réservés.
         </p>
       </div>
 
       {session.data?.user && (
-        <div className="absolute top-1/2 -translate-y-1/2 right-4">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
           <Tooltip content="Déconnexion" position="left">
             <form action={handleLogout}>
               <button type="submit">
-                <LogOut className="text-4xl rotate-180 hover:text-accent cursor-pointer" />
+                <LogOut className="size-5 rotate-180 cursor-pointer hover:text-accent" />
               </button>
             </form>
           </Tooltip>

@@ -27,7 +27,7 @@ export default function RootLayout({
     >
       <body
         className={cn(
-          " bg-background-body ",
+          "h-dvh overflow-hidden bg-background-body text-foreground",
           raleway.variable,
           montserrat.variable
         )}

@@ -18,6 +18,7 @@ export default function AdminPage() {
             <CardFluo
               className="p-5  flex flex-col justify-center group"
               onClick={() => router.push(item.href)}
+              clickable
               variant="primary"
             >
               <item.icon className="text-4xl group-hover:text-accent transition-all duration-300 ease-in-out mb-3" />

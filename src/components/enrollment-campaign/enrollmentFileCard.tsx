@@ -1,8 +1,10 @@
 import { Card, Button, Badge } from "@/components/ui";
-import { FileText, Edit } from "lucide-react";
+import { FileText, Edit, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { useResendEnrollmentInvitation, useDeleteEnrollmentFile } from "@/hooks";
 import type { EnrollmentFileWithDetails } from "@/types/enrollment.type";
 
 interface EnrollmentFileCardProps {
@@ -31,6 +33,27 @@ export default function EnrollmentFileCard({
       default:
         return <Badge variant="info" styleVariant="outline">Inconnu</Badge>;
     }
+  };
+
+  const resend = useResendEnrollmentInvitation(file.id);
+  const deleteFile = useDeleteEnrollmentFile();
+
+  const handleDelete = () => {
+    const label = file.family?.name || file.email;
+    if (
+      !confirm(
+        `Supprimer définitivement le dossier « ${label} » ? Cette action est irréversible.`
+      )
+    ) {
+      return;
+    }
+    deleteFile.mutate(file.id, {
+      onSuccess: () => toast.success("Dossier supprimé"),
+      onError: (err: unknown) =>
+        toast.error(
+          err instanceof Error ? err.message : "Erreur lors de la suppression"
+        ),
+    });
   };
 
   return (
@@ -68,23 +91,57 @@ export default function EnrollmentFileCard({
               )}
             </div>
           </div>
-          <div className="flex gap-2 ml-4">
-            <Button 
-              variant="solid" 
-              
+          <div className="flex gap-2 ml-4 shrink-0">
+           
+            <Button
+              variant="solid"
               size="sm"
               onClick={() => onView?.(file)}
             >
               <FileText className="w-4 h-4 mr-2" />
               Voir
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
+              color="secondary"
+              size="sm"
+              tooltip="Renvoyer le lien par email"
+              aria-label="Renvoyer le lien par email"
+              onClick={() =>
+                resend.mutate(undefined, {
+                  onSuccess: () => toast.success("Email d'invitation renvoyé"),
+                  onError: (err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Erreur lors du renvoi"),
+                })
+              }
+              disabled={resend.isPending}
+          
+            >
+              <Mail className="w-4 h-4" />
+            </Button>
+
+
+            <Button
+              variant="outline"
               color="warning"
               size="sm"
               onClick={() => onEdit?.(file)}
+              tooltip="Modifier le dossier"
+              aria-label="Modifier le dossier"
             >
               <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              color="destructive"
+              size="sm"
+              
+              tooltip="Supprimer le dossier"
+              aria-label="Supprimer le dossier"
+              onClick={handleDelete}
+              disabled={deleteFile.isPending}
+            >
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>

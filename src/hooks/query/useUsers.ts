@@ -140,7 +140,7 @@ export function useUpdateUser(id: string): ApiMutationResult<User, UpdateUserDat
  * Hook pour mettre à jour l'utilisateur courant
  */
 export function useUpdateCurrentUser(): ApiMutationResult<CurrentUser, UpdateUserData> {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const userId = session?.user?.id;
 
   return useApiMutation<CurrentUser, UpdateUserData>({
@@ -149,6 +149,12 @@ export function useUpdateCurrentUser(): ApiMutationResult<CurrentUser, UpdateUse
       return FetchService.patch<CurrentUser>(`/api/users/${userId}`, userData);
     },
     invalidateQueries: [CURRENT_USER_QUERY_KEY, [...USERS_QUERY_KEY, userId || ""]],
+    onSuccess: async (_data, variables) => {
+      // Rafraîchir l'avatar dans la session JWT (menu, etc.)
+      if (variables.image !== undefined) {
+        await updateSession({ image: variables.image });
+      }
+    },
   });
 }
 

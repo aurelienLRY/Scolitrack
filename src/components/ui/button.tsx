@@ -45,7 +45,7 @@ const buttonVariants = cva(
       {
         color: "default",
         variant: "solid",
-        className: "bg-primary hover:bg-primary/90",
+        className: "bg-primary text-primary-foreground hover:bg-primary/90",
       },
       {
         color: "destructive",
@@ -127,7 +127,7 @@ const buttonVariants = cva(
       {
         color: "secondary",
         variant: "outline",
-        className: "text-secondary",
+        className: "text-secondary-strong",
       },
       {
         color: "accent",
@@ -142,7 +142,7 @@ const buttonVariants = cva(
       {
         color: "warning",
         variant: "outline",
-        className: "text-warning",
+        className: "text-warning-strong",
       },
       {
         color: "info",
@@ -163,7 +163,7 @@ const buttonVariants = cva(
       {
         color: "secondary",
         variant: "ghost",
-        className: "hover:bg-secondary/10 text-secondary",
+        className: "hover:bg-secondary/10 text-secondary-strong",
       },
       {
         color: "accent",
@@ -178,7 +178,7 @@ const buttonVariants = cva(
       {
         color: "warning",
         variant: "ghost",
-        className: "hover:bg-warning/10 text-warning",
+        className: "hover:bg-warning/10 text-warning-strong",
       },
       {
         color: "info",
@@ -245,13 +245,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {Icon && (iconPosition === "left" || iconOnly) && <Icon />}
-        {!iconOnly && children}
-        {Icon && iconPosition === "right" && !iconOnly && <Icon />}
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {Icon && (iconPosition === "left" || iconOnly) && <Icon />}
+            {!iconOnly && children}
+            {Icon && iconPosition === "right" && !iconOnly && <Icon />}
+          </>
+        )}
       </Comp>
     );
 
-    if (iconOnly && tooltip) {
+    if (tooltip) {
       return <Tooltip content={tooltip}>{content}</Tooltip>;
     }
 

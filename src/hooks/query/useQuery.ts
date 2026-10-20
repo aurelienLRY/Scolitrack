@@ -100,22 +100,27 @@ export function useApiMutation<TData = unknown, TVariables = unknown>({
   return useMutation({
     mutationFn,
 
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       // Afficher le feedback de succès
       if (data.feedback) {
         toast.success(data.feedback);
       }
 
-      // Invalider les queries concernées pour forcer un rafraîchissement
+      // Invalider puis attendre les refetch des requêtes actives (sinon l’UI peut
+      // encore afficher les données obsolètes avant la fin du rechargement)
       if (invalidateQueries.length > 0) {
-        invalidateQueries.forEach((key) => {
-          queryClient.invalidateQueries({ queryKey: key });
-        });
+        await Promise.all(
+          invalidateQueries.map((key) =>
+            queryClient.invalidateQueries({
+              queryKey: key,
+              refetchType: "active",
+            })
+          )
+        );
       }
 
-      // Appeler le callback onSuccess
       if (onSuccess) {
-        onSuccess(data, variables);
+        await Promise.resolve(onSuccess(data, variables));
       }
     },
     onError: (error: Error, variables) => {

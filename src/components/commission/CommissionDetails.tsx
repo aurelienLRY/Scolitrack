@@ -9,6 +9,7 @@ import { TCommissionWithAllRelations } from "@/types/commission.type";
 import { Users,  UserPlus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs.21st";
+import { getUserAvatarSrc } from "@/lib/utils/image-url";
 
 interface CommissionDetailsProps {
     commission: TCommissionWithAllRelations;
@@ -96,11 +97,11 @@ export default function CommissionDetails({
                                 >
                                     <div className="flex-shrink-0 mr-4">
                                         <Image
-                                            src={member.user?.image || "/icons/my-account.png"}
+                                            src={getUserAvatarSrc(member.user?.image, "thumbnail")}
                                             alt={member.user?.name || "Membre"}
                                             width={40}
                                             height={40}
-                                            className="rounded-full"
+                                            className="rounded-full object-cover"
                                         />
                                     </div>
                                     <div className="flex-grow">

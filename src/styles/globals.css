@@ -5,25 +5,56 @@
 @theme {
   --font-raleway: "Raleway", sans-serif;
   --font-montserrat: "Montserrat", sans-serif;
-  --color-primary: light-dark(#3545d6, #112aff); /* Bleu royal */
-  --color-secondary: light-dark(#a6ee0a, #81bc00); /* Vert lime */
-  --color-accent: light-dark(#9f7300, #e7a906); /* Rouge */
+
+  /* Marque */
+  --color-primary: light-dark(#3545d6, #112aff);
+  --color-primary-foreground: light-dark(#ffffff, #ffffff);
+  --color-secondary: light-dark(#a6ee0a, #81bc00);
+  --color-secondary-foreground: light-dark(#0e1a27, #0e1a27);
+  --color-secondary-strong: light-dark(#3f6b0a, #c6ef62);
+  --color-accent: light-dark(#7a5600, #e7a906);
+  --color-accent-foreground: light-dark(#ffffff, #0e1a27);
   --color-dark: light-dark(#0e1a27, #0e1a27);
 
-  --color-destructive: light-dark(#ff0000, #ff0000);
-  --color-success: light-dark(#008000, #008000);
-  --color-warning: light-dark(#ffa500, #ffa500);
-  --color-info: light-dark(#0000ff, #0000ff);
+  /* États */
+  --color-destructive: light-dark(#c42020, #ff0000);
+  --color-destructive-foreground: light-dark(#ffffff, #ffffff);
+  --color-success: light-dark(#157a32, #008000);
+  --color-success-foreground: light-dark(#ffffff, #ffffff);
+  --color-warning: light-dark(#f5b942, #ffa500);
+  --color-warning-foreground: light-dark(#0e1a27, #0e1a27);
+  --color-warning-strong: light-dark(#9a3412, #f5b942);
+  --color-info: light-dark(#1d4ed8, #0000ff);
+  --color-info-foreground: light-dark(#ffffff, #ffffff);
 
-  /* Variantes de couleurs */
-  --color-primary-light: light-dark(#6474ff, #4656e7);
-  --color-primary-dark: light-dark(#4252dd, #2434c5);
+  /* Variantes */
+  --color-primary-light: light-dark(#4c5ae0, #4656e7);
+  --color-primary-dark: light-dark(#2a38b8, #2434c5);
 
-  /* Couleurs de fond et texte */
-  --color-background: light-dark(#d7d7d7, #0e1a27);
-  --color-background-component: light-dark(#0e1a27, #010716);
-  --color-background-body: light-dark(#ffffff, #000f1f);
+  /* Surfaces et texte */
+  --color-background: light-dark(#ffffff, #0e1a27);
+  --color-background-component: light-dark(#ffffff, #010716);
+  --color-background-body: light-dark(#f4f6f8, #000f1f);
   --color-text: light-dark(#0e1a27, #ffffff);
+  --color-foreground: light-dark(#0e1a27, #ffffff);
+  --color-muted: light-dark(#eef1f5, #152433);
+  --color-muted-foreground: light-dark(#526072, #b7c3d0);
+  --color-border: light-dark(#d5dbe3, #243447);
+  --color-input: light-dark(#c5ced8, #31465c);
+  --color-ring: light-dark(#3545d6, #112aff);
+  --color-popover: light-dark(#ffffff, #0e1a27);
+  --color-popover-foreground: light-dark(#0e1a27, #ffffff);
+}
+
+/* light-dark() suit la classe du bouton de thème, pas seulement le réglage système */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
 }
 
 /* Ajouter des thèmes  */

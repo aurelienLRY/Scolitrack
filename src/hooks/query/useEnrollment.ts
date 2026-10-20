@@ -235,7 +235,7 @@ export function useDeleteEnrollmentCampaign(): ApiMutationResult<
   return useApiMutation<EnrollmentCampaignComplete, string>({
     mutationFn: (id) =>
       FetchService.delete(`/api/enrollment/campaigns/${id}`),
-    invalidateQueries: [ENROLLMENT_CAMPAIGN_QUERY_KEY],
+    invalidateQueries: [ENROLLMENT_CAMPAIGN_QUERY_KEY, ENROLLMENT_FILE_QUERY_KEY],
   });
 }
 
@@ -453,7 +453,7 @@ export function useCreateEnrollmentFile(): ApiMutationResult<
   return useApiMutation<EnrollmentFileWithDetails, CreateEnrollmentFileData>({
     mutationFn: (data) =>
       FetchService.post("/api/enrollment/files", data),
-    invalidateQueries: [ENROLLMENT_FILE_QUERY_KEY],
+    invalidateQueries: [ENROLLMENT_FILE_QUERY_KEY, ENROLLMENT_CAMPAIGN_QUERY_KEY],
   });
 }
 
@@ -498,8 +498,12 @@ export function useUpdateEnrollmentFile(
     mutationFn: (data) =>
       FetchService.put(`/api/enrollment/files/${id}`, data),
     invalidateQueries: id
-      ? [ENROLLMENT_FILE_QUERY_KEY, [...ENROLLMENT_FILE_QUERY_KEY, id]]
-      : [ENROLLMENT_FILE_QUERY_KEY],
+      ? [
+          ENROLLMENT_FILE_QUERY_KEY,
+          ENROLLMENT_CAMPAIGN_QUERY_KEY,
+          [...ENROLLMENT_FILE_QUERY_KEY, id],
+        ]
+      : [ENROLLMENT_FILE_QUERY_KEY, ENROLLMENT_CAMPAIGN_QUERY_KEY],
   });
 }
 
@@ -546,8 +550,12 @@ export function useUpdateEnrollmentFileStatus(
     mutationFn: (data) =>
       FetchService.put(`/api/enrollment/files/${id}/status`, data),
     invalidateQueries: id
-      ? [ENROLLMENT_FILE_QUERY_KEY, [...ENROLLMENT_FILE_QUERY_KEY, id]]
-      : [ENROLLMENT_FILE_QUERY_KEY],
+      ? [
+          ENROLLMENT_FILE_QUERY_KEY,
+          ENROLLMENT_CAMPAIGN_QUERY_KEY,
+          [...ENROLLMENT_FILE_QUERY_KEY, id],
+        ]
+      : [ENROLLMENT_FILE_QUERY_KEY, ENROLLMENT_CAMPAIGN_QUERY_KEY],
   });
 }
 
@@ -590,6 +598,7 @@ export function useUpdateEnrollmentFileByToken(
       FetchService.put(`/api/enrollment/files/token/${token}`, data),
     invalidateQueries: [
       ENROLLMENT_FILE_QUERY_KEY,
+      ENROLLMENT_CAMPAIGN_QUERY_KEY,
       [...ENROLLMENT_FILE_QUERY_KEY, "token", token],
     ],
   });
@@ -629,7 +638,25 @@ export function useDeleteEnrollmentFile(): ApiMutationResult<
   return useApiMutation<EnrollmentFileWithDetails, string>({
     mutationFn: (id) =>
       FetchService.delete(`/api/enrollment/files/${id}`),
-    invalidateQueries: [ENROLLMENT_FILE_QUERY_KEY],
+    invalidateQueries: [
+      ENROLLMENT_FILE_QUERY_KEY,
+      ENROLLMENT_CAMPAIGN_QUERY_KEY,
+    ],
+  });
+}
+
+/**
+ * Hook pour renvoyer l'invitation (email + token) d'un dossier d'inscription
+ */
+export function useResendEnrollmentInvitation(
+  id: string
+): ApiMutationResult<EnrollmentFileWithDetails, void> {
+  return useApiMutation<EnrollmentFileWithDetails, void>({
+    mutationFn: () => FetchService.post(`/api/enrollment/files/${id}/resend`, {}),
+    invalidateQueries: [
+      ENROLLMENT_FILE_QUERY_KEY,
+      [...ENROLLMENT_FILE_QUERY_KEY, id],
+    ],
   });
 }
 
@@ -678,6 +705,7 @@ export function useAddStudentToEnrollment(
       FetchService.post(`/api/enrollment/files/${fileId}/students`, data),
     invalidateQueries: [
       ENROLLMENT_FILE_QUERY_KEY,
+      ENROLLMENT_CAMPAIGN_QUERY_KEY,
       [...ENROLLMENT_FILE_QUERY_KEY, fileId],
     ],
   });
@@ -719,6 +747,7 @@ export function useRemoveStudentFromEnrollment(
       FetchService.delete(`/api/enrollment/files/${fileId}/students?studentId=${studentId}`),
     invalidateQueries: [
       ENROLLMENT_FILE_QUERY_KEY,
+      ENROLLMENT_CAMPAIGN_QUERY_KEY,
       [...ENROLLMENT_FILE_QUERY_KEY, fileId],
     ],
   });

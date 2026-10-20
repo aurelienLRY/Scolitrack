@@ -61,13 +61,7 @@ export const POST = withPrivilege(
       // Valider les données
       try {
         await createEnrollmentCampaignSchema.validate(body);
-        /* TODO: une fois le campagne ouvert , recuperer tous les student    */
-
-
-
-
-
-
+        // Sync élèves existants : POST /api/enrollment/campaigns/[id]/sync-students
       } catch (validationError: unknown) {
         const errorMessage = validationError instanceof Error 
           ? validationError.message 

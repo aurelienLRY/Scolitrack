@@ -101,6 +101,7 @@ export async function PATCH(
         isHousekeeping: data.isHousekeeping,
         isDaycare: data.isDaycare,
         isCanteen: data.isCanteen,
+        ...(data.image !== undefined ? { image: data.image } : {}),
       },
     });
 

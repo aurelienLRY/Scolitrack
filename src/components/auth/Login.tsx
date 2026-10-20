@@ -63,7 +63,7 @@ export default function Login() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex min-w-[300px] w-[90%] max-w-[400px] flex-col items-center gap-6 rounded-md bg-primary p-6 shadow-md dark:bg-primary/50  border-t-2 border-white/20"
+      className="flex min-w-[300px] w-[90%] max-w-[400px] flex-col items-center gap-6 rounded-md bg-primary p-6 text-white shadow-md dark:bg-primary/50 border-t-2 border-white/20"
     >
       <h2 className="text-white">Connexion</h2>
 
@@ -91,7 +91,7 @@ export default function Login() {
         />
         <Link
           href="/forgot-password"
-          className="text-sm text-gray-500 dark:text-gray-400 italic hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          className="text-sm text-white/90 italic hover:text-white transition-colors"
         >
           Mot de passe oublié ?
         </Link>
@@ -100,7 +100,7 @@ export default function Login() {
           type="submit"
           disabled={isSubmitting}
           variant="solid"
-          color="accent"
+          color="secondary"
           className="max-w-[170px] min-w-fit"
         >
           {isSubmitting ? "Connexion en cours..." : "Se connecter"}

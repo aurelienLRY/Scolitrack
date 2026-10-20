@@ -324,27 +324,29 @@ model Student {
 }
 
 model MedicalInformation {
-  id                 String   @id @default(cuid())
-  studentId          String   @unique
-  fileNumber         String
-  healthBooklet      String?
-  medicalCertificate String?
-  hasRubella         Boolean  @default(false)
-  hasChickenpox      Boolean  @default(false)
-  hasTonsillitis     Boolean  @default(false)
-  hasOtitis          Boolean  @default(false)
-  hasScarletFever    Boolean  @default(false)
-  hasWhoopingCough   Boolean  @default(false)
-  hasMumps           Boolean  @default(false)
-  hasMeasles         Boolean  @default(false)
-  hasAsthma          Boolean  @default(false)
-  hasRheumatism      Boolean  @default(false)
-  healthDetails      String?  @db.Text
-  doctorName         String?
-  medicalConsent     Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                     String   @id @default(cuid())
+  studentId              String   @unique
+  fileNumber             String
+  healthBooklet          String?
+  medicalCertificate     String?
+  hasRubella             Boolean  @default(false)
+  hasChickenpox          Boolean  @default(false)
+  hasTonsillitis         Boolean  @default(false)
+  hasOtitis              Boolean  @default(false)
+  hasScarletFever        Boolean  @default(false)
+  hasWhoopingCough       Boolean  @default(false)
+  hasMumps               Boolean  @default(false)
+  hasMeasles             Boolean  @default(false)
+  hasAsthma              Boolean  @default(false)
+  hasRheumatism          Boolean  @default(false)
+  healthDetails          String?  @db.Text
+  doctorName             String?
+  preferredHospital      String?
+  parentRecommendations  String?  @db.Text
+  medicalConsent         Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  student                Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
 }
@@ -384,43 +386,137 @@ model EmergencyContact {
 }
 
 model EnrollmentCampaign {
-  id              String           @id @default(cuid())
+  id              String                 @id @default(cuid())
   name            String
   startDate       DateTime
   endDate         DateTime
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   creatorId       String
-  creator         User             @relation(fields: [creatorId], references: [id])
+  creator         User                   @relation(fields: [creatorId], references: [id])
   enrollmentFiles EnrollmentFile[]
+  signatures      EnrollmentSignature[]
 
   @@index([creatorId])
 }
 
 model EnrollmentFile {
-  id           String              @id @default(cuid())
-  campaignId   String
-  familyId     String?
-  email        String
-  status       EnrollmentStatus    @default(DRAFT)
-  token        String              @unique @default(uuid())
-  submittedAt  DateTime?
-  reviewedAt   DateTime?
-  reviewerId   String?
-  decisionNote String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  campaign     EnrollmentCampaign  @relation(fields: [campaignId], references: [id])
-  family       Family?             @relation(fields: [familyId], references: [id])
-  reviewer     User?               @relation("reviewer", fields: [reviewerId], references: [id])
-  history      EnrollmentHistory[]
-  students     EnrollmentStudent[]
+  id                    String              @id @default(cuid())
+  campaignId            String
+  familyId              String?
+  email                 String              @db.Text
+  status                EnrollmentStatus    @default(DRAFT)
+  token                 String              @unique @default(uuid())
+  submittedAt           DateTime?
+  reviewedAt            DateTime?
+  reviewerId            String?
+  decisionNote          String?             @db.Text
+  /// Payload JSON du formulaire public (chiffré via middleware ENC:)
+  /// Contient parents + enfants + santé + autorisations tant que non hydraté en tables.
+  formPayload           String?             @db.LongText
+  authorizeOutings      Boolean             @default(false)
+  authorizeLeaveAlone   Boolean             @default(false)
+  acceptRegulations     Boolean             @default(false)
+  authorizeImageRights  Boolean             @default(false)
+  acceptAssociation     Boolean             @default(false)
+  acceptCanteenRules    Boolean             @default(false)
+  saquetasQuantity      Int                 @default(0)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  campaign              EnrollmentCampaign    @relation(fields: [campaignId], references: [id])
+  family                Family?               @relation(fields: [familyId], references: [id])
+  reviewer              User?                 @relation("reviewer", fields: [reviewerId], references: [id])
+  history               EnrollmentHistory[]
+  students              EnrollmentStudent[]
+  signatures            EnrollmentSignature[]
+  documents             EnrollmentDocument[]
 
   @@index([campaignId])
   @@index([familyId])
   @@index([reviewerId])
-  @@index([email])
   @@index([status])
+}
+
+/**
+ * Pièces jointes du dossier d'inscription (hors public/).
+ * Stockage disque : storage/enrollment-documents/{fileToken}/…
+ * Accès public via accessToken + fileToken dossier.
+ */
+model EnrollmentDocument {
+  id               String                        @id @default(cuid())
+  enrollmentFileId String
+  /// Token public du dossier (dénormalisé)
+  fileToken        String
+  /// Token d'accès pièce (téléchargement / suppression)
+  accessToken      String                        @unique @default(uuid())
+  category         EnrollmentDocumentCategory
+  /// Portée optionnelle (ex: localId enfant)
+  scopeRef         String                        @default("")
+  originalName     String
+  mimeType         String
+  sizeBytes        Int
+  /// Chemin relatif sous storage/enrollment-documents/
+  storagePath      String
+  uploadedBy       EnrollmentDocumentUploader    @default(PARENT)
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+
+  enrollmentFile EnrollmentFile @relation(fields: [enrollmentFileId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentFileId])
+  @@index([fileToken])
+  @@index([category])
+  @@index([scopeRef])
+}
+
+/**
+ * Signatures électroniques d'inscription (preuve d'acceptation).
+ * Conservation longue durée (≥ 7 ans) : pas de cascade delete sur le dossier.
+ * Identifiées par email + token dossier + campagne + sujet (subjectKey).
+ */
+model EnrollmentSignature {
+  id               String                     @id @default(cuid())
+  campaignId       String
+  enrollmentFileId String?
+  /// Token public du dossier famille
+  fileToken        String
+  /// Email du signataire (chiffré via middleware)
+  email            String                     @db.Text
+  /// Hash SHA-256 de l'email normalisé (unicité / recherche)
+  emailHash        String
+  /// Clé stable du document / clause signée (ex: FICHE1_HORAIRES)
+  subjectKey       String
+  /// Portée optionnelle (ex: localId enfant) — "" = niveau responsable
+  scopeRef         String                     @default("")
+  /// Libellé affiché
+  subjectLabel     String
+  /// Texte exact accepté au moment de la signature
+  acceptanceText   String                     @db.Text
+  /// Token one-shot du lien email (signature unitaire — rétrocompat)
+  confirmToken     String                     @unique @default(uuid())
+  /// Token partagé : un mail / une page pour plusieurs clauses
+  batchToken       String?
+  status           EnrollmentSignatureStatus  @default(PENDING)
+  requestedAt      DateTime                   @default(now())
+  /// Expiration du lien de confirmation (pas de la preuve)
+  linkExpiresAt    DateTime?
+  confirmedAt      DateTime?
+  signerIp         String?
+  userAgent        String?                    @db.Text
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  campaign       EnrollmentCampaign @relation(fields: [campaignId], references: [id])
+  enrollmentFile EnrollmentFile?    @relation(fields: [enrollmentFileId], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, fileToken, emailHash, subjectKey, scopeRef])
+  @@index([fileToken])
+  @@index([emailHash])
+  @@index([campaignId])
+  @@index([confirmToken])
+  @@index([batchToken])
+  @@index([status])
+  @@index([scopeRef])
 }
 
 model EnrollmentStudent {
@@ -456,4 +552,27 @@ enum EnrollmentStatus {
   NEED_INFO
   APPROVED
   REJECTED
+}
+
+enum EnrollmentSignatureStatus {
+  PENDING
+  SIGNED
+  EXPIRED
+  /// Parent a explicitement refusé (ex. quitter seul)
+  DECLINED
+}
+
+enum EnrollmentDocumentCategory {
+  FAMILY_BOOK
+  SCHOOL_TRANSFER
+  MEDICAL_FITNESS
+  VACCINATION
+  INSURANCE
+  PHOTO
+  OTHER
+}
+
+enum EnrollmentDocumentUploader {
+  PARENT
+  STAFF
 }

@@ -53,10 +53,9 @@ export default authMiddleware(async function middleware(req) {
   const { nextUrl } = req;
   console.log("MIDDLEWARE -> Next URL: ", nextUrl.pathname);
 
-  // Gérer les en-têtes de cache pour les images uploadées
+  // Images legacy sous public/
   if (nextUrl.pathname.includes("/img/uploads/")) {
     const response = NextResponse.next();
-    // Désactiver la mise en cache pour les images uploadées
     response.headers.set(
       "Cache-Control",
       "no-store, no-cache, must-revalidate, proxy-revalidate"
@@ -65,6 +64,11 @@ export default authMiddleware(async function middleware(req) {
     response.headers.set("Expires", "0");
     response.headers.set("Surrogate-Control", "no-store");
     return response;
+  }
+
+  // Images storage : accessibles sans session (Next/Image optimiser + affichage)
+  if (nextUrl.pathname.startsWith("/api/storage/images/")) {
+    return NextResponse.next();
   }
 
   // Traiter les routes protégées génériques d'abord
