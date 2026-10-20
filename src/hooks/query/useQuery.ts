@@ -78,6 +78,12 @@ export function useApiQuery<T = unknown>({
  */
 interface UseApiMutationOptions<TData, TVariables> {
   mutationFn: (variables: TVariables) => Promise<ApiResponse<TData>>; // Fonction de mutation
+  /** Mise à jour synchrone du cache (avant toast / invalidation) pour un UI immédiat */
+  updateCache?: (
+    queryClient: ReturnType<typeof useQueryClient>,
+    data: ApiResponse<TData>,
+    variables: TVariables
+  ) => void;
   onSuccess?: (data: ApiResponse<TData>, variables: TVariables) => void; // Callback de succès
   onError?: (error: Error, variables: TVariables) => void; // Callback d'erreur
   invalidateQueries?: QueryKey[]; // Clés de requêtes à invalider
@@ -88,6 +94,7 @@ interface UseApiMutationOptions<TData, TVariables> {
  */
 export function useApiMutation<TData = unknown, TVariables = unknown>({
   mutationFn,
+  updateCache,
   onSuccess,
   onError,
   invalidateQueries = [],
@@ -101,15 +108,18 @@ export function useApiMutation<TData = unknown, TVariables = unknown>({
     mutationFn,
 
     onSuccess: async (data, variables) => {
-      // Afficher le feedback de succès
+      // Patch cache d'abord → l'UI change sans attendre un refetch / reload
+      if (updateCache) {
+        updateCache(queryClient, data, variables);
+      }
+
       if (data.feedback) {
         toast.success(data.feedback);
       }
 
-      // Invalider puis attendre les refetch des requêtes actives (sinon l’UI peut
-      // encore afficher les données obsolètes avant la fin du rechargement)
       if (invalidateQueries.length > 0) {
-        await Promise.all(
+        // En arrière-plan : pas de flash de chargement, le cache est déjà à jour
+        void Promise.all(
           invalidateQueries.map((key) =>
             queryClient.invalidateQueries({
               queryKey: key,

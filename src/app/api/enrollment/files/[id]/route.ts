@@ -9,6 +9,7 @@ import {
 } from "@/lib/services/api.service";
 import { updateEnrollmentFileSchema } from "@/schemas/EnrollmentSchema";
 import { auth } from "@/lib/auth/auth";
+import { ENROLLMENT_SOFT_DELETE_RETENTION_DAYS } from "@/lib/enrollment/soft-delete";
 
 /**
  * GET /api/enrollment/files/[id] - Récupérer un dossier d'inscription par son ID
@@ -128,11 +129,12 @@ export const DELETE = withPrivilege(
         return notFoundResponse(`Dossier d'inscription avec l'ID ${id} non trouvé`);
       }
       
-      // Supprimer le dossier
-      await enrollmentFileService.deleteFile(id, session.user.id);
-      
+      // Soft-delete : corbeille puis purge après le délai de rétention
+      const file = await enrollmentFileService.deleteFile(id, session.user.id);
+
       return successResponse({
-        feedback: "Dossier d'inscription supprimé avec succès",
+        data: file,
+        feedback: `Dossier mis en corbeille. Suppression définitive dans ${ENROLLMENT_SOFT_DELETE_RETENTION_DAYS} jours.`,
       });
     } catch (error) {
       return handleApiError(

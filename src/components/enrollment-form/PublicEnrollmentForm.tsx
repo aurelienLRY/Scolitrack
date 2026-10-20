@@ -21,11 +21,16 @@ import {
 } from "@/hooks";
 import { FetchService } from "@/lib/services/fetch.service";
 import { evaluateEnrollmentCompleteness } from "@/lib/enrollment/completeness";
+import {
+  enrollmentStatusLabel,
+  enrollmentStatusVariant,
+} from "@/lib/enrollment/status-badge";
 import type { EnrollmentFileWithDetails } from "@/types/enrollment.type";
 import GuardianWorkspace from "@/components/enrollment-form/GuardianWorkspace";
 import FamilyContactsSection from "@/components/enrollment-form/FamilyContactsSection";
 import ChildEnrollmentCard from "@/components/enrollment-form/ChildEnrollmentCard";
 import EnrollmentDocumentsSection from "@/components/enrollment-form/EnrollmentDocumentsSection";
+import EnrollmentPushOptInBanner from "@/components/enrollment-form/EnrollmentPushOptInBanner";
 import {
   enrollmentTabsListClass,
   enrollmentTabsTriggerClass,
@@ -354,13 +359,6 @@ export default function PublicEnrollmentForm({
         ? "Modification du dossier"
         : "Bienvenue sur votre dossier d'inscription";
 
-  const statusLabel: Record<string, string> = {
-    DRAFT: "Brouillon",
-    SUBMITTED: "Soumis",
-    NEED_INFO: "A compléter",
-    APPROVED: "Approuvé",
-    REJECTED: "Refusé",
-  };
 
   const child = form.children[activeChild];
   const parentSummary = (p: EnrollmentParentForm, fallback: string) => {
@@ -381,12 +379,15 @@ export default function PublicEnrollmentForm({
                 {isStaff ? ` · ${file.email}` : ""}
               </p>
             </div>
-            <Badge variant="info" styleVariant="outline">
-              {statusLabel[file.status] ?? file.status}
+            <Badge
+              variant={enrollmentStatusVariant(file.status)}
+              styleVariant="outline"
+            >
+              {enrollmentStatusLabel(file.status)}
             </Badge>
           </div>
           {mode === "public" && (
-            <div className="space-y-2 text-sm leading-relaxed text-foreground/90">
+            <div className="space-y-3 text-sm leading-relaxed text-foreground/90">
               <p>
                 Merci de remplir l&apos;ensemble du formulaire. Vous pouvez
                 enregistrer un brouillon à tout moment, puis soumettre lorsque
@@ -420,6 +421,7 @@ export default function PublicEnrollmentForm({
                   pour soumettre).
                 </li>
               </ul>
+              <EnrollmentPushOptInBanner />
             </div>
           )}
           {mode === "staff-view" && (

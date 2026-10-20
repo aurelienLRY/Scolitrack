@@ -21,28 +21,31 @@ export default function CampaignPage() {
 
   const handleDeleteCampaign = (campaign: EnrollmentCampaignComplete) => {
     const filesCount = campaign._count?.enrollmentFiles || 0;
-    const message = filesCount > 0 
-      ? `Êtes-vous sûr de vouloir supprimer la campagne "${campaign.name}" ?\n\n⚠️ ATTENTION : Cette action supprimera également ${filesCount} dossier(s) d'inscription associé(s). Cette action est irréversible.`
-      : `Êtes-vous sûr de vouloir supprimer la campagne "${campaign.name}" ?`;
-    
-    if (confirm(message)) {
-      deleteCampaign.mutate(campaign.id, {
-        onSuccess: () => {
-          const successMessage = filesCount > 0
-            ? `Campagne et ${filesCount} dossier(s) supprimé(s) avec succès`
-            : "Campagne supprimée avec succès";
-          toast.success(successMessage);
-        },
-        onError: (error: unknown) => {
-          const message =
-            error instanceof Error
-              ? error.message
-              : "Erreur lors de la suppression de la campagne";
-          toast.error(message);
-          console.error("Erreur:", error);
-        },
-      });
+    const endPassed = new Date(campaign.endDate) < new Date();
+
+    if (!endPassed) {
+      toast.error(
+        "Impossible de supprimer une campagne dont la date de fin n'est pas encore passée"
+      );
+      return;
     }
+    if (filesCount > 0) {
+      toast.error(
+        "Impossible de supprimer une campagne qui contient encore des dossiers. Mettez-les en corbeille et attendez la purge (30 jours), ou récupérez-les."
+      );
+      return;
+    }
+
+    if (
+      !confirm(
+        `Supprimer définitivement la campagne « ${campaign.name} » ?`
+      )
+    ) {
+      return;
+    }
+
+    // Feedback toast géré par useApiMutation
+    deleteCampaign.mutate(campaign.id);
   };
 
   const handleCreateCampaign = () => {

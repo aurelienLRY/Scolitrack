@@ -156,6 +156,18 @@ export function handleApiError(
       });
     }
 
+    // Règles métier (suppression campagne, corbeille, etc.)
+    if (
+      error.message.startsWith("Impossible") ||
+      error.message.includes("déjà dans la corbeille") ||
+      error.message.includes("n'est pas dans la corbeille")
+    ) {
+      return errorResponse({
+        feedback: error.message,
+        status: HttpStatus.BAD_REQUEST,
+      });
+    }
+
     // Autres erreurs avec message explicite
     return errorResponse({
       feedback: error.message,

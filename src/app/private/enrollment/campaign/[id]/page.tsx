@@ -106,23 +106,43 @@ export default function CampaignDetailPage() {
   };
 
   const handleDeleteCampaign = () => {
+    if (!campaign) return;
+
+    const filesCount = files.length;
+    const endPassed = new Date(campaign.endDate) < new Date();
+
+    if (!endPassed) {
+      toast.error(
+        "Impossible de supprimer une campagne dont la date de fin n'est pas encore passée"
+      );
+      return;
+    }
+    if (filesCount > 0) {
+      toast.error(
+        "Impossible de supprimer une campagne qui contient encore des dossiers (y compris en corbeille)"
+      );
+      return;
+    }
+
     if (
-      confirm(
-        `Êtes-vous sûr de vouloir supprimer la campagne "${campaign?.name}" ?`
+      !confirm(
+        `Supprimer définitivement la campagne « ${campaign.name} » ?`
       )
     ) {
-      deleteCampaign.mutate(campaignId, {
-        onSuccess: () => {
-          toast.success("Campagne supprimée avec succès");
-          router.push("/private/enrollment/campaign");
-        },
-        onError: (error) => {
-          toast.error("Erreur lors de la suppression de la campagne");
-          console.error("Erreur:", error);
-        },
-      });
+      return;
     }
+
+    deleteCampaign.mutate(campaignId, {
+      onSuccess: () => {
+        router.push("/private/enrollment/campaign");
+      },
+    });
   };
+
+  const canDeleteCampaign =
+    !!campaign &&
+    new Date(campaign.endDate) < new Date() &&
+    files.length === 0;
 
   const handleAddFiles = () => {
     const emails = parseEmails(emailsText);
@@ -211,7 +231,14 @@ export default function CampaignDetailPage() {
             variant="outline"
             color="destructive"
             onClick={handleDeleteCampaign}
-            tooltip="Supprimer"
+            disabled={!canDeleteCampaign || deleteCampaign.isPending}
+            tooltip={
+              canDeleteCampaign
+                ? "Supprimer"
+                : files.length > 0
+                  ? "Des dossiers sont encore liés à cette campagne"
+                  : "La date de fin n’est pas encore passée"
+            }
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Supprimer
@@ -268,7 +295,7 @@ export default function CampaignDetailPage() {
               <div className="space-y-4">
                 {files.map((file) => (
                   <EnrollmentFileCard
-                    key={file.id}
+                    key={`${file.id}-${file.deletedAt ?? "active"}`}
                     file={file}
                     onEdit={handleEditFile}
                     onView={handleViewFile}

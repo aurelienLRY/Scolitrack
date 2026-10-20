@@ -34,6 +34,8 @@ yarn-error.log*
 .env*
 !.env.exemple
 
+# cron cPanel (secrets locaux)
+/cron/config.env
 
 # vercel
 .vercel

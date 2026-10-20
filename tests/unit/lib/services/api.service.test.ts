@@ -72,6 +72,27 @@ describe("handleApiError", () => {
     expect(response.status).toBe(HttpStatus.CONFLICT);
   });
 
+  it("renvoie 400 pour les règles métier corbeille / Impossible…", async () => {
+    const softDeleted = handleApiError(
+      new Error("Ce dossier est déjà dans la corbeille")
+    );
+    const notInTrash = handleApiError(
+      new Error("Ce dossier n'est pas dans la corbeille")
+    );
+    const campaignRule = handleApiError(
+      new Error(
+        "Impossible de supprimer une campagne dont la date de fin n'est pas encore passée"
+      )
+    );
+
+    expect(softDeleted.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(notInTrash.status).toBe(HttpStatus.BAD_REQUEST);
+    expect(campaignRule.status).toBe(HttpStatus.BAD_REQUEST);
+    await expect(campaignRule.json()).resolves.toMatchObject({
+      feedback: expect.stringContaining("Impossible de supprimer"),
+    });
+  });
+
   it("renvoie 500 avec le message par défaut pour une valeur inconnue", async () => {
     const response = handleApiError("panne", "Lecture impossible");
 

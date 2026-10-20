@@ -48,6 +48,7 @@ export {
   useUpdateEnrollmentFileStatus,
   useUpdateEnrollmentFileByToken,
   useDeleteEnrollmentFile,
+  useRestoreEnrollmentFile,
   useResendEnrollmentInvitation,
   useAddStudentToEnrollment,
   useRemoveStudentFromEnrollment,

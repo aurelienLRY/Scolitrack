@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button, Card, Badge } from "@/components/ui";
 import {
   DropdownMenu,
@@ -12,25 +12,35 @@ import {
   useEnrollmentFile,
   useResendEnrollmentInvitation,
   useDeleteEnrollmentFile,
+  useRestoreEnrollmentFile,
 } from "@/hooks";
 import { notFound } from "next/navigation";
-import { toast } from "sonner";
 import {
   Mail,
   Pencil,
   ExternalLink,
   Trash2,
+  Undo2,
   FileDown,
   Sheet,
   ChevronDown,
   Eye,
 } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import PublicEnrollmentForm from "@/components/enrollment-form/PublicEnrollmentForm";
 import EnrollmentFileChecklist from "@/components/enrollment-form/EnrollmentFileChecklist";
 import EnrollmentFileHistory from "@/components/enrollment-form/EnrollmentFileHistory";
+import {
+  enrollmentStatusLabel,
+  enrollmentStatusVariant,
+} from "@/lib/enrollment/status-badge";
+import {
+  ENROLLMENT_SOFT_DELETE_RETENTION_DAYS,
+  enrollmentSoftDeletePurgeAt,
+} from "@/lib/enrollment/soft-delete";
 
 export default function EnrollmentFileDetailsPage() {
-  const router = useRouter();
   const params = useParams();
   const rawId = params.id;
   const id =
@@ -38,6 +48,7 @@ export default function EnrollmentFileDetailsPage() {
   const { data, isLoading, error } = useEnrollmentFile(id);
   const resendInvitation = useResendEnrollmentInvitation(id);
   const deleteFile = useDeleteEnrollmentFile();
+  const restoreFile = useRestoreEnrollmentFile();
 
   if (isLoading) return <div>Chargement...</div>;
   if (error) return notFound();
@@ -45,56 +56,27 @@ export default function EnrollmentFileDetailsPage() {
   const file = data?.data;
   if (!file) return notFound();
 
-  const statusLabel: Record<string, string> = {
-    DRAFT: "Brouillon",
-    SUBMITTED: "Soumis",
-    NEED_INFO: "A compléter",
-    APPROVED: "Approuvé",
-    REJECTED: "Refusé",
-  };
-
-  const statusVariant: Record<
-    string,
-    "info" | "secondary" | "warning" | "success" | "destructive"
-  > = {
-    DRAFT: "info",
-    SUBMITTED: "secondary",
-    NEED_INFO: "warning",
-    APPROVED: "success",
-    REJECTED: "destructive",
-  };
+  const isDeleted = !!file.deletedAt;
 
   const handleResend = () => {
-    resendInvitation.mutate(undefined, {
-      onSuccess: () => toast.success("Email d'invitation renvoyé"),
-      onError: (err: unknown) =>
-        toast.error(err instanceof Error ? err.message : "Erreur lors du renvoi"),
-    });
+    // Feedback toast géré par useApiMutation
+    resendInvitation.mutate(undefined);
   };
 
   const handleDelete = () => {
     const label = file.family?.name || file.email;
     if (
       !confirm(
-        `Supprimer définitivement le dossier « ${label} » ? Cette action est irréversible.`
+        `Mettre le dossier « ${label} » en corbeille ?\n\nCe n’est pas une suppression immédiate : le dossier restera récupérable pendant ${ENROLLMENT_SOFT_DELETE_RETENTION_DAYS} jours. Passé ce délai, il sera définitivement effacé.`
       )
     ) {
       return;
     }
-    deleteFile.mutate(id, {
-      onSuccess: () => {
-        toast.success("Dossier supprimé");
-        if (file.campaign?.id) {
-          router.push(`/private/enrollment/campaign/${file.campaign.id}`);
-        } else {
-          router.push("/private/enrollment/files");
-        }
-      },
-      onError: (err: unknown) =>
-        toast.error(
-          err instanceof Error ? err.message : "Erreur lors de la suppression"
-        ),
-    });
+    deleteFile.mutate(id);
+  };
+
+  const handleRestore = () => {
+    restoreFile.mutate(id);
   };
 
   const handleExportPdf = () => {
@@ -131,50 +113,90 @@ export default function EnrollmentFileDetailsPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            variant="outline"
-            color="secondary"
-            onClick={handleResend}
-            disabled={resendInvitation.isPending}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Renvoyer le mail
-          </Button>
-          <Link href={`/private/enrollment/files/${id}/edit`}>
-            <Button variant="outline" color="warning">
-              <Pencil className="mr-2 h-4 w-4" />
-              Modifier
+          {!isDeleted && (
+            <>
+              <Button
+                variant="outline"
+                color="secondary"
+                onClick={handleResend}
+                disabled={resendInvitation.isPending}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Renvoyer le mail
+              </Button>
+              <Link href={`/private/enrollment/files/${id}/edit`}>
+                <Button variant="outline" color="warning">
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Modifier
+                </Button>
+              </Link>
+              <Link href={`/enrollment/${file.token}`} target="_blank">
+                <Button variant="ghost" color="accent">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Lien public
+                </Button>
+              </Link>
+            </>
+          )}
+          {isDeleted ? (
+            <Button
+              variant="outline"
+              color="success"
+              onClick={handleRestore}
+              disabled={restoreFile.isPending}
+            >
+              <Undo2 className="mr-2 h-4 w-4" />
+              Récupérer
             </Button>
-          </Link>
-          <Link href={`/enrollment/${file.token}`} target="_blank">
-            <Button variant="ghost" color="accent">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Lien public
+          ) : (
+            <Button
+              variant="outline"
+              color="destructive"
+              onClick={handleDelete}
+              disabled={deleteFile.isPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
             </Button>
-          </Link>
-          <Button
-            variant="outline"
-            color="destructive"
-            onClick={handleDelete}
-            disabled={deleteFile.isPending}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Supprimer
-          </Button>
+          )}
         </div>
       </div>
+
+      {isDeleted && file.deletedAt && (
+        <Card className="border-dashed p-3" variant="primary">
+          <p className="text-sm text-muted-foreground">
+            Ce dossier est en corbeille depuis le{" "}
+            {format(new Date(file.deletedAt), "dd MMMM yyyy à HH:mm", {
+              locale: fr,
+            })}
+            . Il restera récupérable jusqu’au{" "}
+            {format(enrollmentSoftDeletePurgeAt(file.deletedAt), "dd MMMM yyyy", {
+              locale: fr,
+            })}{" "}
+            ({ENROLLMENT_SOFT_DELETE_RETENTION_DAYS} jours), puis sera
+            définitivement effacé.
+          </p>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Card className="space-y-1.5 p-3" variant="primary">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">Infos</h2>
-            <Badge
-              variant={statusVariant[file.status] ?? "info"}
-              styleVariant="outline"
-              className="text-[10px]"
-            >
-              {statusLabel[file.status] ?? file.status}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              {isDeleted && (
+                <Badge variant="destructive" styleVariant="outline" className="text-[10px]">
+                  Corbeille
+                </Badge>
+              )}
+              <Badge
+                variant={enrollmentStatusVariant(file.status)}
+                styleVariant="outline"
+                className="text-[10px]"
+              >
+                {enrollmentStatusLabel(file.status)}
+              </Badge>
+            </div>
           </div>
           <p className="truncate text-xs text-muted-foreground">
             {file.email}

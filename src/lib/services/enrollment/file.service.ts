@@ -3,6 +3,10 @@ import { Prisma, EnrollmentStatus } from "@prisma/client";
 import { activityLogService } from "@/lib/services/crud/activity-log.service";
 import { sendEnrollmentInvitationEmail } from "@/lib/nodemailer/enrollment-invitation.email";
 import { sendEnrollmentStatusChangeEmail } from "@/lib/nodemailer/enrollment-status-change.email";
+import {
+  notifyEnrollmentSubmitted,
+  notifyParentEnrollmentStatusPush,
+} from "@/lib/services/enrollment/enrollment-notify.service";
 import type { EnrollmentFormPayload } from "@/types/enrollment-form.type";
 import {
   createEmptyFormPayload,
@@ -12,6 +16,7 @@ import { evaluateEnrollmentCompleteness } from "@/lib/enrollment/completeness";
 import { hydrateEnrollmentOnApprove } from "@/lib/services/enrollment/hydrate.service";
 import { enrollmentDocumentService } from "@/lib/services/enrollment/document.service";
 import { enrollmentSignatureService } from "@/lib/services/enrollment/signature.service";
+import { ENROLLMENT_SOFT_DELETE_RETENTION_DAYS } from "@/lib/enrollment/soft-delete";
 
 function parseFormPayload(
   raw: string | null | undefined,
@@ -45,9 +50,21 @@ export const enrollmentFileService = {
     campaignId?: string;
     familyId?: string;
     email?: string;
+    /** true = uniquement corbeille ; false/omit = tous (actifs + corbeille) */
+    onlyDeleted?: boolean;
   }) {
-    return prisma.enrollmentFile.findMany({
-      where: filters,
+    const { onlyDeleted, ...rest } = filters ?? {};
+    const where = {
+      ...rest,
+      ...(onlyDeleted === true
+        ? { deletedAt: { not: null } }
+        : onlyDeleted === false
+          ? { deletedAt: null }
+          : {}),
+    };
+
+    const files = await prisma.enrollmentFile.findMany({
+      where,
       include: {
         campaign: {
           select: {
@@ -91,6 +108,13 @@ export const enrollmentFileService = {
         updatedAt: "desc",
       },
     });
+
+    // formPayload chiffré → déchiffré par middleware ; on parse pour afficher les enfants
+    // avant hydratation (EnrollmentStudent n’existe qu’après approbation).
+    return files.map((file) => ({
+      ...file,
+      parsedFormPayload: parseFormPayload(file.formPayload, file.email),
+    }));
   },
 
   /**
@@ -140,7 +164,8 @@ export const enrollmentFileService = {
   },
 
   /**
-   * Récupère un dossier d'inscription par son token
+   * Récupère un dossier d'inscription par son token (accès public).
+   * Les dossiers en corbeille ne sont pas accessibles.
    */
   async getFileByToken(token: string) {
     const file = await prisma.enrollmentFile.findUnique({
@@ -156,7 +181,7 @@ export const enrollmentFileService = {
       },
     });
 
-    if (!file) return null;
+    if (!file || file.deletedAt) return null;
 
     return {
       ...file,
@@ -220,7 +245,7 @@ export const enrollmentFileService = {
       include: { campaign: { select: { name: true } } },
     });
 
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       throw new Error("Dossier d'inscription non trouvé ou token invalide");
     }
 
@@ -306,6 +331,18 @@ export const enrollmentFileService = {
         );
       } catch (err) {
         console.error("Email soumission inscription:", err);
+      }
+
+      try {
+        await notifyEnrollmentSubmitted({
+          id: updated.id,
+          email: updated.email,
+          token: updated.token,
+          familyId: updated.familyId,
+          campaignName: existing.campaign.name,
+        });
+      } catch (err) {
+        console.error("Notifications soumission inscription:", err);
       }
     }
 
@@ -482,19 +519,45 @@ export const enrollmentFileService = {
       details: `Mise à jour du statut du dossier d'inscription #${fileId} de ${oldStatus} à ${newStatus}`,
     });
 
-    await sendEnrollmentStatusChangeEmail(
-      updatedFile.email,
-      updatedFile.token,
-      file.campaign.name,
-      newStatus,
-      note
-    );
+    try {
+      await sendEnrollmentStatusChangeEmail(
+        updatedFile.email,
+        updatedFile.token,
+        file.campaign.name,
+        newStatus,
+        note
+      );
+    } catch (err) {
+      console.error("Email changement statut inscription:", err);
+    }
+
+    if (
+      newStatus === "APPROVED" ||
+      newStatus === "NEED_INFO" ||
+      newStatus === "REJECTED" ||
+      newStatus === "SUBMITTED"
+    ) {
+      try {
+        await notifyParentEnrollmentStatusPush({
+          file: {
+            id: updatedFile.id,
+            email: updatedFile.email,
+            token: file.token,
+            familyId: updatedFile.familyId ?? file.familyId,
+          },
+          newStatus,
+          campaignName: file.campaign.name,
+        });
+      } catch (err) {
+        console.error("Push parent statut inscription:", err);
+      }
+    }
 
     return updatedFile;
   },
 
   /**
-   * Supprime un dossier d'inscription
+   * Soft-delete : met le dossier en corbeille (purge définitive après le délai légal).
    */
   async deleteFile(id: string, userId: string) {
     const file = await prisma.enrollmentFile.findUnique({
@@ -505,18 +568,101 @@ export const enrollmentFileService = {
       throw new Error("Dossier d'inscription non trouvé");
     }
 
-    await prisma.enrollmentFile.delete({
+    if (file.deletedAt) {
+      throw new Error("Ce dossier est déjà dans la corbeille");
+    }
+
+    const updated = await prisma.enrollmentFile.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      include: {
+        campaign: true,
+        family: true,
+        students: { include: { student: true } },
+      },
+    });
+
+    await activityLogService.logActivity({
+      userId,
+      action: "SOFT_DELETE_ENROLLMENT_FILE",
+      details: `Mise en corbeille du dossier d'inscription #${id} (purge dans ${ENROLLMENT_SOFT_DELETE_RETENTION_DAYS} jours)`,
+    });
+
+    return {
+      ...updated,
+      parsedFormPayload: parseFormPayload(updated.formPayload, updated.email),
+    };
+  },
+
+  /**
+   * Annule une mise en corbeille.
+   */
+  async restoreFile(id: string, userId: string) {
+    const file = await prisma.enrollmentFile.findUnique({
       where: { id },
     });
 
-    // Journaliser l'action
-    await activityLogService.logActivity({
-      userId,
-      action: "DELETE_ENROLLMENT_FILE",
-      details: `Suppression du dossier d'inscription #${id}`,
+    if (!file) {
+      throw new Error("Dossier d'inscription non trouvé");
+    }
+
+    if (!file.deletedAt) {
+      throw new Error("Ce dossier n'est pas dans la corbeille");
+    }
+
+    const updated = await prisma.enrollmentFile.update({
+      where: { id },
+      data: { deletedAt: null },
+      include: {
+        campaign: true,
+        family: true,
+        students: { include: { student: true } },
+      },
     });
 
-    return file;
+    await activityLogService.logActivity({
+      userId,
+      action: "RESTORE_ENROLLMENT_FILE",
+      details: `Restauration du dossier d'inscription #${id} depuis la corbeille`,
+    });
+
+    return {
+      ...updated,
+      parsedFormPayload: parseFormPayload(updated.formPayload, updated.email),
+    };
+  },
+
+  /**
+   * Purge définitive des dossiers en corbeille depuis ≥ le délai de rétention.
+   * Appelé par la tâche cron quotidienne.
+   */
+  async purgeSoftDeletedFiles(
+    olderThanDays = ENROLLMENT_SOFT_DELETE_RETENTION_DAYS
+  ) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - olderThanDays);
+
+    const toPurge = await prisma.enrollmentFile.findMany({
+      where: {
+        deletedAt: { not: null, lte: cutoff },
+      },
+      select: { id: true, email: true, deletedAt: true },
+    });
+
+    if (toPurge.length === 0) {
+      return { purged: 0, ids: [] as string[] };
+    }
+
+    const ids = toPurge.map((f) => f.id);
+
+    await prisma.$transaction(async (tx) => {
+      // Signatures liées aux dossiers (fileId SetNull — on peut aussi les laisser)
+      await tx.enrollmentFile.deleteMany({
+        where: { id: { in: ids } },
+      });
+    });
+
+    return { purged: ids.length, ids };
   },
 
   /**
@@ -627,6 +773,12 @@ export const enrollmentFileService = {
 
     if (!file) {
       throw new Error("Dossier d'inscription non trouvé");
+    }
+
+    if (file.deletedAt) {
+      throw new Error(
+        "Impossible de renvoyer l'invitation : ce dossier est dans la corbeille"
+      );
     }
 
     await sendEnrollmentInvitationEmail(file.email, file.token, file.campaign.name);

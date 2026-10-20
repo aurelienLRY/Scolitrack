@@ -6,16 +6,35 @@ export type TPrivilegeRoute = {
 };
 
 /**
- * Routes publiques ne nécessitant pas d'authentification
+ * Préfixes (ou chemins exacts) accessibles sans session.
+ * Les parents remplissent le dossier via /enrollment/[token] + APIs token.
  */
-const publicRoutes = [
-  "/",
+const publicRoutePrefixes = [
   "/activate-account",
   "/forgot-password",
   "/reset-password",
-  "/unauthorized", // Page d'erreur d'autorisation
-  "/enrollment/[token]", // Accès public aux dossiers d'inscription par token
-];
+  "/unauthorized",
+  "/enrollment", // UI publique + signatures /enrollment/sign/...
+  "/api/enrollment/files/token",
+  "/api/enrollment/signatures",
+  "/api/enrollment/documents/access",
+  // Liste des commissions pour le formulaire public (POST reste protégé dans la route)
+  "/api/setup-application/commissions",
+  "/api/storage/images",
+] as const;
+
+/** @deprecated préférer isPublicPath — conservé pour compat imports */
+const publicRoutes = ["/", ...publicRoutePrefixes];
+
+/**
+ * true si la route UI ou API est ouverte sans authentification.
+ */
+function isPublicPath(pathname: string): boolean {
+  if (pathname === "/") return true;
+  return publicRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
 
 /**
  * Routes API nécessitant des privilèges spécifiques
@@ -101,6 +120,8 @@ const DEFAULT_LOGIN_REDIRECT: string = "/";
 export {
   privilegesApiRoutes,
   publicRoutes,
+  publicRoutePrefixes,
+  isPublicPath,
   privilegesRoutes,
   DEFAULT_LOGIN_REDIRECT,
 };

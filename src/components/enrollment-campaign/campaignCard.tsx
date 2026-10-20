@@ -23,10 +23,32 @@ interface CampaignCardProps {
 
 const ICONS_SIZE = 4;
 
+function canDeleteCampaign(campaign: Campaign): {
+  allowed: boolean;
+  reason?: string;
+} {
+  if (campaign.status !== "past") {
+    return {
+      allowed: false,
+      reason:
+        "La date de fin de la campagne n’est pas encore passée",
+    };
+  }
+  if (campaign.filesCount > 0) {
+    return {
+      allowed: false,
+      reason:
+        "Des dossiers sont encore liés à cette campagne (y compris en corbeille)",
+    };
+  }
+  return { allowed: true };
+}
+
 export default function CampaignCard({ 
   campaign, 
   onDelete 
 }: CampaignCardProps) {
+  const deleteCheck = canDeleteCampaign(campaign);
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -94,6 +116,17 @@ export default function CampaignCard({
             color="destructive"
             size="sm" 
             onClick={() => onDelete?.(campaign)}
+            disabled={!deleteCheck.allowed}
+            tooltip={
+              deleteCheck.allowed
+                ? "Supprimer la campagne"
+                : deleteCheck.reason
+            }
+            aria-label={
+              deleteCheck.allowed
+                ? "Supprimer la campagne"
+                : deleteCheck.reason
+            }
           >
             <Trash2 className="w-4 h-4" />
           </Button>

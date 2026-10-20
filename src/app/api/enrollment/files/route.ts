@@ -1,4 +1,3 @@
-"use server";
 import { NextRequest } from "next/server";
 import { withPrivilege, PrivilegeName } from "@/lib/services/auth.service";
 import { enrollmentFileService } from "@/lib/services/enrollment/file.service";
@@ -12,6 +11,8 @@ import {
 import { createEnrollmentFileSchema } from "@/schemas/EnrollmentSchema";
 import { auth } from "@/lib/auth/auth";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/enrollment/files - Récupérer les dossiers d'inscription
  * Paramètres de requête optionnels:
@@ -23,32 +24,33 @@ import { auth } from "@/lib/auth/auth";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
-    // Récupérer les paramètres de filtrage
+
     const filters: Record<string, string> = {};
-    
+
     if (searchParams.has("status")) {
       filters.status = searchParams.get("status") as string;
     }
-    
+
     if (searchParams.has("campaignId")) {
       filters.campaignId = searchParams.get("campaignId") as string;
     }
-    
+
     if (searchParams.has("familyId")) {
       filters.familyId = searchParams.get("familyId") as string;
     }
-    
+
     if (searchParams.has("email")) {
       filters.email = searchParams.get("email") as string;
     }
-    
+
     const files = await enrollmentFileService.getAllFiles(filters);
-    
-    return successResponse({
+
+    const response = successResponse({
       data: files,
       feedback: "Dossiers d'inscription récupérés avec succès",
     });
+    response.headers.set("Cache-Control", "no-store, max-age=0");
+    return response;
   } catch (error) {
     return handleApiError(
       error,

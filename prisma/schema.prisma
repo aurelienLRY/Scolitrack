@@ -421,6 +421,8 @@ model EnrollmentFile {
   acceptAssociation     Boolean             @default(false)
   acceptCanteenRules    Boolean             @default(false)
   saquetasQuantity      Int                 @default(0)
+  /// Soft-delete : date de mise à la corbeille (purge définitive après 15 jours)
+  deletedAt             DateTime?
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   campaign              EnrollmentCampaign    @relation(fields: [campaignId], references: [id])
@@ -435,6 +437,7 @@ model EnrollmentFile {
   @@index([familyId])
   @@index([reviewerId])
   @@index([status])
+  @@index([deletedAt])
 }
 
 /**

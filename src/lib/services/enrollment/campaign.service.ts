@@ -161,7 +161,8 @@ export const enrollmentCampaignService = {
 
   /**
    * Supprime une campagne d'inscription.
-   * Ordre : signatures (FK campaignId) → dossiers (docs en cascade) → campagne.
+   * Interdit si la date de fin n'est pas passée, ou s'il reste des dossiers
+   * (actifs ou en corbeille — attendre la purge / vider les dossiers d'abord).
    */
   async deleteCampaign(id: string, userId: string) {
     const campaign = await prisma.enrollmentCampaign.findUnique({
@@ -180,13 +181,24 @@ export const enrollmentCampaignService = {
       throw new Error("Campagne d'inscription non trouvée");
     }
 
-    await prisma.$transaction(async (tx) => {
-      // Les signatures référencent la campagne sans onDelete Cascade
-      await tx.enrollmentSignature.deleteMany({
-        where: { campaignId: id },
-      });
+    const now = new Date();
+    if (campaign.endDate >= now) {
+      throw new Error(
+        "Impossible de supprimer une campagne dont la date de fin n'est pas encore passée"
+      );
+    }
 
-      await tx.enrollmentFile.deleteMany({
+    const remainingFiles = await prisma.enrollmentFile.count({
+      where: { campaignId: id },
+    });
+    if (remainingFiles > 0) {
+      throw new Error(
+        "Impossible de supprimer une campagne qui contient encore des dossiers (y compris en corbeille). Supprimez ou attendez la purge des dossiers."
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.enrollmentSignature.deleteMany({
         where: { campaignId: id },
       });
 
@@ -198,7 +210,7 @@ export const enrollmentCampaignService = {
     await activityLogService.logActivity({
       userId,
       action: "DELETE_ENROLLMENT_CAMPAIGN",
-      details: `Suppression de la campagne "${campaign.name}" (${campaign._count.enrollmentFiles} dossier(s), ${campaign._count.signatures} signature(s))`,
+      details: `Suppression de la campagne "${campaign.name}"`,
     });
 
     return campaign;
@@ -288,6 +300,7 @@ export const enrollmentCampaignService = {
       where: { id },
       include: {
         enrollmentFiles: {
+          where: { deletedAt: null },
           select: {
             id: true,
             status: true,

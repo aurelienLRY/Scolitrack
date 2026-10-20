@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   privilegesApiRoutes,
   privilegesRoutes,
+  isPublicPath,
   TPrivilegeRoute,
 } from "@/config/routes.config";
 
@@ -66,8 +67,9 @@ export default authMiddleware(async function middleware(req) {
     return response;
   }
 
-  // Images storage : accessibles sans session (Next/Image optimiser + affichage)
-  if (nextUrl.pathname.startsWith("/api/storage/images/")) {
+  // Parcours public (lien token inscription, signatures, commissions lecture, images…)
+  // Doit passer AVANT le 401 global sur /api — sinon le parent non connecté est bloqué.
+  if (isPublicPath(nextUrl.pathname)) {
     return NextResponse.next();
   }
 

@@ -22,16 +22,17 @@ src/
 │   ├── pwa.config.ts      # Configuration de la PWA
 │   └── notification.constants.ts # Constantes pour les notifications
 ├── lib/
+│   ├── services/
+│   │   └── web-push.service.ts  # Envoi push serveur (userIds / rôle / privilège)
 │   └── servicesWorker/
-│       ├── index.ts       # Configuration du service worker principal
-│       └── webPush.services.ts # Services pour les notifications push
+│       └── index.ts       # Handlers push / notificationclick du SW
 ├── types/
 │   └── notification.type.ts # Types pour les notifications
 └── app/
     └── api/
         └── notification/  # API pour les notifications
-            ├── push/      # Envoi de notifications
-            ├── subscribe/ # Abonnement aux notifications
+            ├── notify/      # Envoi de notifications (HTTP, auth session)
+            ├── subscribe/   # Abonnement
             └── unsubscribe/ # Désabonnement
 
 public/
@@ -151,53 +152,48 @@ function MyComponent() {
 }
 ```
 
-#### 2. Via l'API (côté serveur ou services)
+#### 2. Depuis un service serveur (recommandé)
 
-Pour envoyer une notification depuis le serveur ou un service backend, utilisez l'API `/api/notification/push` :
+Pour un déclenchement métier (inscriptions, etc.), utiliser `src/lib/services/web-push.service.ts` plutôt qu’un `fetch` interne :
 
 ```typescript
-// Exemple d'envoi de notification via l'API
+import {
+  sendWebPushToUserIds,
+  sendWebPushToPrivilege,
+} from "@/lib/services/web-push.service";
+import { PrivilegeName } from "@/config/privileges.config";
 
-async function sendServerNotification() {
-  const notification = {
+await sendWebPushToPrivilege(PrivilegeName.MANAGE_ENROLLMENTS, {
+  title: "Dossier soumis",
+  message: "Une famille a soumis son dossier",
+  path: "/private/enrollment/files/abc",
+});
+
+await sendWebPushToUserIds(["userId1"], {
+  title: "Dossier accepté",
+  message: "Votre inscription a été validée",
+  path: "/enrollment/token-xyz",
+});
+```
+
+Branchements inscriptions : [Notifications-Inscriptions.md](./Notifications-Inscriptions.md).
+
+#### 3. Via l'API HTTP (outil / labo, session requise)
+
+Endpoint actuel : **`POST /api/notification/notify`**.
+
+```typescript
+const response = await fetch("/api/notification/notify", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
     title: "Mise à jour importante",
     message: "Une nouvelle version de l'application est disponible",
-    target: {
-      type: "role",
-      id: "ADMIN", // Envoyer à tous les utilisateurs avec le rôle ADMIN
-    },
-    data: {
-      path: "/updates",
-      priority: "high",
-      timestamp: Date.now(),
-    },
-
-    // Options facultatives :
-
-    actions: [
-      {
-        action: "open",
-        title: "Voir les détails",
-      },
-      {
-        action: "close",
-        title: "Plus tard",
-      },
-    ],
-    vibrate: [200, 100, 200], // Motif de vibration personnalisé
-    icon: "/custom-icon.png", // Icône personnalisée
-  };
-
-  const response = await fetch("/api/notification/push", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(notification),
-  });
-  const result = await response.json();
-  console.log(`Notifications envoyées: ${result.sent}/${result.total}`);
-}
+    target: { type: "role", id: "ADMIN" },
+    data: { path: "/updates" },
+  }),
+});
+const result = await response.json();
 ```
 
 ### Structure des données de notification

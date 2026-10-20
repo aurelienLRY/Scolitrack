@@ -71,20 +71,12 @@ export default function EditEnrollmentFilePage() {
   if (!file) return notFound();
 
   const saveMetadata = () => {
-    updateFile.mutate(
-      {
-        email,
-        decisionNote: decisionNote || undefined,
-        familyId: familyId || null,
-      },
-      {
-        onSuccess: () => toast.success("Dossier mis à jour"),
-        onError: (err: unknown) =>
-          toast.error(
-            err instanceof Error ? err.message : "Erreur de mise à jour"
-          ),
-      }
-    );
+    // Feedback toast géré par useApiMutation
+    updateFile.mutate({
+      email,
+      decisionNote: decisionNote || undefined,
+      familyId: familyId || null,
+    });
   };
 
   const saveStatus = () => {
@@ -94,14 +86,7 @@ export default function EditEnrollmentFilePage() {
       );
       return;
     }
-    updateStatus.mutate(
-      { status, note: decisionNote || undefined },
-      {
-        onSuccess: () => toast.success("Statut mis à jour"),
-        onError: (err: unknown) =>
-          toast.error(err instanceof Error ? err.message : "Erreur de statut"),
-      }
-    );
+    updateStatus.mutate({ status, note: decisionNote || undefined });
   };
 
   return (

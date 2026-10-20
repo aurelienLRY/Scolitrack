@@ -86,6 +86,7 @@ class FetchService {
   ): Promise<ApiResponse<T>> {
     return this.fetchApi<T>(url, {
       method: "GET",
+      cache: "no-store",
       ...options,
     });
   }

@@ -2,6 +2,21 @@
 
 Ce guide explique comment le middleware d'authentification et d'autorisation est implémenté dans Scolitrack pour sécuriser les routes de l'application.
 
+> **Autre « middleware »** : le chiffrement transparent des données Prisma (AES `ENC:…`) est documenté séparément dans [Prisma Middleware - cryptoData.md](./Prisma%20Middleware%20-%20cryptoData.md) (extension `$extends`, pas le fichier `src/middleware.ts`).
+
+### Parcours inscription public (important)
+
+Le lien parent est **`/enrollment/[token]`** (pas `/private/...`).  
+Le middleware laisse passer sans session les préfixes définis par `isPublicPath()` dans `routes.config.ts`, notamment :
+
+- `/enrollment` (UI + pages de signature)
+- `/api/enrollment/files/token/…`
+- `/api/enrollment/signatures/…`
+- `/api/enrollment/documents/access/…`
+- `/api/setup-application/commissions` (GET liste pour le formulaire ; POST reste protégé dans la route)
+
+Sans cette exception, toute requête `/api/*` non connectée renvoie **401** et le dossier est inutilisable en navigation privée.
+
 ## 1. Vue d'ensemble
 
 Le système de middleware de Scolitrack permet de :

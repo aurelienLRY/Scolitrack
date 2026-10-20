@@ -124,7 +124,7 @@ export default function EnrollmentFilesPage() {
             ) : (
               files.map((file) => (
                 <EnrollmentFileCard
-                  key={file.id}
+                  key={`${file.id}-${file.deletedAt ?? "active"}`}
                   file={file}
                   onEdit={handleEditFile}
                   onView={handleViewFile}

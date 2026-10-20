@@ -47,24 +47,16 @@ export function QuickSendWidget({ onSuccess }: QuickSendWidgetProps) {
       return;
     }
 
-    createFile.mutate({
-      campaignId,
-      email,
-    }, {
-      onSuccess: () => {
-        toast.success("Dossier créé et email d'invitation envoyé !");
-        setCampaignId("");
-        setEmail("");
-        onSuccess?.();
-      },
-      onError: (error: unknown) => {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Erreur lors de la création du dossier";
-        toast.error(message);
-      },
-    });
+    createFile.mutate(
+      { campaignId, email },
+      {
+        onSuccess: () => {
+          setCampaignId("");
+          setEmail("");
+          onSuccess?.();
+        },
+      }
+    );
   };
 
   return (

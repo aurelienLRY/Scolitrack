@@ -1,5 +1,6 @@
 "use client";
 
+import { QueryClient } from "@tanstack/react-query";
 import {
   useApiQuery,
   useApiMutation,
@@ -7,6 +8,7 @@ import {
   ApiMutationResult,
 } from "@/hooks/query/useQuery";
 import FetchService from "@/lib/services/fetch.service";
+import { ApiResponse } from "@/types/api.type";
 import {
   EnrollmentCampaignComplete,
   EnrollmentFileWithDetails,
@@ -26,6 +28,40 @@ import {
 export const ENROLLMENT_CAMPAIGN_QUERY_KEY = ["enrollment-campaign"];
 export const ENROLLMENT_FILE_QUERY_KEY = ["enrollment-file"];
 export const ENROLLMENT_STATS_QUERY_KEY = ["enrollment-stats"];
+
+/**
+ * Met à jour un dossier dans tous les caches (listes + détail) sans recharger la page.
+ * `deletedAt` est forcé explicitement (y compris `null` après restauration).
+ */
+function syncEnrollmentFileInCache(
+  queryClient: QueryClient,
+  file: EnrollmentFileWithDetails
+) {
+  const deletedAt = file.deletedAt ?? null;
+
+  const entries = queryClient.getQueriesData<
+    ApiResponse<EnrollmentFileWithDetails[] | EnrollmentFileWithDetails>
+  >({ queryKey: ENROLLMENT_FILE_QUERY_KEY });
+
+  for (const [queryKey, old] of entries) {
+    if (!old?.data) continue;
+
+    if (Array.isArray(old.data)) {
+      const next = old.data.map((f) =>
+        f.id === file.id ? { ...f, ...file, deletedAt } : f
+      );
+      queryClient.setQueryData(queryKey, { ...old, data: next });
+      continue;
+    }
+
+    if (old.data.id === file.id) {
+      queryClient.setQueryData(queryKey, {
+        ...old,
+        data: { ...old.data, ...file, deletedAt },
+      });
+    }
+  }
+}
 
 /**
  * Hook pour récupérer toutes les campagnes d'inscription
@@ -336,6 +372,7 @@ export function useEnrollmentFiles(
   return useApiQuery<EnrollmentFileWithDetails[]>({
     queryKey: [...ENROLLMENT_FILE_QUERY_KEY, filters],
     url,
+    staleTime: 0,
   });
 }
 
@@ -638,10 +675,33 @@ export function useDeleteEnrollmentFile(): ApiMutationResult<
   return useApiMutation<EnrollmentFileWithDetails, string>({
     mutationFn: (id) =>
       FetchService.delete(`/api/enrollment/files/${id}`),
-    invalidateQueries: [
-      ENROLLMENT_FILE_QUERY_KEY,
-      ENROLLMENT_CAMPAIGN_QUERY_KEY,
-    ],
+    updateCache: (queryClient, response) => {
+      if (!response.data) return;
+      // Annuler les refetch en cours qui pourraient écraser le patch avec une liste périmée
+      void queryClient.cancelQueries({ queryKey: ENROLLMENT_FILE_QUERY_KEY });
+      syncEnrollmentFileInCache(queryClient, response.data);
+    },
+    // Pas d'invalidation des dossiers : le cache est déjà synchronisé (évite un GET périmé)
+    invalidateQueries: [ENROLLMENT_CAMPAIGN_QUERY_KEY],
+  });
+}
+
+/**
+ * Hook pour restaurer un dossier depuis la corbeille
+ */
+export function useRestoreEnrollmentFile(): ApiMutationResult<
+  EnrollmentFileWithDetails,
+  string
+> {
+  return useApiMutation<EnrollmentFileWithDetails, string>({
+    mutationFn: (id) =>
+      FetchService.post(`/api/enrollment/files/${id}/restore`, {}),
+    updateCache: (queryClient, response) => {
+      if (!response.data) return;
+      void queryClient.cancelQueries({ queryKey: ENROLLMENT_FILE_QUERY_KEY });
+      syncEnrollmentFileInCache(queryClient, response.data);
+    },
+    invalidateQueries: [ENROLLMENT_CAMPAIGN_QUERY_KEY],
   });
 }
 
@@ -784,13 +844,16 @@ export function useRemoveStudentFromEnrollment(
  * ```
  */
 export function useEnrollmentStats(files: EnrollmentFileWithDetails[]) {
+  const active = files.filter((file) => !file.deletedAt);
   return {
-    totalFiles: files.length,
-    submittedFiles: files.filter(file => file.status === "SUBMITTED").length,
-    approvedFiles: files.filter(file => file.status === "APPROVED").length,
-    rejectedFiles: files.filter(file => file.status === "REJECTED").length,
-    pendingFiles: files.filter(file => file.status === "DRAFT" || file.status === "NEED_INFO").length,
-    draftFiles: files.filter(file => file.status === "DRAFT").length,
-    needInfoFiles: files.filter(file => file.status === "NEED_INFO").length,
+    totalFiles: active.length,
+    submittedFiles: active.filter((file) => file.status === "SUBMITTED").length,
+    approvedFiles: active.filter((file) => file.status === "APPROVED").length,
+    rejectedFiles: active.filter((file) => file.status === "REJECTED").length,
+    pendingFiles: active.filter(
+      (file) => file.status === "DRAFT" || file.status === "NEED_INFO"
+    ).length,
+    draftFiles: active.filter((file) => file.status === "DRAFT").length,
+    needInfoFiles: active.filter((file) => file.status === "NEED_INFO").length,
   };
 }

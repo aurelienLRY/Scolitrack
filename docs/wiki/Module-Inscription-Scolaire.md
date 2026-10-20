@@ -7,7 +7,7 @@ Le module "Campagne d'inscription scolaire" permet à l'établissement de :
 1. **Planifier** des campagnes d'inscription sur une période donnée
 2. **Générer** des dossiers d'inscription pré-remplis pour les familles cibles
 3. **Suivre** l'avancement des dossiers à travers différents statuts
-4. **Notifier** automatiquement les familles par email à chaque étape
+4. **Notifier** les familles (email) et le staff (email + push) aux étapes clés — détail dans [Notifications-Inscriptions.md](./Notifications-Inscriptions.md)
 5. **Créer** un compte parent uniquement après validation (`APPROVED`) si la famille n'existait pas
 
 ## Structure des données
@@ -230,14 +230,25 @@ L'interface est organisée en deux sections principales :
 - Formulaire adaptatif selon le statut
 - Processus guidé en plusieurs étapes
 
-## Notifications
+## Notifications (email + push)
 
-Les notifications sont envoyées automatiquement à plusieurs étapes :
+Documentation dédiée : **[Notifications-Inscriptions.md](./Notifications-Inscriptions.md)**.
 
-1. **Invitation** : Lorsqu'un dossier est créé
-2. **Confirmation** : Lorsqu'un dossier est soumis
-3. **Demande d'information** : Lorsque l'administration demande des compléments
-4. **Décision** : Approbation ou refus du dossier
+Résumé :
+
+1. **Invitation** : email parent (lien token) à la création du dossier
+2. **Soumission** : email confirmation parent + **email + push staff** (`MANAGE_ENROLLMENTS`)
+3. **NEED_INFO / APPROVED / REJECTED** : email parent + push parent si compte User abonné
+4. Opt-in push : menu staff (`NotificationToggle`) ; bandeau sur le formulaire public si session User
+
+## Corbeille et purge
+
+- Soft-delete dossier (`deletedAt`), récupérable **30 jours**, puis purge cron cPanel — voir [`cron/README.md`](../../cron/README.md)
+- Suppression campagne uniquement si date de fin passée **et** aucun dossier restant
+
+## Affichage des élèves
+
+Avant hydratation (`APPROVED`), les enfants sont dans `formPayload`. Les listes utilisent `enrollmentChildLabels()` (formulaire ou `EnrollmentStudent`).
 
 ## Intégration avec les modules existants
 
@@ -246,7 +257,7 @@ Le module d'inscription s'intègre avec :
 - **Module Famille** : Création/mise à jour des familles
 - **Module Étudiant** : Association des étudiants aux dossiers
 - **Module Utilisateur** : Création de comptes parents
-- **Module Notification** : Envoi d'emails et notifications push
+- **Notifications push / email** : voir [Notifications-Inscriptions.md](./Notifications-Inscriptions.md) et [PWA.md](./PWA.md)
 
 ## Comment utiliser le module
 
@@ -409,9 +420,11 @@ stateDiagram-v2
 ### Services connectés
 
 1. **Service de journalisation** : `activityLogService` correctement importé et utilisé
-2. **Service d'emails** : Templates nodemailer créés et intégrés :
-   - `enrollment-invitation.email.ts` - Invitation à remplir un dossier
-   - `enrollment-status-change.email.ts` - Notification de changement de statut
+2. **Service d'emails / push** : Templates et orchestration :
+   - `enrollment-invitation.email.ts` — invitation à remplir un dossier
+   - `enrollment-status-change.email.ts` — changement de statut (parent)
+   - `enrollment-staff-submitted.email.ts` — alerte staff à la soumission
+   - `enrollment-notify.service.ts` + `web-push.service.ts` — push staff / parent
 
 ### API Routes complètes
 
@@ -496,6 +509,7 @@ Système complet de hooks pour la gestion des données côté client :
 - ✅ Routes API pour les dossiers d'inscription
 - ✅ Logique de gestion des statuts et transitions
 - ✅ Notifications par email intégrées
+- ✅ Notifications push staff (soumission) + parent (décisions, si User abonné)
 
 ### ✅ Phase 3 : Interface utilisateur - TERMINÉE
 - ✅ Interface d'administration des campagnes

@@ -11,6 +11,8 @@ import {
 import { EnrollmentCampaignComplete } from "@/types/enrollment.type";
 import { FileText, Users, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { enrollmentChildLabels } from "@/lib/enrollment/child-labels";
+import type { EnrollmentFileWithDetails } from "@/types/enrollment.type";
 
 export default function EnrollmentDashboard() {
   // Récupération des données avec les hooks TanStack Query
@@ -155,7 +157,11 @@ export default function EnrollmentDashboard() {
               )}
               <Card className="p-6" variant="primary">
                 <div className="space-y-3">
-                  {inProgressFiles.slice(0, 5).map((file: { id: string; family?: { name: string }; email: string; campaign?: { name: string }; status: string; students?: unknown[] }) => (
+                  {inProgressFiles
+                    .slice(0, 5)
+                    .map((file: EnrollmentFileWithDetails) => {
+                      const childNames = enrollmentChildLabels(file);
+                      return (
                     <Link 
                       key={file.id} 
                       href={`/private/enrollment/files/${file.id}`}
@@ -165,13 +171,18 @@ export default function EnrollmentDashboard() {
                         <p className="font-medium">{file.family?.name || file.email}</p>
                         <p className="text-sm text-muted-foreground">
                           {file.campaign?.name} - {file.status === "SUBMITTED" ? "Soumis" : "À compléter"}
+                          {childNames.length > 0
+                            ? ` · ${childNames.join(", ")}`
+                            : ""}
                         </p>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {file.students?.length || 0} élève(s)
+                        {childNames.length} élève
+                        {childNames.length > 1 ? "s" : ""}
                       </div>
                     </Link>
-                  ))}
+                      );
+                  })}
                 </div>
               </Card>
             </div>
